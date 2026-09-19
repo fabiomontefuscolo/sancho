@@ -96,3 +96,9 @@ restart → deleted stays gone.
 
 MVP = Phases 1–3 (switch between conversations working end to end). Then deliver
 US2 → US3 → US4 as independent increments, each commit-ready, finishing with Polish.
+
+## Phase 8: Convergence
+
+- [ ] T031 Gate `conversation.state` emission in `src/agent/chat-handler.ts` on the conversation still being the active one (check `getActiveConversationId()` before `postConversation` at send-start, screenshot append, and run end), so a run completing in a backgrounded conversation does not clobber the panel's current view per FR-012 (partial)
+- [ ] T032 Track abort controllers per conversation id in `src/agent/chat-handler.ts` (map of conversationId → AbortController); `chat.cancel` and `conversations.delete` abort only the run bound to the relevant conversation, so concurrent sends in different conversations do not clobber each other per FR-012 (partial)
+- [ ] T033 Render the permission and screenshot-consent banners above the conversations list view as well as the chat view in `src/ui/components/chat.tsx`, so an ACP permission request is actionable while the list is open per US1 (partial)
