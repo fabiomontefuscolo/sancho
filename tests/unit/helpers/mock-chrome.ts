@@ -6,36 +6,41 @@ type ChangeListener = (
 ) => void;
 
 export function installMockChrome() {
-  const stores: Record<string, Record<string, unknown>> = { sync: {}, local: {} };
+  const stores: { sync: Record<string, unknown>; local: Record<string, unknown> } = {
+    sync: {},
+    local: {},
+  };
   const changeListeners: ChangeListener[] = [];
 
-  const makeArea = (areaName: "sync" | "local") => ({
-    get: vi.fn(async (keys?: string | string[] | null) => {
-      const store = stores[areaName];
-      if (keys == null) return { ...store };
-      const list = Array.isArray(keys) ? keys : [keys];
-      const out: Record<string, unknown> = {};
-      for (const key of list) {
-        if (key in store) out[key] = store[key];
-      }
-      return out;
-    }),
-    set: vi.fn(async (items: Record<string, unknown>) => {
-      const changes: Record<string, { oldValue?: unknown; newValue?: unknown }> = {};
-      for (const [key, value] of Object.entries(items)) {
-        changes[key] = { oldValue: stores[areaName][key], newValue: value };
-        stores[areaName][key] = value;
-      }
-      changeListeners.forEach((listener) => listener(changes, areaName));
-    }),
-    remove: vi.fn(async (keys: string | string[]) => {
-      const list = Array.isArray(keys) ? keys : [keys];
-      for (const key of list) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete stores[areaName][key];
-      }
-    }),
-  });
+  const makeArea = (areaName: "sync" | "local") => {
+    const store = stores[areaName];
+    return {
+      get: vi.fn(async (keys?: string | string[] | null) => {
+        if (keys == null) return { ...store };
+        const list = Array.isArray(keys) ? keys : [keys];
+        const out: Record<string, unknown> = {};
+        for (const key of list) {
+          if (key in store) out[key] = store[key];
+        }
+        return out;
+      }),
+      set: vi.fn(async (items: Record<string, unknown>) => {
+        const changes: Record<string, { oldValue?: unknown; newValue?: unknown }> = {};
+        for (const [key, value] of Object.entries(items)) {
+          changes[key] = { oldValue: store[key], newValue: value };
+          store[key] = value;
+        }
+        changeListeners.forEach((listener) => listener(changes, areaName));
+      }),
+      remove: vi.fn(async (keys: string | string[]) => {
+        const list = Array.isArray(keys) ? keys : [keys];
+        for (const key of list) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete store[key];
+        }
+      }),
+    };
+  };
 
   const chromeMock = {
     storage: {
