@@ -26,7 +26,7 @@
 
 **Purpose**: Shared formatting utility used by US3; no other setup needed (existing project).
 
-- [ ] T001 Create `src/ui/utils/format-time.ts` exporting `formatMessageTime(epochMs: number): string` that formats with `Intl.DateTimeFormat` (user locale, weekday `short`, month `short`, day `numeric`, hour `2-digit`, minute `2-digit`, `hour12: false`) so 1758317760000-style epochs render like `Sat Sep 19 22:56`; do NOT reuse `src/agent/time.ts#formatTimestamp` (plan decision 4 — bracketed agent-context format)
+- [x] T001 Create `src/ui/utils/format-time.ts` exporting `formatMessageTime(epochMs: number): string` that formats with `Intl.DateTimeFormat` (user locale, weekday `short`, month `short`, day `numeric`, hour `2-digit`, minute `2-digit`, `hour12: false`) so 1758317760000-style epochs render like `Sat Sep 19 22:56`; do NOT reuse `src/agent/time.ts#formatTimestamp` (plan decision 4 — bracketed agent-context format)
 
 ---
 
@@ -46,12 +46,12 @@ _(No tasks.)_
 
 ### Tests for User Story 1
 
-- [ ] T002 [US1] Add e2e layout spec `tests/e2e/layout.spec.ts`: open the side panel, send a message via the mock provider, then assert (a) `document.body.scrollWidth === document.body.clientWidth` and `document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1` (no outer scrollbars), (b) the thread viewport element has `scrollHeight > clientHeight` only after enough messages, and (c) computed `margin` on `body` is `0px`
+- [x] T002 [US1] Add e2e layout spec `tests/e2e/layout.spec.ts`: open the side panel, send a message via the mock provider, then assert (a) `document.body.scrollWidth === document.body.clientWidth` and `document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1` (no outer scrollbars), (b) the thread viewport element has `scrollHeight > clientHeight` only after enough messages, and (c) computed `margin` on `body` is `0px`
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] In `src/ui/components/chat.css` add a root reset — `html, body, #root { margin: 0; height: 100%; overflow: hidden; }` — and ensure `.sancho-chat-root` keeps `height: 100vh` with the flex chain `.sancho-thread { min-height: 0 }` and `.sancho-viewport { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }` so the viewport is the sole scroll region (research R2)
-- [ ] T004 [P] [US1] Remove dead side margins/padding in `src/ui/components/chat.css` and the conversation-list styles (`src/ui/components/conversation-list.tsx` classNames/CSS): header/topbar, consent banner, activity strip, composer, and list rows span 100% width; keep inner content padding only inside bubbles/rows (FR-001, research R5)
+- [x] T003 [US1] In `src/ui/components/chat.css` add a root reset — `html, body, #root { margin: 0; height: 100%; overflow: hidden; }` — and ensure `.sancho-chat-root` keeps `height: 100vh` with the flex chain `.sancho-thread { min-height: 0 }` and `.sancho-viewport { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }` so the viewport is the sole scroll region (research R2)
+- [x] T004 [P] [US1] Remove dead side margins/padding in `src/ui/components/chat.css` and the conversation-list styles (`src/ui/components/conversation-list.tsx` classNames/CSS): header/topbar, consent banner, activity strip, composer, and list rows span 100% width; keep inner content padding only inside bubbles/rows (FR-001, research R5)
 
 **Checkpoint**: US1 testable — full-width views, single scrollbar.
 
@@ -65,11 +65,11 @@ _(No tasks.)_
 
 ### Tests for User Story 4
 
-- [ ] T005 [US4] Extend `tests/e2e/layout.spec.ts`: mock an assistant message containing an image part and a message containing a fenced code block with a 200-character line; assert the viewport/list element keeps `scrollWidth === clientWidth`, the rendered `img` `getBoundingClientRect().width <=` message width, and the `pre` element itself has `scrollWidth > clientWidth` with `overflow-x` computed `auto` (contract invariants 8–11)
+- [x] T005 [US4] Extend `tests/e2e/layout.spec.ts`: mock an assistant message containing an image part and a message containing a fenced code block with a 200-character line; assert the viewport/list element keeps `scrollWidth === clientWidth`, the rendered `img` `getBoundingClientRect().width <=` message width, and the `pre` element itself has `scrollWidth > clientWidth` with `overflow-x` computed `auto` (contract invariants 8–11)
 
 ### Implementation for User Story 4
 
-- [ ] T006 [US4] In `src/ui/components/chat.css` add containment rules: `.sancho-message { min-width: 0; max-width: 100%; }` (replacing the 85% cap with `max-width: 85%` kept but bounded by `100%` of the viewport — verify computed behavior in e2e), `.sancho-message img { max-width: 100%; height: auto; display: block; }`, `.sancho-message pre { max-width: 100%; overflow-x: auto; }`, and `overflow-wrap: anywhere` on message text so URLs/tokens wrap (research R3; rules must hold without a markdown renderer)
+- [x] T006 [US4] In `src/ui/components/chat.css` add containment rules: `.sancho-message { min-width: 0; max-width: 100%; }` (replacing the 85% cap with `max-width: 85%` kept but bounded by `100%` of the viewport — verify computed behavior in e2e), `.sancho-message img { max-width: 100%; height: auto; display: block; }`, `.sancho-message pre { max-width: 100%; overflow-x: auto; }`, and `overflow-wrap: anywhere` on message text so URLs/tokens wrap (research R3; rules must hold without a markdown renderer)
 
 **Checkpoint**: US4 testable — list horizontally static for any content.
 
@@ -83,12 +83,12 @@ _(No tasks.)_
 
 ### Tests for User Story 3
 
-- [ ] T007 [US3] Add component test `tests/component/chat-timestamp.test.tsx`: render the chat with (a) user + assistant messages with known `createdAt` and assert both timestamp labels match the `Sat Sep 19 22:56` shape (`/\w{3} \w{3} \d{1,2} \d{2}:\d{2}/`), (b) a message whose stored record has no `createdAt` and assert no timestamp node, (c) unit-test `formatMessageTime` from `src/ui/utils/format-time.ts` for a fixed epoch (contract invariants 5–6; mock-chrome + jsdom per existing harness)
+- [x] T007 [US3] Add component test `tests/component/chat-timestamp.test.tsx`: render the chat with (a) user + assistant messages with known `createdAt` and assert both timestamp labels match the `Sat Sep 19 22:56` shape (`/\w{3} \w{3} \d{1,2} \d{2}:\d{2}/`), (b) a message whose stored record has no `createdAt` and assert no timestamp node, (c) unit-test `formatMessageTime` from `src/ui/utils/format-time.ts` for a fixed epoch (contract invariants 5–6; mock-chrome + jsdom per existing harness)
 
 ### Implementation for User Story 3
 
-- [ ] T008 [US3] Create `MessageTimestamp` component in `src/ui/components/chat.tsx`: inside `MessagePrimitive.Root`, read the current message via assistant-ui's `useMessage` hook (0.11 API — verify import from `@assistant-ui/react`), return `null` when `createdAt` is absent, otherwise render `<div className="sancho-message-time">{formatMessageTime(createdAt)}</div>`; add it to both `UserMessage` and `AssistantMessage` (research R1)
-- [ ] T009 [P] [US3] Add `.sancho-message-time` styles in `src/ui/components/chat.css`: `font-size: 11px`, subdued `color: var(--chat-text-secondary)`, `margin-top: 4px`, and for user (accent) bubbles a translucent variant of `--chat-accent-text` so the label stays readable on the accent background (spec assumption: subdued, non-competing)
+- [x] T008 [US3] Create `MessageTimestamp` component in `src/ui/components/chat.tsx`: inside `MessagePrimitive.Root`, read the current message via assistant-ui's `useMessage` hook (0.11 API — verify import from `@assistant-ui/react`), return `null` when `createdAt` is absent, otherwise render `<div className="sancho-message-time">{formatMessageTime(createdAt)}</div>`; add it to both `UserMessage` and `AssistantMessage` (research R1)
+- [x] T009 [P] [US3] Add `.sancho-message-time` styles in `src/ui/components/chat.css`: `font-size: 11px`, subdued `color: var(--chat-text-secondary)`, `margin-top: 4px`, and for user (accent) bubbles a translucent variant of `--chat-accent-text` so the label stays readable on the accent background (spec assumption: subdued, non-competing)
 
 **Checkpoint**: US3 testable — timestamps on all new messages, none on legacy.
 
@@ -102,11 +102,11 @@ _(No tasks.)_
 
 ### Tests for User Story 2
 
-- [ ] T010 [US2] Extend `tests/e2e/layout.spec.ts`: assert the composer element's `getBoundingClientRect().bottom` is at least 8px less than the panel's `innerHeight` (contract invariant 4)
+- [x] T010 [US2] Extend `tests/e2e/layout.spec.ts`: assert the composer element's `getBoundingClientRect().bottom` is at least 8px less than the panel's `innerHeight` (contract invariant 4)
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] In `src/ui/components/chat.css` set `.sancho-composer` bottom padding so total space below the input is ≥ 8px (e.g. `padding: 12px 12px max(12px, env(safe-area-inset-bottom));` — research R4) without reintroducing an outer scrollbar (verify with T002's body assertions)
+- [x] T011 [US2] In `src/ui/components/chat.css` set `.sancho-composer` bottom padding so total space below the input is ≥ 8px (e.g. `padding: 12px 12px max(12px, env(safe-area-inset-bottom));` — research R4) without reintroducing an outer scrollbar (verify with T002's body assertions)
 
 **Checkpoint**: US2 testable.
 
@@ -115,7 +115,7 @@ _(No tasks.)_
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 - [ ] T012 Run `quickstart.md` manual validation (all 5 scenarios) in Brave and fix any visual deviations found
-- [ ] T013 Run full gates — `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — and resolve failures
+- [x] T013 Run full gates — `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — and resolve failures
 
 ---
 
