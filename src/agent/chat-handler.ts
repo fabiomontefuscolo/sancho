@@ -31,7 +31,7 @@ export function handlePermissionResponse(payload: {
   resolve(payload.optionId);
 }
 
-function requestPermissionFromUser(
+export function requestPermissionFromUser(
   port: chrome.runtime.Port,
   request: { title: string; options: Array<{ optionId: string; name: string; kind: string }> },
   timeoutMs = 120_000,
