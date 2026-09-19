@@ -15,5 +15,6 @@ export default defineConfig({
       "tabs",
     ],
     host_permissions: ["<all_urls>"],
+    action: { default_title: "Open Sancho" },
   },
 });

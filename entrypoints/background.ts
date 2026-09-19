@@ -88,6 +88,7 @@ export default defineBackground(() => {
     port.onDisconnect.addListener(() => setActiveUiPort(null));
   });
   chrome.runtime.onInstalled.addListener(() => {
+    void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
     void seedBuiltinActions().then(rebuildContextMenus);
   });
   chrome.runtime.onStartup.addListener(() => {
