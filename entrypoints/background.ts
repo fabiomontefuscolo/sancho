@@ -11,6 +11,12 @@ import {
   handleConversationGet,
   handleScreenshotConsent,
 } from "../src/agent/chat-handler";
+import { rebuildContextMenus, seedBuiltinActions, watchActionChanges } from "../src/agent/menus";
+import {
+  registerContextMenuClickListener,
+  runActionById,
+  setActiveUiPort,
+} from "../src/agent/action-handler";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -51,5 +57,22 @@ export default defineBackground(() => {
     if (envelope.type !== "screenshot.consent") return;
     await handleScreenshotConsent(envelope.payload, port);
   });
-  chrome.runtime.onConnect.addListener(handlePortConnection);
+  registerHandler("action.run", async (envelope, port) => {
+    if (envelope.type !== "action.run") return;
+    await runActionById(envelope.payload.actionId, envelope.payload.tabId, port);
+  });
+  chrome.runtime.onConnect.addListener((port) => {
+    handlePortConnection(port);
+    setActiveUiPort(port);
+    port.onDisconnect.addListener(() => setActiveUiPort(null));
+  });
+  chrome.runtime.onInstalled.addListener(() => {
+    void seedBuiltinActions().then(rebuildContextMenus);
+  });
+  chrome.runtime.onStartup.addListener(() => {
+    void rebuildContextMenus();
+  });
+  void seedBuiltinActions().then(rebuildContextMenus);
+  watchActionChanges();
+  registerContextMenuClickListener();
 });

@@ -116,9 +116,9 @@ page is untouched (quickstart.md Scenario 3).
 
 ### Implementation for User Story 3
 
-- [ ] T035 [US3] Register context menus from enabled Action records and rebuild the menu on every storage change in entrypoints/background.ts
+- [x] T035 [US3] Register context menus from enabled Action records and rebuild the menu on every storage change in entrypoints/background.ts
 - [x] T036 [US3] Implement action.run handler: detect `editable` via `selection.get`, run the action prompt through the provider, then `selection.replace` (editable, native events) or append result to the sidebar conversation (read-only) in entrypoints/background.ts
-- [ ] T037 [US3] Seed built-in actions (`improve-writing`, `make-formal`, `fix-grammar`) with `builtin: true` and their prompts on install in src/storage/settings.ts
+- [x] T037 [US3] Seed built-in actions (`improve-writing`, `make-formal`, `fix-grammar`) with `builtin: true` and their prompts on install in src/storage/settings.ts
 - [x] T038 [US3] Guard concurrent actions on the same field so replacements cannot interleave in src/agent/actions.ts
 
 **Checkpoint**: Built-in selection actions work on editable and read-only text
