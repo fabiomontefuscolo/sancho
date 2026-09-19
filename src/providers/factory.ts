@@ -39,6 +39,13 @@ export function validateBaseUrl(baseUrl: string): void {
   }
 }
 
+let cachedAcp: { key: string; provider: AcpProvider } | null = null;
+
+export function resetCachedAcpProvider(): void {
+  cachedAcp?.provider.dispose();
+  cachedAcp = null;
+}
+
 export async function createProvider(): Promise<BaseLLMProvider> {
   const config = await getProviderConfig();
   if (!config) throw new ProviderNotConfiguredError();
@@ -47,10 +54,17 @@ export async function createProvider(): Promise<BaseLLMProvider> {
     if (!config.acp?.hostName) {
       throw new ProviderNotConfiguredError();
     }
-    const acp: { hostName: string; token?: string } = { hostName: config.acp.hostName };
-    if (config.acp.token !== undefined) acp.token = config.acp.token;
-    return new AcpProvider(acp);
+    const key = `${config.acp.hostName}:${config.acp.token ?? ""}`;
+    if (cachedAcp?.key !== key) {
+      cachedAcp?.provider.dispose();
+      const acp: { hostName: string; token?: string } = { hostName: config.acp.hostName };
+      if (config.acp.token !== undefined) acp.token = config.acp.token;
+      cachedAcp = { key, provider: new AcpProvider(acp) };
+    }
+    return cachedAcp.provider;
   }
+
+  resetCachedAcpProvider();
 
   if (!config.model) throw new ProviderNotConfiguredError();
   validateBaseUrl(config.baseUrl);

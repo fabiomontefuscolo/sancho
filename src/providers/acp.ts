@@ -324,4 +324,13 @@ export class AcpProvider extends BaseLLMProvider {
   resetSession(): void {
     this.sessions.clear();
   }
+
+  dispose(): void {
+    logEvent("acp dispose");
+    this.connection = null;
+    this.sessions.clear();
+    this.port?.disconnect();
+    this.port = null;
+    this.mcpServer = null;
+  }
 }
