@@ -50,11 +50,11 @@ describe("message timestamps", () => {
     ]);
 
     await waitFor(() => {
-      const labels = document.querySelectorAll(".sancho-message-time");
+      const labels = [...document.querySelectorAll(".sancho-message-time")];
       expect(labels).toHaveLength(2);
-      expect(labels[0].textContent).toMatch(/\w{3} \w{3} \d{1,2} \d{2}:\d{2}/);
-      expect(labels[0].textContent).toBe(formatMessageTime(userTime));
-      expect(labels[1].textContent).toBe(formatMessageTime(assistantTime));
+      expect(labels[0]?.textContent).toMatch(/\w{3} \w{3} \d{1,2} \d{2}:\d{2}/);
+      expect(labels[0]?.textContent).toBe(formatMessageTime(userTime));
+      expect(labels[1]?.textContent).toBe(formatMessageTime(assistantTime));
     });
   });
 
