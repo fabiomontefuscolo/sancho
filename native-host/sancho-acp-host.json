@@ -1,0 +1,7 @@
+{
+  "name": "sancho-acp-host",
+  "description": "Sancho ACP bridge to a local agent (opencode acp)",
+  "path": "__HOST_SCRIPT_ABSOLUTE_PATH__",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://__EXTENSION_ID__/"]
+}
