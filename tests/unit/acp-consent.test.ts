@@ -6,6 +6,7 @@ interface CapturedHandlers {
     | ((request: { name: string; arguments: Record<string, unknown> }) => Promise<unknown>)
     | undefined;
   permission?: unknown;
+  invalid?: (() => void) | undefined;
 }
 
 vi.mock("../../src/providers/acp", () => {
@@ -14,7 +15,9 @@ vi.mock("../../src/providers/acp", () => {
     handlers: CapturedHandlers = {};
     useConversation(): void {}
     setSessionCreatedHandler(): void {}
-    setSessionInvalidHandler(): void {}
+    setSessionInvalidHandler(handler: unknown): void {
+      this.handlers.invalid = handler as (() => void) | undefined;
+    }
     setPermissionHandler(handler: unknown): void {
       this.handlers.permission = handler;
     }
@@ -42,7 +45,7 @@ vi.mock("../../src/providers/factory", async () => {
 import { AcpProvider } from "../../src/providers/acp";
 import { createProvider } from "../../src/providers/factory";
 import { handleChatSend } from "../../src/agent/chat-handler";
-import { createConversation } from "../../src/storage/conversations";
+import { createConversation, getConversation } from "../../src/storage/conversations";
 import type { AnyEnvelope } from "../../src/bridge/messages";
 
 function makePort() {
@@ -85,5 +88,22 @@ describe("ACP tool invoke consent surfacing", () => {
           envelope.payload.conversationId === conversation.id,
       ),
     ).toBe(true);
+  });
+
+  it("clears the persisted acpSessionId when the session is invalidated", async () => {
+    const provider = new AcpProvider({ hostName: "mock.host" } as never);
+    vi.mocked(createProvider).mockResolvedValue(provider as never);
+    const conversation = await createConversation();
+    conversation.acpSessionId = "ses-stale";
+    const port = makePort();
+
+    await handleChatSend({ text: "continue", tabId: 1, conversationId: conversation.id }, port);
+
+    const invalid = (provider as unknown as { handlers: CapturedHandlers }).handlers.invalid;
+    expect(invalid).toBeTypeOf("function");
+    invalid?.();
+    await vi.waitFor(async () => {
+      expect((await getConversation(conversation.id))?.acpSessionId).toBeNull();
+    });
   });
 });
