@@ -9,15 +9,17 @@ import {
 } from "../../src/storage/settings";
 import {
   clearAgentSession,
-  clearConversation,
   getAgentSession,
   getApiKey,
-  getConversation,
   newAgentSession,
   saveAgentSession,
   saveApiKey,
-  saveConversation,
 } from "../../src/storage/local";
+import {
+  createConversation,
+  getActiveConversation,
+  saveConversationRecord,
+} from "../../src/storage/conversations";
 import type { Action, ProviderConfig } from "../../src/types";
 
 const config: ProviderConfig = {
@@ -71,17 +73,16 @@ describe("local storage", () => {
     expect(Object.keys(stores.sync)).toHaveLength(0);
   });
 
-  it("returns an empty global conversation by default and clears consent on clear", async () => {
-    const conversation = await getConversation();
-    expect(conversation.id).toBe("global");
+  it("returns an empty active conversation by default and persists consent", async () => {
+    const conversation = await getActiveConversation();
     expect(conversation.screenshotConsent).toBe(false);
 
-    await saveConversation({ ...conversation, screenshotConsent: true });
-    expect((await getConversation()).screenshotConsent).toBe(true);
+    await saveConversationRecord({ ...conversation, screenshotConsent: true });
+    expect((await getActiveConversation()).screenshotConsent).toBe(true);
 
-    const cleared = await clearConversation();
-    expect(cleared.screenshotConsent).toBe(false);
-    expect(cleared.messages).toEqual([]);
+    const fresh = await createConversation();
+    expect(fresh.screenshotConsent).toBe(false);
+    expect(fresh.messages).toEqual([]);
   });
 
   it("round-trips and clears agent session with default maxIterations 25", async () => {
@@ -97,10 +98,10 @@ describe("local storage", () => {
   it("touches updatedAt when saving a conversation", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(1000);
-    const conversation = await getConversation();
+    const conversation = await createConversation();
     vi.setSystemTime(2000);
-    await saveConversation(conversation);
-    expect((await getConversation()).updatedAt).toBe(2000);
+    await saveConversationRecord(conversation);
+    expect((await getActiveConversation()).updatedAt).toBe(2000);
     vi.useRealTimers();
   });
 });

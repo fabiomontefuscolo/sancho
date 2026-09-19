@@ -3,7 +3,7 @@ import { installMockChrome } from "./helpers/mock-chrome";
 import { menuIdForAction, rebuildContextMenus, seedBuiltinActions } from "../../src/agent/menus";
 import { executeTool } from "../../src/agent/tools";
 import { listActions, saveActions } from "../../src/storage/settings";
-import { saveConversation, getConversation } from "../../src/storage/local";
+import { getActiveConversation, saveConversationRecord } from "../../src/storage/conversations";
 import type { Action } from "../../src/types";
 
 describe("menus", () => {
@@ -65,9 +65,9 @@ describe("executeTool", () => {
   });
 
   it("captures an in-memory screenshot with consent", async () => {
-    const conversation = await getConversation();
+    const conversation = await getActiveConversation();
     conversation.screenshotConsent = true;
-    await saveConversation(conversation);
+    await saveConversationRecord(conversation);
     const result = (await executeTool("captureScreenshot", {}, 1)) as {
       ok: boolean;
       imageBase64: string;

@@ -88,8 +88,8 @@ describe("conversation handlers", () => {
       tabId: 1,
       createdAt: 1,
     });
-    const { saveConversation } = await import("../../src/storage/local");
-    await saveConversation(conversation);
+    const { saveConversationRecord } = await import("../../src/storage/conversations");
+    await saveConversationRecord(conversation);
 
     const port = makePort();
     await handleChatClear(port);

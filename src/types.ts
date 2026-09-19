@@ -91,4 +91,3 @@ export interface ToolCall {
 }
 
 export const DEFAULT_MAX_ITERATIONS = 25;
-export const GLOBAL_CONVERSATION_ID = "global";
