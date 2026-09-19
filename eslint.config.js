@@ -18,6 +18,12 @@ export default [
   },
   js.configs.recommended,
   {
+    files: ["native-host/**/*.mjs"],
+    rules: {
+      "no-undef": "off",
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsparser,
