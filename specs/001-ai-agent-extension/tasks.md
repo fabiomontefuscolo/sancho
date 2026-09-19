@@ -243,4 +243,4 @@ Task: "Side panel UI in entrypoints/sidepanel/main.tsx"
 - [x] T052 Track `chrome.tabs.onActivated` in the side panel and background so the agent's page context follows the newly active tab per FR-016 (partial)
 - [x] T053 Add latency assertions to e2e tests covering first response under 5s and selection action under 10s per SC-001 and SC-002 (partial)
 - [x] T054 Amend spec.md with functional requirements for agent time awareness and the ACP MCP tool bridge, which were user-requested but are absent from the FR list (unrequested)
-- [ ] T055 Surface ACP `requestPermission` calls to the user with approve/deny instead of auto-cancelling in src/providers/acp.ts per FR-006 (partial)
+- [x] T055 Surface ACP `requestPermission` calls to the user with approve/deny instead of auto-cancelling in src/providers/acp.ts per FR-006 (partial)

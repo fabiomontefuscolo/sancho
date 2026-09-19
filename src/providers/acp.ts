@@ -75,6 +75,13 @@ export interface ToolInvokeRequest {
 
 export type ToolInvokeHandler = (request: ToolInvokeRequest) => Promise<unknown>;
 
+export interface PermissionRequest {
+  title: string;
+  options: Array<{ optionId: string; name: string; kind: string }>;
+}
+
+export type PermissionHandler = (request: PermissionRequest) => Promise<string | null>;
+
 function isToolInvoke(value: unknown): value is ToolInvokeRequest & { type: "tool.invoke" } {
   if (typeof value !== "object" || value === null) return false;
   const candidate = value as Record<string, unknown>;
@@ -93,6 +100,7 @@ export class AcpProvider extends BaseLLMProvider {
   private port: NativePort | null = null;
   private mcpServer: McpServerSpec | null = null;
   private toolInvokeHandler: ToolInvokeHandler | null = null;
+  private permissionHandler: PermissionHandler | null = null;
 
   constructor(options: AcpHostOptions) {
     super();
@@ -101,6 +109,10 @@ export class AcpProvider extends BaseLLMProvider {
 
   setToolInvokeHandler(handler: ToolInvokeHandler | null): void {
     this.toolInvokeHandler = handler;
+  }
+
+  setPermissionHandler(handler: PermissionHandler | null): void {
+    this.permissionHandler = handler;
   }
 
   private onSessionText: ((text: string) => void) | null = null;
@@ -134,7 +146,23 @@ export class AcpProvider extends BaseLLMProvider {
       () => ({
         readTextFile: async () => ({ content: "" }),
         writeTextFile: async () => ({}),
-        requestPermission: async () => ({ outcome: { outcome: "cancelled" } }),
+        requestPermission: async (params) => {
+          if (!this.permissionHandler) {
+            return { outcome: { outcome: "cancelled" as const } };
+          }
+          const title =
+            typeof params.toolCall.title === "string" ? params.toolCall.title : "permission";
+          const selected = await this.permissionHandler({
+            title,
+            options: params.options.map((option) => ({
+              optionId: option.optionId,
+              name: option.name,
+              kind: option.kind,
+            })),
+          });
+          if (selected === null) return { outcome: { outcome: "cancelled" as const } };
+          return { outcome: { outcome: "selected" as const, optionId: selected } };
+        },
         sessionUpdate: async (params) => {
           const update = params.update;
           if (update.sessionUpdate === "agent_message_chunk" && update.content.type === "text") {

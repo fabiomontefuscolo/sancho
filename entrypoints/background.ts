@@ -9,6 +9,7 @@ import {
   handleChatClear,
   handleChatSend,
   handleConversationGet,
+  handlePermissionResponse,
   handleScreenshotConsent,
 } from "../src/agent/chat-handler";
 import { rebuildContextMenus, seedBuiltinActions, watchActionChanges } from "../src/agent/menus";
@@ -81,6 +82,10 @@ export default defineBackground(() => {
   registerHandler("settings.set", async (envelope, port) => {
     if (envelope.type !== "settings.set") return;
     await handleSettingsSet(envelope.payload, port);
+  });
+  registerHandler("permission.response", async (envelope) => {
+    if (envelope.type !== "permission.response") return;
+    handlePermissionResponse(envelope.payload);
   });
   chrome.runtime.onConnect.addListener((port) => {
     handlePortConnection(port);

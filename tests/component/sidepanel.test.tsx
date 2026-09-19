@@ -89,4 +89,53 @@ describe("ChatPanel", () => {
     });
     await waitFor(() => expect(screen.getByText(/connection failed/)).toBeInTheDocument());
   });
+
+  it("shows ACP permission requests and resolves them with the chosen option", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "permission.request",
+      id: "e7",
+      payload: {
+        requestId: "perm-1",
+        title: "run shell command",
+        options: [
+          { optionId: "allow-once", name: "Allow once", kind: "allow_once" },
+          { optionId: "allow-always", name: "Always allow", kind: "allow_always" },
+        ],
+      },
+    });
+
+    await waitFor(() => expect(screen.getByText(/run shell command/)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "Allow once" }));
+    expect(port.sent).toContainEqual(
+      expect.objectContaining({
+        type: "permission.response",
+        payload: { requestId: "perm-1", optionId: "allow-once" },
+      }),
+    );
+    await waitFor(() => expect(screen.queryByText(/run shell command/)).not.toBeInTheDocument());
+  });
+
+  it("denies ACP permission requests via the Deny button", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "permission.request",
+      id: "e8",
+      payload: {
+        requestId: "perm-2",
+        title: "write file",
+        options: [{ optionId: "allow-once", name: "Allow", kind: "allow_once" }],
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/write file/)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "Deny" }));
+    expect(port.sent).toContainEqual(
+      expect.objectContaining({
+        type: "permission.response",
+        payload: { requestId: "perm-2", optionId: null },
+      }),
+    );
+  });
 });

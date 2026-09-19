@@ -50,6 +50,20 @@ export interface ActionUpsertPayload {
 export interface ActionDeletePayload {
   actionId: string;
 }
+export interface PermissionOption {
+  optionId: string;
+  name: string;
+  kind: string;
+}
+export interface PermissionRequestPayload {
+  requestId: string;
+  title: string;
+  options: PermissionOption[];
+}
+export interface PermissionResponsePayload {
+  requestId: string;
+  optionId: string | null;
+}
 
 export type UiToBackground =
   | Envelope<"chat.send", ChatSendPayload>
@@ -60,6 +74,7 @@ export type UiToBackground =
   | Envelope<"screenshot.consent", ScreenshotConsentPayload>
   | Envelope<"settings.get", Record<string, never>>
   | Envelope<"settings.set", SettingsSetPayload>
+  | Envelope<"permission.response", PermissionResponsePayload>
   | Envelope<"actions.list", Record<string, never>>
   | Envelope<"actions.upsert", ActionUpsertPayload>
   | Envelope<"actions.delete", ActionDeletePayload>;
@@ -72,7 +87,8 @@ export type BackgroundToUi =
   | Envelope<"conversation.state", Conversation>
   | Envelope<"action.result", ActionResultPayload>
   | Envelope<"settings.state", { config: ProviderConfig | null; hasApiKey: boolean }>
-  | Envelope<"actions.state", Action[]>;
+  | Envelope<"actions.state", Action[]>
+  | Envelope<"permission.request", PermissionRequestPayload>;
 
 export type AnyEnvelope = UiToBackground | BackgroundToUi;
 

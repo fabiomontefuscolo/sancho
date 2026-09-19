@@ -24,11 +24,29 @@ function AssistantMessage() {
 }
 
 export function ChatPanel({ tabId }: { tabId: number }) {
-  const { runtime, consentRequired, grantConsent, toolActivity } = useSanchoRuntime(tabId);
+  const {
+    runtime,
+    consentRequired,
+    grantConsent,
+    toolActivity,
+    pendingPermission,
+    resolvePermission,
+  } = useSanchoRuntime(tabId);
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <div className="sancho-chat-root">
+        {pendingPermission && (
+          <div className="sancho-consent-banner" role="alert">
+            <span>The agent requests permission: {pendingPermission.title}</span>
+            {pendingPermission.options.map((option) => (
+              <button key={option.optionId} onClick={() => resolvePermission(option.optionId)}>
+                {option.name}
+              </button>
+            ))}
+            <button onClick={() => resolvePermission(null)}>Deny</button>
+          </div>
+        )}
         {consentRequired && (
           <div className="sancho-consent-banner">
             <span>The agent wants to capture a screenshot of this page.</span>

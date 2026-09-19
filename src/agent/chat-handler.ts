@@ -19,6 +19,37 @@ import { formatTimestamp, systemClockMessage } from "./time";
 
 let activeAbort: AbortController | null = null;
 
+const pendingPermissions = new Map<string, (optionId: string | null) => void>();
+
+export function handlePermissionResponse(payload: {
+  requestId: string;
+  optionId: string | null;
+}): void {
+  const resolve = pendingPermissions.get(payload.requestId);
+  if (!resolve) return;
+  pendingPermissions.delete(payload.requestId);
+  resolve(payload.optionId);
+}
+
+function requestPermissionFromUser(
+  port: chrome.runtime.Port,
+  request: { title: string; options: Array<{ optionId: string; name: string; kind: string }> },
+  timeoutMs = 120_000,
+): Promise<string | null> {
+  return new Promise((resolve) => {
+    const requestId = crypto.randomUUID();
+    const timer = setTimeout(() => {
+      pendingPermissions.delete(requestId);
+      resolve(null);
+    }, timeoutMs);
+    pendingPermissions.set(requestId, (optionId) => {
+      clearTimeout(timer);
+      resolve(optionId);
+    });
+    postToPort(port, makeEnvelope("event", "permission.request", { requestId, ...request }));
+  });
+}
+
 function postConversation(port: chrome.runtime.Port, conversation: Conversation): void {
   postToPort(port, makeEnvelope("event", "conversation.state", conversation));
 }
@@ -87,6 +118,7 @@ export async function handleChatSend(
   let assistantText = "";
 
   if (provider instanceof AcpProvider) {
+    provider.setPermissionHandler((request) => requestPermissionFromUser(port, request));
     provider.setToolInvokeHandler(async (request) => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const tabId = tab?.id ?? payload.tabId;

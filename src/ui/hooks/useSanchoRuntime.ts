@@ -21,11 +21,19 @@ function toThreadMessage(message: Message): ThreadMessageLike {
   };
 }
 
+export interface PendingPermission {
+  requestId: string;
+  title: string;
+  options: Array<{ optionId: string; name: string; kind: string }>;
+}
+
 export interface SanchoRuntime {
   runtime: ReturnType<typeof useExternalStoreRuntime>;
   consentRequired: boolean;
   grantConsent: () => void;
   toolActivity: string[];
+  pendingPermission: PendingPermission | null;
+  resolvePermission: (optionId: string | null) => void;
 }
 
 export function useSanchoRuntime(tabId: number): SanchoRuntime {
@@ -33,6 +41,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [isRunning, setIsRunning] = useState(false);
   const [consentRequired, setConsentRequired] = useState(false);
   const [toolActivity, setToolActivity] = useState<string[]>([]);
+  const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null);
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const streamingRef = useRef<Map<string, string>>(new Map());
   const tabIdRef = useRef(tabId);
@@ -80,6 +89,12 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       } else if (envelope.type === "chat.tool") {
         const label = `${envelope.payload.toolCall.name} (${envelope.payload.status})`;
         setToolActivity((prev) => [...prev.slice(-9), label]);
+      } else if (envelope.type === "permission.request") {
+        setPendingPermission({
+          requestId: envelope.payload.requestId,
+          title: envelope.payload.title,
+          options: envelope.payload.options,
+        });
       } else if (envelope.type === "conversation.state") {
         const conversation = envelope.payload as Conversation;
         streamingRef.current.clear();
@@ -133,7 +148,18 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         );
       },
       toolActivity,
+      pendingPermission,
+      resolvePermission: (optionId: string | null) => {
+        if (!pendingPermission) return;
+        portRef.current?.postMessage(
+          makeEnvelope("request", "permission.response", {
+            requestId: pendingPermission.requestId,
+            optionId,
+          }),
+        );
+        setPendingPermission(null);
+      },
     }),
-    [runtime, consentRequired, toolActivity],
+    [runtime, consentRequired, toolActivity, pendingPermission],
   );
 }
