@@ -16,7 +16,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@agentclientprotocol/sdk": "^0.4.0",
+    "@agentclientprotocol/sdk": "^1.4.0",
     "@ai-sdk/openai-compatible": "^1.0.0",
     "@assistant-ui/react": "^0.11.0",
     "@modelcontextprotocol/sdk": "^1.30.0",

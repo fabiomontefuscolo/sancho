@@ -18,7 +18,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ["native-host/**/*.mjs"],
+    files: ["native-host/**/*.mjs", "tests/**/*.mjs"],
     rules: {
       "no-undef": "off",
     },

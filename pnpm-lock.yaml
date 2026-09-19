@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@agentclientprotocol/sdk':
-        specifier: ^0.4.0
-        version: 0.4.9
+        specifier: ^1.4.0
+        version: 1.4.0(zod@4.6.5)
       '@ai-sdk/openai-compatible':
         specifier: ^1.0.0
         version: 1.0.54(zod@4.6.5)
@@ -111,8 +111,10 @@ packages:
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
 
-  '@agentclientprotocol/sdk@0.4.9':
-    resolution: {integrity: sha512-ExwH828LaTGoTTjxuw49l+fwOLA+Yx0+qkWn1TcHMOsY5mVI9CUfkj7ZDhv2klgZ7mJeT+lxX/Dn/KINv1AkNQ==}
+  '@agentclientprotocol/sdk@1.4.0':
+    resolution: {integrity: sha512-/eufudw+aFY1LKLolT6yFE6UMmYRl7fMJ/DEONSIyR6wI3slHWITBsANRGqXEY8FRzqUxwh7QEaGiZHcJPVThg==}
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
 
   '@ai-sdk/gateway@2.0.153':
     resolution: {integrity: sha512-USFJ7MIRxR6+PrXT06Q7V+cJf/rJIOmH/KdY84OWCb6+9bhg4xg1pUNxKD28N4F8+VFnX42wfWtqbM3+ZhK+yQ==}
@@ -3831,9 +3833,9 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@agentclientprotocol/sdk@0.4.9':
+  '@agentclientprotocol/sdk@1.4.0(zod@4.6.5)':
     dependencies:
-      zod: 3.25.76
+      zod: 4.6.5
 
   '@ai-sdk/gateway@2.0.153(zod@4.6.5)':
     dependencies:

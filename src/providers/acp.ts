@@ -30,8 +30,31 @@ function portToStreams(port: NativePort): PortStreams {
     },
   });
 
+  const KNOWN_SESSION_UPDATES = new Set([
+    "user_message_chunk",
+    "agent_message_chunk",
+    "agent_thought_chunk",
+    "tool_call",
+    "tool_call_update",
+    "plan",
+    "available_commands_update",
+    "current_mode_update",
+  ]);
+
   port.onMessage.addListener((message: unknown) => {
     if (typeof message !== "string") return;
+    try {
+      const parsed = JSON.parse(message) as {
+        method?: string;
+        params?: { update?: { sessionUpdate?: string } };
+      };
+      if (parsed.method === "session/update") {
+        const variant = parsed.params?.update?.sessionUpdate;
+        if (variant && !KNOWN_SESSION_UPDATES.has(variant)) return;
+      }
+    } catch {
+      // non-JSON lines pass through untouched
+    }
     controllerRef?.enqueue(encoder.encode(message + "\n"));
   });
 
