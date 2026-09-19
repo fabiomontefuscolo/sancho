@@ -30,7 +30,16 @@ import { RestrictedPageError } from "./inject";
 import { executeTool } from "./tools";
 import { formatTimestamp, systemClockMessage } from "./time";
 
-let activeAbort: AbortController | null = null;
+const runAborts = new Map<string, AbortController>();
+
+function abortRun(conversationId: string | null): boolean {
+  if (!conversationId) return false;
+  const controller = runAborts.get(conversationId);
+  if (!controller) return false;
+  controller.abort();
+  runAborts.delete(conversationId);
+  return true;
+}
 
 const pendingPermissions = new Map<string, (optionId: string | null) => void>();
 
@@ -65,6 +74,15 @@ export function requestPermissionFromUser(
 
 function postConversation(port: chrome.runtime.Port, conversation: Conversation): void {
   postToPort(port, makeEnvelope("event", "conversation.state", conversation));
+}
+
+async function postConversationIfActive(
+  port: chrome.runtime.Port,
+  conversation: Conversation,
+): Promise<void> {
+  if ((await getActiveConversationId()) === conversation.id) {
+    postConversation(port, conversation);
+  }
 }
 
 async function postConversationsState(port: chrome.runtime.Port): Promise<void> {
@@ -126,7 +144,7 @@ export async function handleChatSend(
   conversation.messages.push(userMessage);
   const savedUser = await saveConversationRecord(conversation);
   conversation.title = savedUser.title;
-  postConversation(port, conversation);
+  await postConversationIfActive(port, conversation);
   void postConversationsState(port);
 
   const assistantId = crypto.randomUUID();
@@ -140,7 +158,8 @@ export async function handleChatSend(
   }
 
   const session = (await getAgentSession()) ?? newAgentSession(conversationId);
-  activeAbort = new AbortController();
+  const abort = new AbortController();
+  runAborts.set(conversationId, abort);
   let assistantText = "";
 
   if (provider instanceof AcpProvider) {
@@ -187,7 +206,7 @@ export async function handleChatSend(
     {
       provider,
       getMessages: async () => buildProviderMessages(conversation, payload.tabId),
-      signal: activeAbort.signal,
+      signal: abort.signal,
       onDelta: (text) => {
         assistantText += text;
         postToPort(
@@ -257,7 +276,7 @@ export async function handleChatSend(
   if (finalSession.state === "done" || finalSession.state === "stopped") {
     await clearAgentSession();
   }
-  activeAbort = null;
+  runAborts.delete(conversationId);
   postToPort(
     port,
     makeEnvelope("event", "chat.done", {
@@ -266,7 +285,7 @@ export async function handleChatSend(
       ...(finalSession.state === "stopped" ? { cancelled: true } : {}),
     }),
   );
-  postConversation(port, conversation);
+  await postConversationIfActive(port, conversation);
 }
 
 async function maybeAppendScreenshot(
@@ -290,15 +309,14 @@ async function maybeAppendScreenshot(
     createdAt: Date.now(),
   });
   await saveConversationRecord(conversation);
-  postConversation(port, conversation);
+  await postConversationIfActive(port, conversation);
   void postConversationsState(port);
 }
 
 export async function handleChatCancel(port: chrome.runtime.Port): Promise<void> {
-  activeAbort?.abort();
-  activeAbort = null;
-  await clearAgentSession();
   const conversationId = (await getActiveConversationId()) ?? "";
+  abortRun(conversationId);
+  await clearAgentSession();
   postToPort(
     port,
     makeEnvelope("event", "chat.done", {
@@ -310,10 +328,9 @@ export async function handleChatCancel(port: chrome.runtime.Port): Promise<void>
 }
 
 export async function handleChatClear(port: chrome.runtime.Port): Promise<void> {
-  activeAbort?.abort();
-  activeAbort = null;
-  await clearAgentSession();
   const activeId = await getActiveConversationId();
+  abortRun(activeId);
+  await clearAgentSession();
   if (activeId) await deleteConversation(activeId);
   const fresh = await createConversation();
   postConversation(port, fresh);
@@ -365,9 +382,7 @@ export async function handleConversationsDelete(
   port: chrome.runtime.Port,
 ): Promise<void> {
   const wasActive = (await getActiveConversationId()) === payload.conversationId;
-  if (wasActive) {
-    activeAbort?.abort();
-    activeAbort = null;
+  if (abortRun(payload.conversationId) || wasActive) {
     await clearAgentSession();
   }
   await deleteConversation(payload.conversationId);

@@ -165,4 +165,25 @@ describe("conversation handlers", () => {
     expect(list).toHaveLength(1);
     expect(list[0]?.id).not.toBe(a.id);
   });
+
+  it("does not emit conversation.state for a run in a backgrounded conversation", async () => {
+    const a = await createConversation();
+    await createConversation();
+    const port = makePort();
+    await handleChatSend({ text: "for a", tabId: 1, conversationId: a.id }, port);
+    const states = port.posted.filter((envelope) => envelope.type === "conversation.state");
+    expect(states).toEqual([]);
+    const deltas = port.posted.filter((envelope) => envelope.type === "chat.delta");
+    expect(deltas.length).toBeGreaterThan(0);
+    expect((await getConversation(a.id))?.messages).toHaveLength(2);
+  });
+
+  it("chat.cancel aborts the active conversation's run and tags chat.done with its id", async () => {
+    const a = await createConversation();
+    const { handleChatCancel } = await import("../../src/agent/chat-handler");
+    const port = makePort();
+    await handleChatCancel(port);
+    const done = port.posted.find((envelope) => envelope.type === "chat.done");
+    expect((done?.payload as { conversationId: string }).conversationId).toBe(a.id);
+  });
 });
