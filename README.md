@@ -56,8 +56,17 @@ Open the extension's options page (right-click the icon → **Options**, or
    prompt (use `{{selection}}` where the selected text should go)
 
 For the local ACP agent you need a companion native messaging host script installed on
-your machine; see `specs/001-ai-agent-extension/contracts/acp-transport.md` for the
-handshake contract.
+your machine:
+
+```bash
+./native-host/install.sh <extension-id>   # ID from chrome://extensions
+```
+
+The host (`native-host/com.sancho.acp_host.mjs`) spawns `opencode acp` (override with
+`SANCHO_ACP_COMMAND`/`SANCHO_ACP_ARGS`), validates the optional token from
+`~/.config/sancho/token`, and exposes Sancho's browser tools to the agent through a
+companion MCP server so the agent can read and act on the active tab. See
+`specs/001-ai-agent-extension/contracts/acp-transport.md` for the full contract.
 
 ## Tests
 
