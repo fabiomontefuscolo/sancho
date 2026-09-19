@@ -14,7 +14,7 @@ vi.mock("../../src/providers/factory", async () => {
 
 import { createProvider } from "../../src/providers/factory";
 import { handleChatSend } from "../../src/agent/chat-handler";
-import { getConversation } from "../../src/storage/local";
+import { getActiveConversation } from "../../src/storage/conversations";
 import type { AnyEnvelope } from "../../src/bridge/messages";
 
 class EchoProvider extends BaseLLMProvider {
@@ -45,7 +45,7 @@ describe("chat.send flow", () => {
 
   it("streams a reply and persists user + assistant messages", async () => {
     const port = makePort();
-    await handleChatSend({ text: "hello", tabId: 1 }, port);
+    await handleChatSend({ text: "hello", tabId: 1, conversationId: "c1" }, port);
 
     expect(
       port.posted.some(
@@ -58,7 +58,7 @@ describe("chat.send flow", () => {
     ).toBe(true);
     expect(port.posted.some((envelope) => envelope.type === "chat.done")).toBe(true);
 
-    const conversation = await getConversation();
+    const conversation = await getActiveConversation();
     expect(conversation.messages).toHaveLength(2);
     expect(conversation.messages[1]?.role).toBe("assistant");
   });
@@ -79,7 +79,7 @@ describe("chat.send flow", () => {
     }
     vi.mocked(createProvider).mockResolvedValue(new InspectProvider());
     const port = makePort();
-    await handleChatSend({ text: "hi", tabId: 1 }, port);
+    await handleChatSend({ text: "hi", tabId: 1, conversationId: "c1" }, port);
 
     expect(received[0]?.role).toBe("system");
     expect(received[0]?.content).toContain("Current local time:");
@@ -90,7 +90,7 @@ describe("chat.send flow", () => {
   it("emits chat.error when no provider is configured", async () => {
     vi.mocked(createProvider).mockRejectedValue(new Error("no provider configured"));
     const port = makePort();
-    await handleChatSend({ text: "hello", tabId: 1 }, port);
+    await handleChatSend({ text: "hello", tabId: 1, conversationId: "c1" }, port);
     expect(
       port.posted.some(
         (envelope) =>

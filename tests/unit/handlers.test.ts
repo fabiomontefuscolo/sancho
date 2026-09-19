@@ -8,7 +8,7 @@ vi.mock("../../src/providers/factory", async () => {
 
 import { handleSettingsGet, handleSettingsSet } from "../../src/agent/settings-handler";
 import { handleChatClear, handleScreenshotConsent } from "../../src/agent/chat-handler";
-import { getConversation } from "../../src/storage/local";
+import { getActiveConversation } from "../../src/storage/conversations";
 import { getProviderConfig } from "../../src/storage/settings";
 import type { AnyEnvelope } from "../../src/bridge/messages";
 
@@ -79,7 +79,7 @@ describe("conversation handlers", () => {
   beforeEach(() => installMockChrome());
 
   it("chat.clear resets conversation and consent", async () => {
-    const conversation = await getConversation();
+    const conversation = await getActiveConversation();
     conversation.screenshotConsent = true;
     conversation.messages.push({
       id: "m1",
@@ -93,7 +93,7 @@ describe("conversation handlers", () => {
 
     const port = makePort();
     await handleChatClear(port);
-    const cleared = await getConversation();
+    const cleared = await getActiveConversation();
     expect(cleared.messages).toEqual([]);
     expect(cleared.screenshotConsent).toBe(false);
   });
@@ -101,7 +101,7 @@ describe("conversation handlers", () => {
   it("screenshot.consent grants and persists consent", async () => {
     const port = makePort();
     await handleScreenshotConsent({ granted: true }, port);
-    expect((await getConversation()).screenshotConsent).toBe(true);
+    expect((await getActiveConversation()).screenshotConsent).toBe(true);
     expect(
       port.posted.some(
         (envelope) =>

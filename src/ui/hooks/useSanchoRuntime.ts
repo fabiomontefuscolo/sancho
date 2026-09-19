@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useExternalStoreRuntime, type ThreadMessageLike } from "@assistant-ui/react";
 import { UI_PORT_NAME, isEnvelope, makeEnvelope, type AnyEnvelope } from "../../bridge/messages";
-import type { Conversation, Message } from "../../types";
+import type { Conversation, ConversationSummary, Message } from "../../types";
 
 type ThreadContentPart = Exclude<ThreadMessageLike["content"], string>[number];
 
@@ -34,6 +34,12 @@ export interface SanchoRuntime {
   toolActivity: string[];
   pendingPermission: PendingPermission | null;
   resolvePermission: (optionId: string | null) => void;
+  conversations: ConversationSummary[];
+  activeConversationId: string;
+  requestConversations: () => void;
+  selectConversation: (conversationId: string) => void;
+  newConversation: () => void;
+  deleteConversation: (conversationId: string) => void;
 }
 
 export function useSanchoRuntime(tabId: number): SanchoRuntime {
@@ -42,10 +48,14 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [consentRequired, setConsentRequired] = useState(false);
   const [toolActivity, setToolActivity] = useState<string[]>([]);
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null);
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState("");
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const streamingRef = useRef<Map<string, string>>(new Map());
   const tabIdRef = useRef(tabId);
   tabIdRef.current = tabId;
+  const activeConversationRef = useRef("");
+  activeConversationRef.current = activeConversationId;
 
   useEffect(() => {
     const port = chrome.runtime.connect({ name: UI_PORT_NAME });
@@ -72,14 +82,22 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       });
     };
 
+    const isForActiveConversation = (conversationId: string | undefined) =>
+      conversationId === undefined ||
+      activeConversationRef.current === "" ||
+      conversationId === activeConversationRef.current;
+
     const listener = (raw: unknown) => {
       if (!isEnvelope(raw)) return;
       const envelope = raw as AnyEnvelope;
       if (envelope.type === "chat.delta") {
+        if (!isForActiveConversation(envelope.payload.conversationId)) return;
         appendDelta(envelope.payload.messageId, envelope.payload.text);
       } else if (envelope.type === "chat.done") {
+        if (!isForActiveConversation(envelope.payload.conversationId)) return;
         setIsRunning(false);
       } else if (envelope.type === "chat.error") {
+        if (!isForActiveConversation(envelope.payload.conversationId)) return;
         setIsRunning(false);
         if (envelope.payload.message === "consent_required") {
           setConsentRequired(true);
@@ -87,6 +105,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
           appendDelta(envelope.id, `Error: ${envelope.payload.message}`);
         }
       } else if (envelope.type === "chat.tool") {
+        if (!isForActiveConversation(envelope.payload.conversationId)) return;
         const label = `${envelope.payload.toolCall.name} (${envelope.payload.status})`;
         setToolActivity((prev) => [...prev.slice(-9), label]);
       } else if (envelope.type === "permission.request") {
@@ -97,8 +116,12 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         });
       } else if (envelope.type === "conversation.state") {
         const conversation = envelope.payload as Conversation;
+        setActiveConversationId(conversation.id);
         streamingRef.current.clear();
         setMessages(conversation.messages.map(toThreadMessage));
+      } else if (envelope.type === "conversations.state") {
+        setConversations(envelope.payload.conversations);
+        setActiveConversationId(envelope.payload.activeConversationId);
       } else if (envelope.type === "action.result") {
         if (envelope.payload.text) {
           appendDelta(envelope.id, envelope.payload.text);
@@ -108,6 +131,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
 
     port.onMessage.addListener(listener);
     port.postMessage(makeEnvelope("request", "conversation.get", {}));
+    port.postMessage(makeEnvelope("request", "conversations.list", {}));
     return () => port.disconnect();
   }, []);
 
@@ -132,7 +156,11 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         },
       ]);
       portRef.current?.postMessage(
-        makeEnvelope("request", "chat.send", { text, tabId: tabIdRef.current }),
+        makeEnvelope("request", "chat.send", {
+          text,
+          tabId: tabIdRef.current,
+          conversationId: activeConversationRef.current,
+        }),
       );
     },
   });
@@ -159,7 +187,32 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         );
         setPendingPermission(null);
       },
+      conversations,
+      activeConversationId,
+      requestConversations: () => {
+        portRef.current?.postMessage(makeEnvelope("request", "conversations.list", {}));
+      },
+      selectConversation: (conversationId: string) => {
+        portRef.current?.postMessage(
+          makeEnvelope("request", "conversations.select", { conversationId }),
+        );
+      },
+      newConversation: () => {
+        portRef.current?.postMessage(makeEnvelope("request", "conversations.new", {}));
+      },
+      deleteConversation: (conversationId: string) => {
+        portRef.current?.postMessage(
+          makeEnvelope("request", "conversations.delete", { conversationId }),
+        );
+      },
     }),
-    [runtime, consentRequired, toolActivity, pendingPermission],
+    [
+      runtime,
+      consentRequired,
+      toolActivity,
+      pendingPermission,
+      conversations,
+      activeConversationId,
+    ],
   );
 }

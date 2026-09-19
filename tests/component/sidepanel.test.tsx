@@ -20,7 +20,7 @@ describe("ChatPanel", () => {
     expect(port.sent).toContainEqual(
       expect.objectContaining({
         type: "chat.send",
-        payload: { text: "hello agent", tabId: 7 },
+        payload: { text: "hello agent", tabId: 7, conversationId: "" },
       }),
     );
   });

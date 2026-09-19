@@ -78,7 +78,7 @@ describe("chat.send with tool call", () => {
   it("executes tools, reports activity, and completes", async () => {
     vi.mocked(createProvider).mockResolvedValue(new ToolCallingProvider());
     const port = makePort();
-    await handleChatSend({ text: "read it", tabId: 1 }, port);
+    await handleChatSend({ text: "read it", tabId: 1, conversationId: "c1" }, port);
 
     const toolEvents = port.posted.filter((envelope) => envelope.type === "chat.tool");
     expect(toolEvents.map((envelope) => envelope.payload.status)).toEqual(["started", "finished"]);
@@ -91,10 +91,11 @@ describe("chat.send with tool call", () => {
   });
 
   it("appends screenshot image messages when consent is granted", async () => {
-    const { saveConversation, getConversation } = await import("../../src/storage/local");
-    const conversation = await getConversation();
-    conversation.screenshotConsent = true;
-    await saveConversation(conversation);
+    const { createConversation, saveConversationRecord, getConversation } =
+      await import("../../src/storage/conversations");
+    const created = await createConversation();
+    created.screenshotConsent = true;
+    await saveConversationRecord(created);
 
     class ScreenshotProvider extends BaseLLMProvider {
       readonly id = "shot";
@@ -111,11 +112,11 @@ describe("chat.send with tool call", () => {
     }
     vi.mocked(createProvider).mockResolvedValue(new ScreenshotProvider());
     const port = makePort();
-    await handleChatSend({ text: "look", tabId: 1 }, port);
+    await handleChatSend({ text: "look", tabId: 1, conversationId: created.id }, port);
 
-    const updated = await getConversation();
+    const updated = await getConversation(created.id);
     expect(
-      updated.messages.some((message) => message.parts.some((part) => part.type === "image")),
+      updated?.messages.some((message) => message.parts.some((part) => part.type === "image")),
     ).toBe(true);
   });
 
@@ -135,7 +136,7 @@ describe("chat.send with tool call", () => {
     }
     vi.mocked(createProvider).mockResolvedValue(new BlockedProvider());
     const port = makePort();
-    await handleChatSend({ text: "look", tabId: 1 }, port);
+    await handleChatSend({ text: "look", tabId: 1, conversationId: "c1" }, port);
     expect(
       port.posted.some(
         (envelope) =>
@@ -160,7 +161,7 @@ describe("chat.send with tool call", () => {
     chromeMock.scripting.executeScript.mockRejectedValue(new Error("cannot inject"));
     vi.mocked(createProvider).mockResolvedValue(new ToolCallingProvider());
     const port = makePort();
-    await handleChatSend({ text: "read it", tabId: 1 }, port);
+    await handleChatSend({ text: "read it", tabId: 1, conversationId: "c1" }, port);
     expect(port.posted.some((envelope) => envelope.type === "chat.done")).toBe(true);
   });
 });
