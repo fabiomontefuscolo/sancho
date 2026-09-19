@@ -97,6 +97,7 @@ test("context-menu action replaces editable selection via native events", async 
     });
     expect(tabId).toBeGreaterThan(-1);
 
+    const actionStart = Date.now();
     const result = await panel.evaluate(async (targetTabId) => {
       return await new Promise((resolve) => {
         const port = chrome.runtime.connect({ name: "sancho-ui" });
@@ -122,6 +123,7 @@ test("context-menu action replaces editable selection via native events", async 
 
     expect(result).toMatchObject({ actionId: "fix-grammar", replacement: "the quick brown fox" });
     await expect(textarea).toHaveValue("the quick brown fox");
+    expect(Date.now() - actionStart).toBeLessThan(10_000);
   } finally {
     server.close();
   }

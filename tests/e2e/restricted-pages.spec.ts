@@ -54,35 +54,41 @@ test("chat stays available on restricted pages while page tools report unavailab
     await restricted.goto("chrome://version");
     await restricted.bringToFront();
 
-    const result: { deltas: string[]; toolError: boolean } = await panel.evaluate(async () => {
-      return await new Promise((resolve) => {
-        const port = chrome.runtime.connect({ name: "sancho-ui" });
-        const collected: string[] = [];
-        const timeout = setTimeout(
-          () => resolve({ deltas: ["TIMEOUT"], toolError: false }),
-          20_000,
-        );
-        port.onMessage.addListener((message: { type: string; payload?: { text?: string } }) => {
-          if (message.type === "chat.delta" && message.payload?.text) {
-            collected.push(message.payload.text);
-          }
-          if (message.type === "chat.done") {
-            clearTimeout(timeout);
-            resolve({ deltas: collected, toolError: true });
-          }
-        });
-        void chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-          port.postMessage({
-            kind: "request",
-            type: "chat.send",
-            id: "r1",
-            payload: { text: "hello", tabId: tabs[0]?.id ?? -1 },
+    const result: { deltas: string[]; toolError: boolean; firstDeltaMs: number } =
+      await panel.evaluate(async () => {
+        return await new Promise((resolve) => {
+          const port = chrome.runtime.connect({ name: "sancho-ui" });
+          const collected: string[] = [];
+          const sentAt = Date.now();
+          let firstDeltaMs = -1;
+          const timeout = setTimeout(
+            () => resolve({ deltas: ["TIMEOUT"], toolError: false, firstDeltaMs }),
+            20_000,
+          );
+          port.onMessage.addListener((message: { type: string; payload?: { text?: string } }) => {
+            if (message.type === "chat.delta" && message.payload?.text) {
+              if (firstDeltaMs < 0) firstDeltaMs = Date.now() - sentAt;
+              collected.push(message.payload.text);
+            }
+            if (message.type === "chat.done") {
+              clearTimeout(timeout);
+              resolve({ deltas: collected, toolError: true, firstDeltaMs });
+            }
+          });
+          void chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+            port.postMessage({
+              kind: "request",
+              type: "chat.send",
+              id: "r1",
+              payload: { text: "hello", tabId: tabs[0]?.id ?? -1 },
+            });
           });
         });
       });
-    });
 
     expect(result.deltas.join("")).toContain("chat works fine");
+    expect(result.firstDeltaMs).toBeGreaterThanOrEqual(0);
+    expect(result.firstDeltaMs).toBeLessThan(5_000);
 
     const injectionBlocked: boolean = await panel.evaluate(async () => {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
