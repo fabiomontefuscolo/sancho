@@ -91,6 +91,13 @@ export async function handleChatSend(
             port,
             makeEnvelope("event", "chat.tool", { toolCall, status: "finished" as const }),
           );
+          if (
+            typeof result === "object" &&
+            result !== null &&
+            (result as Record<string, unknown>).error === "consent_required"
+          ) {
+            postToPort(port, makeEnvelope("event", "chat.error", { message: "consent_required" }));
+          }
           await maybeAppendScreenshot(port, conversation, toolCall, result);
           return result;
         } catch (error) {
