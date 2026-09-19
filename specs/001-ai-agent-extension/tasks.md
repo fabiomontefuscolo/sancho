@@ -136,7 +136,7 @@ Scenario 3, step 3).
 
 ### Tests for User Story 4
 
-- [ ] T039 [P] [US4] Unit tests for Action CRUD validation: name uniqueness, length limits, built-ins can be hidden (`enabled: false`) but not deleted in tests/unit/action-crud.test.ts
+- [x] T039 [P] [US4] Unit tests for Action CRUD validation: name uniqueness, length limits, built-ins can be hidden (`enabled: false`) but not deleted in tests/unit/action-crud.test.ts
 - [ ] T040 [P] [US4] Component test for the action editor form (create, edit, delete flows) in tests/component/action-editor.test.tsx
 
 ### Implementation for User Story 4
