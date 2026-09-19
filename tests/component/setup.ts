@@ -13,3 +13,7 @@ class ResizeObserverStub {
   disconnect() {}
 }
 (globalThis as { ResizeObserver?: unknown }).ResizeObserver ??= ResizeObserverStub;
+
+if (typeof Element !== "undefined" && !Element.prototype.scrollTo) {
+  Element.prototype.scrollTo = () => {};
+}
