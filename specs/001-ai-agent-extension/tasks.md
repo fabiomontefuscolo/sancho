@@ -90,10 +90,10 @@ verify streamed responses and that native form validation accepts filled values
 - [x] T026 [US1] Implement deterministic Plan → Act → Verify loop with AgentSession persisted to local storage each iteration (service-worker-restart safe) in src/agent/loop.ts
 - [x] T027 [US1] Implement content-script handlers for `page.read` (structural minification + semantic chunking), `page.fill`, `page.click`, `page.select`, `selection.get`, `selection.replace` with native events in entrypoints/content.ts per contracts/runtime-messages.md
 - [x] T028 [US1] Build side panel UI with assistant-ui Thread wired to a custom ExternalStoreRuntime bridged over the `sancho-ui` port (chat.send/chat.delta/chat.tool/chat.done/chat.error, conversation.get/conversation.state, screenshot.consent) in entrypoints/sidepanel/main.tsx and src/ui/hooks/useSanchoRuntime.ts
-- [ ] T029 [US1] Implement active-tab page context: `tabId` tracked per message, context follows the newly active tab in the single global conversation in entrypoints/background.ts
-- [ ] T030 [US1] Implement chat.cancel (maps to ACP `session/cancel`) and chat.clear (resets conversation AND `screenshotConsent`) in entrypoints/background.ts
-- [ ] T031 [US1] Implement graceful degradation on restricted pages: chat stays available, page tools report unavailable in entrypoints/background.ts and entrypoints/content.ts
-- [ ] T032 [US1] Implement screenshot capture via chrome.tabs.captureVisibleTab in-memory only (base64 image part, never stored or forwarded without consent) in entrypoints/background.ts
+- [x] T029 [US1] Implement active-tab page context: `tabId` tracked per message, context follows the newly active tab in the single global conversation in entrypoints/background.ts
+- [x] T030 [US1] Implement chat.cancel (maps to ACP `session/cancel`) and chat.clear (resets conversation AND `screenshotConsent`) in entrypoints/background.ts
+- [x] T031 [US1] Implement graceful degradation on restricted pages: chat stays available, page tools report unavailable in entrypoints/background.ts and entrypoints/content.ts
+- [x] T032 [US1] Implement screenshot capture via chrome.tabs.captureVisibleTab in-memory only (base64 image part, never stored or forwarded without consent) in entrypoints/background.ts
 
 **Checkpoint**: MVP — sidebar agent chats, reads, acts, and analyzes within loop caps
 

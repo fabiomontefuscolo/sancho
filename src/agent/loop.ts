@@ -9,6 +9,7 @@ export interface LoopDeps {
   onStateChange: (state: AgentSessionState) => void;
   saveSession: (session: AgentSession) => Promise<void>;
   getMessages: () => Promise<ProviderMessage[]>;
+  signal?: AbortSignal;
 }
 
 interface RoundResult {
@@ -26,17 +27,22 @@ async function runRound(
   const toolCalls: ToolCall[] = [];
   let error: Error | null = null;
 
-  await provider.streamChat(messages, toolDefinitions as never[], {
-    onDelta: (delta) => {
-      text += delta;
-      deps.onDelta(delta);
+  await provider.streamChat(
+    messages,
+    toolDefinitions as never[],
+    {
+      onDelta: (delta) => {
+        text += delta;
+        deps.onDelta(delta);
+      },
+      onToolCall: (call) => toolCalls.push(call),
+      onDone: () => {},
+      onError: (err) => {
+        error = err;
+      },
     },
-    onToolCall: (call) => toolCalls.push(call),
-    onDone: () => {},
-    onError: (err) => {
-      error = err;
-    },
-  });
+    deps.signal,
+  );
 
   return { text, toolCalls, error };
 }

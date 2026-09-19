@@ -4,7 +4,13 @@ import {
   type AnyEnvelope,
   type UiToBackground,
 } from "../src/bridge/messages";
-import { handleChatSend } from "../src/agent/chat-handler";
+import {
+  handleChatCancel,
+  handleChatClear,
+  handleChatSend,
+  handleConversationGet,
+  handleScreenshotConsent,
+} from "../src/agent/chat-handler";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -37,6 +43,13 @@ export default defineBackground(() => {
   registerHandler("chat.send", async (envelope, port) => {
     if (envelope.type !== "chat.send") return;
     await handleChatSend(envelope.payload, port);
+  });
+  registerHandler("chat.cancel", async (_envelope, port) => handleChatCancel(port));
+  registerHandler("chat.clear", async (_envelope, port) => handleChatClear(port));
+  registerHandler("conversation.get", async (_envelope, port) => handleConversationGet(port));
+  registerHandler("screenshot.consent", async (envelope, port) => {
+    if (envelope.type !== "screenshot.consent") return;
+    await handleScreenshotConsent(envelope.payload, port);
   });
   chrome.runtime.onConnect.addListener(handlePortConnection);
 });
