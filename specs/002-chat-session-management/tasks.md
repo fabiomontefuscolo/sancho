@@ -102,3 +102,7 @@ US2 → US3 → US4 as independent increments, each commit-ready, finishing with
 - [x] T031 Gate `conversation.state` emission in `src/agent/chat-handler.ts` on the conversation still being the active one (check `getActiveConversationId()` before `postConversation` at send-start, screenshot append, and run end), so a run completing in a backgrounded conversation does not clobber the panel's current view per FR-012 (partial)
 - [x] T032 Track abort controllers per conversation id in `src/agent/chat-handler.ts` (map of conversationId → AbortController); `chat.cancel` and `conversations.delete` abort only the run bound to the relevant conversation, so concurrent sends in different conversations do not clobber each other per FR-012 (partial)
 - [x] T033 Render the permission and screenshot-consent banners above the conversations list view as well as the chat view in `src/ui/components/chat.tsx`, so an ACP permission request is actionable while the list is open per US1 (partial)
+
+## Phase 9: Convergence
+
+- [ ] T034 Scope agent loop sessions per conversation in `src/agent/chat-handler.ts` + `src/storage/local.ts`: store sessions keyed by conversation id (or validate `session.conversationId === conversationId` before resuming and start a fresh session on mismatch), so a send in one conversation never resumes another conversation's run state per FR-012 (partial)
