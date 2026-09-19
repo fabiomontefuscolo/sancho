@@ -16,7 +16,7 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URLS.openai ?? "");
   const [model, setModel] = useState("");
   const [apiKey, setApiKey] = useState("");
-  const [hostName, setHostName] = useState("sancho-acp-host");
+  const [hostName, setHostName] = useState("com.sancho.acp_host");
   const [token, setToken] = useState("");
   const [saved, setSaved] = useState(false);
 

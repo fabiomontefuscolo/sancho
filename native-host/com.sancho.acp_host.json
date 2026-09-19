@@ -1,5 +1,5 @@
 {
-  "name": "sancho-acp-host",
+  "name": "com.sancho.acp_host",
   "description": "Sancho ACP bridge to a local agent (opencode acp)",
   "path": "__HOST_SCRIPT_ABSOLUTE_PATH__",
   "type": "stdio",
