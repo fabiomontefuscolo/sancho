@@ -54,7 +54,7 @@ losing conversation state (quickstart.md Scenario 2).
 ### Tests for User Story 2
 
 - [x] T014 [P] [US2] Unit tests for BaseLLMProvider contract: uniform message schema, streaming deltas, tool-call parsing in tests/unit/providers.test.ts
-- [ ] T015 [P] [US2] Unit tests for ACP transport handshake (token mismatch closes port, NDJSON framing) in tests/unit/acp.test.ts
+- [x] T015 [P] [US2] Unit tests for ACP transport handshake (token mismatch closes port, NDJSON framing) in tests/unit/acp.test.ts
 
 ### Implementation for User Story 2
 
