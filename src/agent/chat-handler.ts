@@ -81,10 +81,16 @@ export async function handleChatSend(
       saveSession: saveAgentSession,
       executeTool: async (call: ToolCall) => {
         const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
-        postToPort(port, makeEnvelope("event", "chat.tool", { toolCall, status: "started" }));
+        postToPort(
+          port,
+          makeEnvelope("event", "chat.tool", { toolCall, status: "started" as const }),
+        );
         try {
           const result = await executeTool(toolCall.name, toolCall.arguments, toolCall.tabId);
-          postToPort(port, makeEnvelope("event", "chat.tool", { toolCall, status: "finished" }));
+          postToPort(
+            port,
+            makeEnvelope("event", "chat.tool", { toolCall, status: "finished" as const }),
+          );
           await maybeAppendScreenshot(port, conversation, toolCall, result);
           return result;
         } catch (error) {
