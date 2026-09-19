@@ -14,6 +14,7 @@ vi.mock("../../src/providers/acp", () => {
     handlers: CapturedHandlers = {};
     useConversation(): void {}
     setSessionCreatedHandler(): void {}
+    setSessionInvalidHandler(): void {}
     setPermissionHandler(handler: unknown): void {
       this.handlers.permission = handler;
     }

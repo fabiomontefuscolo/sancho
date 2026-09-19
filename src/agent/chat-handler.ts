@@ -192,6 +192,10 @@ export async function handleChatSend(
       conversation.acpSessionId = sessionId;
       void saveConversationRecord(conversation);
     });
+    provider.setSessionInvalidHandler(() => {
+      conversation.acpSessionId = null;
+      void saveConversationRecord(conversation);
+    });
     provider.setPermissionHandler((request) => requestPermissionFromUser(port, request));
     provider.setToolInvokeHandler(async (request) => {
       armWatchdog();

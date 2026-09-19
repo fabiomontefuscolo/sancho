@@ -76,6 +76,11 @@ export interface ToolInvokeRequest {
 
 export type ToolInvokeHandler = (request: ToolInvokeRequest) => Promise<unknown>;
 
+function isSessionNotFound(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /session not found/i.test(message);
+}
+
 export interface PermissionRequest {
   title: string;
   options: Array<{ optionId: string; name: string; kind: string }>;
@@ -100,6 +105,7 @@ export class AcpProvider extends BaseLLMProvider {
   private sessions = new Map<string, string>();
   private activeConversationId: string | null = null;
   private sessionCreatedHandler: ((sessionId: string) => void) | null = null;
+  private sessionInvalidHandler: ((conversationKey: string) => void) | null = null;
   private port: NativePort | null = null;
   private mcpServer: McpServerSpec | null = null;
   private toolInvokeHandler: ToolInvokeHandler | null = null;
@@ -129,6 +135,10 @@ export class AcpProvider extends BaseLLMProvider {
     this.sessionCreatedHandler = handler;
   }
 
+  setSessionInvalidHandler(handler: ((conversationKey: string) => void) | null): void {
+    this.sessionInvalidHandler = handler;
+  }
+
   private onSessionText: ((text: string) => void) | null = null;
 
   private async ensureConnection(): Promise<ClientSideConnection> {
@@ -142,6 +152,9 @@ export class AcpProvider extends BaseLLMProvider {
     port.onDisconnect.addListener(() => {
       logEvent("acp native port disconnected");
       this.connection = null;
+      for (const conversationKey of this.sessions.keys()) {
+        this.sessionInvalidHandler?.(conversationKey);
+      }
       this.sessions.clear();
       this.port = null;
       this.mcpServer = null;
@@ -202,6 +215,35 @@ export class AcpProvider extends BaseLLMProvider {
     return this.connection;
   }
 
+  private async ensureSession(
+    connection: ClientSideConnection,
+    conversationKey: string,
+  ): Promise<string> {
+    const existing = this.sessions.get(conversationKey);
+    if (existing) {
+      logEvent("acp session reuse", { conversationKey });
+      return existing;
+    }
+    logEvent("acp session new", { conversationKey });
+    const mcpServers = this.mcpServer
+      ? [
+          {
+            name: this.mcpServer.name,
+            command: this.mcpServer.command,
+            args: this.mcpServer.args,
+            env: Object.entries(this.mcpServer.env).map(([name, value]) => ({
+              name,
+              value,
+            })),
+          },
+        ]
+      : [];
+    const session = await connection.newSession({ cwd: "/", mcpServers });
+    this.sessions.set(conversationKey, session.sessionId);
+    this.sessionCreatedHandler?.(session.sessionId);
+    return session.sessionId;
+  }
+
   async streamChat(
     messages: ProviderMessage[],
     _tools: ToolDefinition[],
@@ -211,27 +253,7 @@ export class AcpProvider extends BaseLLMProvider {
     try {
       const connection = await this.ensureConnection();
       const conversationKey = this.activeConversationId ?? "default";
-      let sessionId = this.sessions.get(conversationKey);
-      logEvent(sessionId ? "acp session reuse" : "acp session new", { conversationKey });
-      if (!sessionId) {
-        const mcpServers = this.mcpServer
-          ? [
-              {
-                name: this.mcpServer.name,
-                command: this.mcpServer.command,
-                args: this.mcpServer.args,
-                env: Object.entries(this.mcpServer.env).map(([name, value]) => ({
-                  name,
-                  value,
-                })),
-              },
-            ]
-          : [];
-        const session = await connection.newSession({ cwd: "/", mcpServers });
-        sessionId = session.sessionId;
-        this.sessions.set(conversationKey, sessionId);
-        this.sessionCreatedHandler?.(sessionId);
-      }
+      let sessionId = await this.ensureSession(connection, conversationKey);
       this.onSessionText = (text) => events.onDelta(text);
       const clock = systemClockMessage().content;
       const preamble =
@@ -246,16 +268,35 @@ export class AcpProvider extends BaseLLMProvider {
         return;
       }
 
+      const sendPrompt = async (id: string, contextRebuild: boolean) => {
+        const context = contextRebuild
+          ? messages
+              .slice(-11, -1)
+              .map((message) => `${message.role}: ${message.content}`)
+              .join("\n")
+          : "";
+        const text = context
+          ? `${preamble}\n\nThe previous session was reset. Rebuild context from this transcript:\n${context}\n\n${last.content}`
+          : `${preamble}\n\n${last.content}`;
+        await connection.prompt({ sessionId: id, prompt: [{ type: "text", text }] });
+      };
+
       const abort = () => {
         void connection.cancel({ sessionId });
       };
       signal?.addEventListener("abort", abort, { once: true });
 
       try {
-        await connection.prompt({
-          sessionId,
-          prompt: [{ type: "text", text: `${preamble}\n\n${last.content}` }],
-        });
+        try {
+          await sendPrompt(sessionId, false);
+        } catch (error) {
+          if (!isSessionNotFound(error)) throw error;
+          logEvent("acp stale session, retrying with fresh session", { conversationKey });
+          this.sessions.delete(conversationKey);
+          this.sessionInvalidHandler?.(conversationKey);
+          sessionId = await this.ensureSession(connection, conversationKey);
+          await sendPrompt(sessionId, true);
+        }
       } finally {
         signal?.removeEventListener("abort", abort);
       }
