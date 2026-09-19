@@ -7,7 +7,7 @@ Tests are included: the project constitution (Article VI) requires ≥80% covera
 
 ## Phase 1: Setup
 
-- [ ] T001 Extend `Conversation` in `src/types.ts` with `title: string` and `acpSessionId: string | null`; add `ConversationSummary` interface with fields `id: string`, `title: string`, `updatedAt: number`, `createdAt: number`, `messageCount: number` per `data-model.md`
+- [x] T001 Extend `Conversation` in `src/types.ts` with `title: string` and `acpSessionId: string | null`; add `ConversationSummary` interface with fields `id: string`, `title: string`, `updatedAt: number`, `createdAt: number`, `messageCount: number` per `data-model.md`
 
 ## Phase 2: Foundational (blocking prerequisites)
 

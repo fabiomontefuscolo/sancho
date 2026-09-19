@@ -27,8 +27,10 @@ export function emptyConversation(): Conversation {
   const now = Date.now();
   return {
     id: GLOBAL_CONVERSATION_ID,
+    title: "New conversation",
     messages: [],
     screenshotConsent: false,
+    acpSessionId: null,
     createdAt: now,
     updatedAt: now,
   };

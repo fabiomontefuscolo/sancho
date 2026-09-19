@@ -57,10 +57,20 @@ export interface Message {
 
 export interface Conversation {
   id: string;
+  title: string;
   messages: Message[];
   screenshotConsent: boolean;
+  acpSessionId: string | null;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  updatedAt: number;
+  createdAt: number;
+  messageCount: number;
 }
 
 export type AgentSessionState =
