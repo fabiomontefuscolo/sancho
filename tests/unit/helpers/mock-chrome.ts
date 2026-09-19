@@ -54,6 +54,33 @@ export function installMockChrome() {
         },
       },
     },
+    scripting: {
+      executeScript: vi.fn(async () => []),
+    },
+    tabs: {
+      sendMessage: vi.fn(async (_tabId: number, message: { type: string }) => {
+        if (message.type === "page.read") {
+          return { title: "t", url: "https://x", chunks: ["text"] };
+        }
+        if (message.type === "selection.get") return { text: "sel", editable: true };
+        return { ok: true };
+      }),
+      get: vi.fn(async () => ({ windowId: 1 })),
+      captureVisibleTab: vi.fn(async () => "data:image/png;base64,QUJD"),
+    },
+    contextMenus: {
+      removeAll: vi.fn(async () => {}),
+      create: vi.fn(),
+      onClicked: { addListener: vi.fn() },
+    },
+    runtime: {
+      onConnect: { addListener: vi.fn() },
+      onInstalled: { addListener: vi.fn() },
+      onStartup: { addListener: vi.fn() },
+      connectNative: vi.fn(() => {
+        throw new Error("Specified native messaging host not found.");
+      }),
+    },
   };
 
   vi.stubGlobal("chrome", chromeMock);
