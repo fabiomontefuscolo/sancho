@@ -105,12 +105,32 @@ test("runaway agent loop stops at the 25-iteration cap", async ({ context, exten
             }
           },
         );
-        void chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+        void chrome.tabs.query({ active: true, currentWindow: true }).then(async (tabs) => {
           port.postMessage({
             kind: "request",
             type: "chat.send",
             id: "loop-1",
-            payload: { text: "loop forever", tabId: tabs[0]?.id ?? -1 },
+            payload: {
+              text: "loop forever",
+              tabId: tabs[0]?.id ?? -1,
+              conversationId: await new Promise<string>((resolve) => {
+                const probe = chrome.runtime.connect({ name: "sancho-ui" });
+                probe.onMessage.addListener(
+                  (message: { type: string; payload?: { id?: string } }) => {
+                    if (message.type === "conversation.state" && message.payload?.id) {
+                      probe.disconnect();
+                      resolve(message.payload.id);
+                    }
+                  },
+                );
+                probe.postMessage({
+                  kind: "request",
+                  type: "conversation.get",
+                  id: "probe",
+                  payload: {},
+                });
+              }),
+            },
           });
         });
       });

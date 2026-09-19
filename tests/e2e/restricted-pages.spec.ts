@@ -75,12 +75,29 @@ test("chat stays available on restricted pages while page tools report unavailab
               resolve({ deltas: collected, toolError: true, firstDeltaMs });
             }
           });
-          void chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+          void chrome.tabs.query({ active: true, currentWindow: true }).then(async (tabs) => {
+            const conversationId = await new Promise<string>((resolve) => {
+              const probe = chrome.runtime.connect({ name: "sancho-ui" });
+              probe.onMessage.addListener(
+                (message: { type: string; payload?: { id?: string } }) => {
+                  if (message.type === "conversation.state" && message.payload?.id) {
+                    probe.disconnect();
+                    resolve(message.payload.id);
+                  }
+                },
+              );
+              probe.postMessage({
+                kind: "request",
+                type: "conversation.get",
+                id: "probe",
+                payload: {},
+              });
+            });
             port.postMessage({
               kind: "request",
               type: "chat.send",
               id: "r1",
-              payload: { text: "hello", tabId: tabs[0]?.id ?? -1 },
+              payload: { text: "hello", tabId: tabs[0]?.id ?? -1, conversationId },
             });
           });
         });

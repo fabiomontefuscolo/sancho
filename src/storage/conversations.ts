@@ -44,10 +44,7 @@ async function migrateLegacy(): Promise<void> {
   if (existing) return;
   const result = await chrome.storage.local.get(LEGACY_KEY);
   const legacy = result[LEGACY_KEY] as Conversation | undefined;
-  if (!legacy) {
-    await writeIndex([]);
-    return;
-  }
+  if (!legacy) return;
   const migrated: Conversation = {
     ...legacy,
     id: crypto.randomUUID(),

@@ -69,7 +69,10 @@ export function ChatPanel({ tabId }: { tabId: number }) {
               newConversation();
               setView("chat");
             }}
-            onDelete={deleteConversation}
+            onDelete={(conversationId) => {
+              deleteConversation(conversationId);
+              if (conversationId === activeConversationId) setView("chat");
+            }}
             onBack={() => setView("chat")}
           />
         ) : (
