@@ -60,7 +60,7 @@ losing conversation state (quickstart.md Scenario 2).
 
 - [x] T016 [US2] Implement BaseLLMProvider abstract class (stream, message history schema, structural tool output) in src/providers/base.ts
 - [x] T017 [US2] Implement OpenAI-compatible provider using Vercel AI SDK v5 (`ai` + `@ai-sdk/openai-compatible`, browser-safe build) with configurable `baseUrl` (https required, http allowed on loopback) and `model` in src/providers/openai-compatible.ts
-- [ ] T018 [US2] Implement ACP provider using `@agentclientprotocol/sdk` over Native Messaging (`chrome.runtime.connectNative` to `ProviderConfig.acp.hostName`, `{ "type": "handshake", "token" }` first message, `initialize`/`session/new`/`session/prompt`/`session/cancel`) in src/providers/acp.ts per contracts/acp-transport.md
+- [x] T018 [US2] Implement ACP provider using `@agentclientprotocol/sdk` over Native Messaging (`chrome.runtime.connectNative` to `ProviderConfig.acp.hostName`, `{ "type": "handshake", "token" }` first message, `initialize`/`session/new`/`session/prompt`/`session/cancel`) in src/providers/acp.ts per contracts/acp-transport.md
 - [ ] T019 [US2] Implement provider factory reading ProviderConfig from sync storage and resolving ApiKey from local storage in src/providers/factory.ts
 - [ ] T020 [US2] Wire connection-failure handling (`chat.error` with actionable message, conversation preserved; ACP disconnect sets `AgentSession.state = "error"`) in entrypoints/background.ts
 
