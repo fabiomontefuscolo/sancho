@@ -4,6 +4,7 @@ import {
   type AnyEnvelope,
   type UiToBackground,
 } from "../src/bridge/messages";
+import { handleChatSend } from "../src/agent/chat-handler";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -33,5 +34,9 @@ export function handlePortConnection(port: chrome.runtime.Port): void {
 }
 
 export default defineBackground(() => {
+  registerHandler("chat.send", async (envelope, port) => {
+    if (envelope.type !== "chat.send") return;
+    await handleChatSend(envelope.payload, port);
+  });
   chrome.runtime.onConnect.addListener(handlePortConnection);
 });
