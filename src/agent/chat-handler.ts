@@ -195,6 +195,16 @@ export async function handleChatSend(
             conversationId,
           }),
         );
+        if (
+          typeof result === "object" &&
+          result !== null &&
+          (result as Record<string, unknown>).error === "consent_required"
+        ) {
+          postToPort(
+            port,
+            makeEnvelope("event", "chat.error", { message: "consent_required", conversationId }),
+          );
+        }
         await maybeAppendScreenshot(port, conversation, toolCall, result);
         return result;
       } catch (error) {

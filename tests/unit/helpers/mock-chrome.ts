@@ -66,6 +66,7 @@ export function installMockChrome() {
         return { ok: true };
       }),
       get: vi.fn(async () => ({ windowId: 1 })),
+      query: vi.fn(async () => [{ id: 1, windowId: 1 }]),
       captureVisibleTab: vi.fn(async () => "data:image/png;base64,QUJD"),
     },
     contextMenus: {
