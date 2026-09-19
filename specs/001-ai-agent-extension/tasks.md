@@ -14,12 +14,12 @@ orchestration logic.
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Initialize WXT project with React template and TypeScript strict mode (`strict: true`, `no-explicit-any` error) at repository root
-- [ ] T002 [P] Configure ESLint (`@typescript-eslint`, `eslint-plugin-react-hooks`) and Prettier in eslint.config.js and .prettierrc
-- [ ] T003 [P] Configure husky + lint-staged pre-commit hooks running ESLint and Prettier in package.json and .husky/pre-commit
-- [ ] T004 [P] Configure Vitest with coverage thresholds (≥80% statements/branches for src/agent, src/providers, src/storage) in vitest.config.ts
-- [ ] T005 [P] Configure Playwright persistent-context harness loading the unpacked extension in tests/e2e/fixtures.ts
-- [ ] T006 Add assistant-ui dependencies (`@assistant-ui/react`) and scaffold thread components via `npx assistant-ui init` into src/ui/components/
+- [x] T001 Initialize WXT project with React template and TypeScript strict mode (`strict: true`, `no-explicit-any` error) at repository root
+- [x] T002 [P] Configure ESLint (`@typescript-eslint`, `eslint-plugin-react-hooks`) and Prettier in eslint.config.js and .prettierrc
+- [x] T003 [P] Configure husky + lint-staged pre-commit hooks running ESLint and Prettier in package.json and .husky/pre-commit
+- [x] T004 [P] Configure Vitest with coverage thresholds (≥80% statements/branches for src/agent, src/providers, src/storage) in vitest.config.ts
+- [x] T005 [P] Configure Playwright persistent-context harness loading the unpacked extension in tests/e2e/fixtures.ts
+- [x] T006 Add assistant-ui dependencies (`@assistant-ui/react`) and scaffold thread components via `npx assistant-ui init` into src/ui/components/
 
 ---
 
@@ -27,7 +27,7 @@ orchestration logic.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 [P] Define all data-model interfaces (ProviderConfig with `method: "api" | "acp"`, ApiKey, Action with `builtin: boolean`, Conversation with `screenshotConsent: boolean`, Message, AgentSession with states `"idle" | "planning" | "acting" | "verifying" | "done" | "stopped" | "error"` and `maxIterations` default 25, ToolCall) in src/types.ts
+- [x] T007 [P] Define all data-model interfaces (ProviderConfig with `method: "api" | "acp"`, ApiKey, Action with `builtin: boolean`, Conversation with `screenshotConsent: boolean`, Message, AgentSession with states `"idle" | "planning" | "acting" | "verifying" | "done" | "stopped" | "error"` and `maxIterations` default 25, ToolCall) in src/types.ts
 - [ ] T008 Implement sync storage wrapper for ProviderConfig and Action collections in src/storage/settings.ts
 - [ ] T009 [P] Implement local storage wrapper for ApiKey (keyed by `apiKeyRef`, never synced), Conversation, and transient AgentSession in src/storage/local.ts
 - [ ] T010 [P] Implement typed message Envelope (`kind: "request" | "response" | "event"`, correlation `id`; unknown types ignored, malformed envelopes dropped and logged) and port helpers in src/bridge/messages.ts per contracts/runtime-messages.md
