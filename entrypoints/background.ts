@@ -9,6 +9,10 @@ import {
   handleChatClear,
   handleChatSend,
   handleConversationGet,
+  handleConversationsDelete,
+  handleConversationsList,
+  handleConversationsNew,
+  handleConversationsSelect,
   handlePermissionResponse,
   handleScreenshotConsent,
 } from "../src/agent/chat-handler";
@@ -60,7 +64,20 @@ export default defineBackground(() => {
   });
   registerHandler("chat.cancel", async (_envelope, port) => handleChatCancel(port));
   registerHandler("chat.clear", async (_envelope, port) => handleChatClear(port));
-  registerHandler("conversation.get", async (_envelope, port) => handleConversationGet(port));
+  registerHandler("conversation.get", async (envelope, port) => {
+    if (envelope.type !== "conversation.get") return;
+    await handleConversationGet(envelope.payload, port);
+  });
+  registerHandler("conversations.list", async (_envelope, port) => handleConversationsList(port));
+  registerHandler("conversations.select", async (envelope, port) => {
+    if (envelope.type !== "conversations.select") return;
+    await handleConversationsSelect(envelope.payload, port);
+  });
+  registerHandler("conversations.new", async (_envelope, port) => handleConversationsNew(port));
+  registerHandler("conversations.delete", async (envelope, port) => {
+    if (envelope.type !== "conversations.delete") return;
+    await handleConversationsDelete(envelope.payload, port);
+  });
   registerHandler("screenshot.consent", async (envelope, port) => {
     if (envelope.type !== "screenshot.consent") return;
     await handleScreenshotConsent(envelope.payload, port);

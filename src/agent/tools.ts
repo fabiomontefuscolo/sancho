@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ToolDefinition } from "../providers/base";
-import { getConversation } from "../storage/local";
+import { getActiveConversation } from "../storage/conversations";
 import { sendToContent } from "./inject";
 
 export const readPageArgs = z.object({
@@ -90,7 +90,7 @@ export async function captureScreenshot(
 ): Promise<
   { ok: true; imageBase64: string; mimeType: "image/png" } | { ok: false; error: string }
 > {
-  const conversation = await getConversation();
+  const conversation = await getActiveConversation();
   if (!conversation.screenshotConsent) {
     return { ok: false, error: "consent_required" };
   }

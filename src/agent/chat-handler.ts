@@ -1,16 +1,29 @@
 import { makeEnvelope, postToPort } from "../bridge/messages";
+import type {
+  ChatSendPayload,
+  ConversationDeletePayload,
+  ConversationGetPayload,
+  ConversationSelectPayload,
+} from "../bridge/messages";
 import { createProvider } from "../providers/factory";
 import { AcpProvider } from "../providers/acp";
 import type { ProviderMessage } from "../providers/base";
 import {
   clearAgentSession,
-  clearConversation,
   getAgentSession,
-  getConversation,
   newAgentSession,
   saveAgentSession,
-  saveConversation,
 } from "../storage/local";
+import {
+  createConversation,
+  deleteConversation,
+  getActiveConversation,
+  getActiveConversationId,
+  getConversation,
+  listConversations,
+  saveConversationRecord,
+  setActiveConversation,
+} from "../storage/conversations";
 import type { Conversation, Message, ToolCall } from "../types";
 import { runAgentLoop } from "./loop";
 import { RestrictedPageError } from "./inject";
@@ -54,6 +67,15 @@ function postConversation(port: chrome.runtime.Port, conversation: Conversation)
   postToPort(port, makeEnvelope("event", "conversation.state", conversation));
 }
 
+async function postConversationsState(port: chrome.runtime.Port): Promise<void> {
+  const conversations = await listConversations();
+  const activeConversationId = (await getActiveConversationId()) ?? conversations[0]?.id ?? "";
+  postToPort(
+    port,
+    makeEnvelope("event", "conversations.state", { conversations, activeConversationId }),
+  );
+}
+
 function toProviderMessages(conversation: Conversation): ProviderMessage[] {
   return conversation.messages.map((message) => {
     const text = message.parts
@@ -88,10 +110,12 @@ async function buildProviderMessages(
 }
 
 export async function handleChatSend(
-  payload: { text: string; tabId: number },
+  payload: ChatSendPayload,
   port: chrome.runtime.Port,
 ): Promise<void> {
-  const conversation = await getConversation();
+  const loaded = await getConversation(payload.conversationId);
+  const conversation = loaded ?? (await getActiveConversation());
+  const conversationId = conversation.id;
   const userMessage: Message = {
     id: crypto.randomUUID(),
     role: "user",
@@ -100,8 +124,10 @@ export async function handleChatSend(
     createdAt: Date.now(),
   };
   conversation.messages.push(userMessage);
-  await saveConversation(conversation);
+  const savedUser = await saveConversationRecord(conversation);
+  conversation.title = savedUser.title;
   postConversation(port, conversation);
+  void postConversationsState(port);
 
   const assistantId = crypto.randomUUID();
   let provider;
@@ -109,11 +135,11 @@ export async function handleChatSend(
     provider = await createProvider();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    postToPort(port, makeEnvelope("event", "chat.error", { message }, assistantId));
+    postToPort(port, makeEnvelope("event", "chat.error", { message, conversationId }, assistantId));
     return;
   }
 
-  const session = (await getAgentSession()) ?? newAgentSession(conversation.id);
+  const session = (await getAgentSession()) ?? newAgentSession(conversationId);
   activeAbort = new AbortController();
   let assistantText = "";
 
@@ -125,13 +151,21 @@ export async function handleChatSend(
       const toolCall: ToolCall = { name: request.name, arguments: request.arguments, tabId };
       postToPort(
         port,
-        makeEnvelope("event", "chat.tool", { toolCall, status: "started" as const }),
+        makeEnvelope("event", "chat.tool", {
+          toolCall,
+          status: "started" as const,
+          conversationId,
+        }),
       );
       try {
         const result = await executeTool(request.name, request.arguments, tabId);
         postToPort(
           port,
-          makeEnvelope("event", "chat.tool", { toolCall, status: "finished" as const }),
+          makeEnvelope("event", "chat.tool", {
+            toolCall,
+            status: "finished" as const,
+            conversationId,
+          }),
         );
         await maybeAppendScreenshot(port, conversation, toolCall, result);
         return result;
@@ -151,7 +185,10 @@ export async function handleChatSend(
       signal: activeAbort.signal,
       onDelta: (text) => {
         assistantText += text;
-        postToPort(port, makeEnvelope("event", "chat.delta", { messageId: assistantId, text }));
+        postToPort(
+          port,
+          makeEnvelope("event", "chat.delta", { messageId: assistantId, text, conversationId }),
+        );
       },
       onStateChange: () => {},
       saveSession: saveAgentSession,
@@ -159,20 +196,31 @@ export async function handleChatSend(
         const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
         postToPort(
           port,
-          makeEnvelope("event", "chat.tool", { toolCall, status: "started" as const }),
+          makeEnvelope("event", "chat.tool", {
+            toolCall,
+            status: "started" as const,
+            conversationId,
+          }),
         );
         try {
           const result = await executeTool(toolCall.name, toolCall.arguments, toolCall.tabId);
           postToPort(
             port,
-            makeEnvelope("event", "chat.tool", { toolCall, status: "finished" as const }),
+            makeEnvelope("event", "chat.tool", {
+              toolCall,
+              status: "finished" as const,
+              conversationId,
+            }),
           );
           if (
             typeof result === "object" &&
             result !== null &&
             (result as Record<string, unknown>).error === "consent_required"
           ) {
-            postToPort(port, makeEnvelope("event", "chat.error", { message: "consent_required" }));
+            postToPort(
+              port,
+              makeEnvelope("event", "chat.error", { message: "consent_required", conversationId }),
+            );
           }
           await maybeAppendScreenshot(port, conversation, toolCall, result);
           return result;
@@ -198,7 +246,8 @@ export async function handleChatSend(
       tabId: payload.tabId,
       createdAt: Date.now(),
     });
-    await saveConversation(conversation);
+    await saveConversationRecord(conversation);
+    void postConversationsState(port);
   }
   if (finalSession.state === "done" || finalSession.state === "stopped") {
     await clearAgentSession();
@@ -208,6 +257,7 @@ export async function handleChatSend(
     port,
     makeEnvelope("event", "chat.done", {
       messageId: assistantId,
+      conversationId,
       ...(finalSession.state === "stopped" ? { cancelled: true } : {}),
     }),
   );
@@ -234,17 +284,23 @@ async function maybeAppendScreenshot(
     tabId: call.tabId,
     createdAt: Date.now(),
   });
-  await saveConversation(conversation);
+  await saveConversationRecord(conversation);
   postConversation(port, conversation);
+  void postConversationsState(port);
 }
 
 export async function handleChatCancel(port: chrome.runtime.Port): Promise<void> {
   activeAbort?.abort();
   activeAbort = null;
   await clearAgentSession();
+  const conversationId = (await getActiveConversationId()) ?? "";
   postToPort(
     port,
-    makeEnvelope("event", "chat.done", { messageId: crypto.randomUUID(), cancelled: true }),
+    makeEnvelope("event", "chat.done", {
+      messageId: crypto.randomUUID(),
+      cancelled: true,
+      conversationId,
+    }),
   );
 }
 
@@ -252,20 +308,77 @@ export async function handleChatClear(port: chrome.runtime.Port): Promise<void> 
   activeAbort?.abort();
   activeAbort = null;
   await clearAgentSession();
-  const fresh = await clearConversation();
+  const activeId = await getActiveConversationId();
+  if (activeId) await deleteConversation(activeId);
+  const fresh = await createConversation();
   postConversation(port, fresh);
+  await postConversationsState(port);
 }
 
-export async function handleConversationGet(port: chrome.runtime.Port): Promise<void> {
-  postConversation(port, await getConversation());
+export async function handleConversationGet(
+  payload: ConversationGetPayload,
+  port: chrome.runtime.Port,
+): Promise<void> {
+  const conversation = payload.conversationId
+    ? ((await getConversation(payload.conversationId)) ?? (await getActiveConversation()))
+    : await getActiveConversation();
+  postConversation(port, conversation);
+}
+
+export async function handleConversationsList(port: chrome.runtime.Port): Promise<void> {
+  await postConversationsState(port);
+}
+
+export async function handleConversationsSelect(
+  payload: ConversationSelectPayload,
+  port: chrome.runtime.Port,
+): Promise<void> {
+  const ok = await setActiveConversation(payload.conversationId);
+  if (!ok) {
+    postToPort(
+      port,
+      makeEnvelope("event", "chat.error", {
+        message: "unknown conversation",
+        conversationId: payload.conversationId,
+      }),
+    );
+    return;
+  }
+  const conversation = await getConversation(payload.conversationId);
+  if (conversation) postConversation(port, conversation);
+  await postConversationsState(port);
+}
+
+export async function handleConversationsNew(port: chrome.runtime.Port): Promise<void> {
+  const conversation = await createConversation();
+  postConversation(port, conversation);
+  await postConversationsState(port);
+}
+
+export async function handleConversationsDelete(
+  payload: ConversationDeletePayload,
+  port: chrome.runtime.Port,
+): Promise<void> {
+  const wasActive = (await getActiveConversationId()) === payload.conversationId;
+  if (wasActive) {
+    activeAbort?.abort();
+    activeAbort = null;
+    await clearAgentSession();
+  }
+  await deleteConversation(payload.conversationId);
+  if (wasActive) {
+    const fresh = await createConversation();
+    postConversation(port, fresh);
+  }
+  await postConversationsState(port);
 }
 
 export async function handleScreenshotConsent(
   payload: { granted: boolean },
   port: chrome.runtime.Port,
 ): Promise<void> {
-  const conversation = await getConversation();
+  const conversation = await getActiveConversation();
   conversation.screenshotConsent = payload.granted;
-  await saveConversation(conversation);
+  await saveConversationRecord(conversation);
   postConversation(port, conversation);
 }

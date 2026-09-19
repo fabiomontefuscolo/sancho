@@ -1,7 +1,7 @@
 import { makeEnvelope, postToPort } from "../bridge/messages";
 import { createProvider } from "../providers/factory";
 import { listActions } from "../storage/settings";
-import { getConversation, saveConversation } from "../storage/local";
+import { getActiveConversation, saveConversationRecord } from "../storage/conversations";
 import { sendToContent } from "./inject";
 import { menuIdForAction } from "./menus";
 import { runSelectionAction } from "./actions";
@@ -34,7 +34,7 @@ export async function runActionById(
         error?: string;
       }>,
     appendToConversation: async (text) => {
-      const conversation = await getConversation();
+      const conversation = await getActiveConversation();
       conversation.messages.push({
         id: crypto.randomUUID(),
         role: "assistant",
@@ -42,7 +42,7 @@ export async function runActionById(
         tabId,
         createdAt: Date.now(),
       });
-      await saveConversation(conversation);
+      await saveConversationRecord(conversation);
       if (port) {
         postToPort(port, makeEnvelope("event", "conversation.state", conversation));
       }

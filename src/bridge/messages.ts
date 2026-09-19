@@ -1,4 +1,4 @@
-import type { Action, Conversation, ProviderConfig, ToolCall } from "../types";
+import type { Action, Conversation, ConversationSummary, ProviderConfig, ToolCall } from "../types";
 
 export interface Envelope<T extends string, P> {
   kind: "request" | "response" | "event";
@@ -10,21 +10,39 @@ export interface Envelope<T extends string, P> {
 export interface ChatSendPayload {
   text: string;
   tabId: number;
+  conversationId: string;
 }
 export interface ChatDeltaPayload {
   messageId: string;
   text: string;
+  conversationId: string;
 }
 export interface ChatToolPayload {
   toolCall: ToolCall;
   status: "started" | "finished";
+  conversationId?: string;
 }
 export interface ChatDonePayload {
   messageId: string;
   cancelled?: boolean;
+  conversationId: string;
 }
 export interface ChatErrorPayload {
   message: string;
+  conversationId?: string;
+}
+export interface ConversationGetPayload {
+  conversationId?: string;
+}
+export interface ConversationSelectPayload {
+  conversationId: string;
+}
+export interface ConversationDeletePayload {
+  conversationId: string;
+}
+export interface ConversationsStatePayload {
+  conversations: ConversationSummary[];
+  activeConversationId: string;
 }
 export interface ActionRunPayload {
   actionId: string;
@@ -69,7 +87,11 @@ export type UiToBackground =
   | Envelope<"chat.send", ChatSendPayload>
   | Envelope<"chat.cancel", Record<string, never>>
   | Envelope<"chat.clear", Record<string, never>>
-  | Envelope<"conversation.get", Record<string, never>>
+  | Envelope<"conversation.get", ConversationGetPayload>
+  | Envelope<"conversations.list", Record<string, never>>
+  | Envelope<"conversations.select", ConversationSelectPayload>
+  | Envelope<"conversations.new", Record<string, never>>
+  | Envelope<"conversations.delete", ConversationDeletePayload>
   | Envelope<"action.run", ActionRunPayload>
   | Envelope<"screenshot.consent", ScreenshotConsentPayload>
   | Envelope<"settings.get", Record<string, never>>
@@ -85,6 +107,7 @@ export type BackgroundToUi =
   | Envelope<"chat.done", ChatDonePayload>
   | Envelope<"chat.error", ChatErrorPayload>
   | Envelope<"conversation.state", Conversation>
+  | Envelope<"conversations.state", ConversationsStatePayload>
   | Envelope<"action.result", ActionResultPayload>
   | Envelope<"settings.state", { config: ProviderConfig | null; hasApiKey: boolean }>
   | Envelope<"actions.state", Action[]>
