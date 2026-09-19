@@ -1,5 +1,6 @@
 import { ClientSideConnection, ndJsonStream, PROTOCOL_VERSION } from "@agentclientprotocol/sdk";
 import { systemClockMessage } from "../agent/time";
+import { logEvent } from "../agent/log";
 import {
   BaseLLMProvider,
   type ProviderMessage,
@@ -132,10 +133,19 @@ export class AcpProvider extends BaseLLMProvider {
 
   private async ensureConnection(): Promise<ClientSideConnection> {
     if (this.connection) return this.connection;
+    logEvent("acp connect", { host: this.options.hostName });
     const port = openNativePort(this.options.hostName);
     const { mcpServer } = await connectAcpHost(port, this.options);
     this.port = port;
     this.mcpServer = mcpServer;
+    logEvent("acp handshake ok", { mcpServer: mcpServer?.name ?? null });
+    port.onDisconnect.addListener(() => {
+      logEvent("acp native port disconnected");
+      this.connection = null;
+      this.sessions.clear();
+      this.port = null;
+      this.mcpServer = null;
+    });
 
     port.onMessage.addListener((message: unknown) => {
       if (!isToolInvoke(message) || !this.toolInvokeHandler) return;
@@ -202,6 +212,7 @@ export class AcpProvider extends BaseLLMProvider {
       const connection = await this.ensureConnection();
       const conversationKey = this.activeConversationId ?? "default";
       let sessionId = this.sessions.get(conversationKey);
+      logEvent(sessionId ? "acp session reuse" : "acp session new", { conversationKey });
       if (!sessionId) {
         const mcpServers = this.mcpServer
           ? [
@@ -250,6 +261,9 @@ export class AcpProvider extends BaseLLMProvider {
       }
       events.onDone();
     } catch (error) {
+      logEvent("acp error", {
+        message: error instanceof Error ? error.message : String(error),
+      });
       this.connection = null;
       this.sessions.clear();
       this.port = null;

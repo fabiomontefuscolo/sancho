@@ -29,6 +29,7 @@ import {
   handleSettingsGet,
   handleSettingsSet,
 } from "../src/agent/settings-handler";
+import { logEvent } from "../src/agent/log";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -49,6 +50,8 @@ async function dispatch(envelope: UiToBackground, port: chrome.runtime.Port): Pr
 
 export function handlePortConnection(port: chrome.runtime.Port): void {
   if (port.name !== UI_PORT_NAME) return;
+  logEvent("ui port connected");
+  port.onDisconnect.addListener(() => logEvent("ui port disconnected"));
   onPortEnvelope(port, (envelope: AnyEnvelope) => {
     if (envelope.kind !== "request") return;
     void dispatch(envelope as UiToBackground, port).catch((error: unknown) => {
@@ -58,6 +61,7 @@ export function handlePortConnection(port: chrome.runtime.Port): void {
 }
 
 export default defineBackground(() => {
+  logEvent("background started");
   registerHandler("chat.send", async (envelope, port) => {
     if (envelope.type !== "chat.send") return;
     await handleChatSend(envelope.payload, port);

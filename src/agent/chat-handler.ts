@@ -27,6 +27,7 @@ import {
 import type { Conversation, Message, ToolCall } from "../types";
 import { runAgentLoop } from "./loop";
 import { startKeepAlive } from "./keepalive";
+import { logEvent } from "./log";
 import { RestrictedPageError } from "./inject";
 import { executeTool } from "./tools";
 import { formatTimestamp, systemClockMessage } from "./time";
@@ -166,6 +167,7 @@ export async function handleChatSend(
   const abort = new AbortController();
   runAborts.set(conversationId, abort);
   const stopKeepAlive = startKeepAlive();
+  logEvent("run start", { conversationId, provider: provider.id });
   let assistantText = "";
 
   if (provider instanceof AcpProvider) {
@@ -284,6 +286,7 @@ export async function handleChatSend(
     );
   } finally {
     stopKeepAlive();
+    logEvent("run end", { conversationId, provider: provider.id });
   }
 
   if (assistantText) {
@@ -300,6 +303,7 @@ export async function handleChatSend(
   if (finalSession.state === "done" || finalSession.state === "stopped") {
     await clearAgentSession();
   }
+  logEvent("run finished", { conversationId, state: finalSession.state });
   runAborts.delete(conversationId);
   postToPort(
     port,

@@ -22,6 +22,9 @@ function makeFakePort(): NativePort & {
     emit(message: unknown) {
       listeners.forEach((listener) => listener(message));
     },
+    onDisconnect: {
+      addListener() {},
+    },
     disconnect() {
       this.disconnected = true;
     },
