@@ -18,7 +18,7 @@
 - Q: Should custom actions also work on non-editable selected text? → A: Both — actions on editable text replace the selection; actions on read-only text show the result in the sidebar.
 - Q: Should conversation history survive a browser restart? → A: Persistent — history survives restarts until the user clears it.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Chat Sidebar with Page-Aware Agent (Priority: P1)
 
@@ -163,7 +163,7 @@ methods, and managing actions; the page should visually resemble browser setting
 - What happens if two actions run concurrently on the same field? Concurrent replacement
   must not interleave or corrupt text.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -209,6 +209,18 @@ methods, and managing actions; the page should visually resemble browser setting
   user switches tabs, the agent's page context MUST follow the newly active tab.
 - **FR-017**: Conversation history MUST persist across browser restarts until the user
   explicitly clears it.
+- **FR-018**: The agent MUST receive the user's current local time (with timezone) on
+  every run via a system message, and every provider-bound message MUST carry a
+  human-readable timestamp prefix derived from its `createdAt`.
+- **FR-019**: When using the ACP connection method, the extension MUST expose its browser
+  tools (`read_page`, `fill_field`, `click_element`, `select_option`,
+  `capture_screenshot`) to the agent as an MCP server registered via `session/new`, with
+  tool calls relayed over the token-authenticated loopback bridge defined in
+  `contracts/acp-transport.md`, and ACP prompts MUST include a preamble describing the
+  browser-extension environment and tool availability.
+- **FR-020**: The toolbar icon MUST open the side panel on click.
+- **FR-021**: The extension UI MUST follow the host browser's light/dark theme via
+  `prefers-color-scheme`, and the options page MUST open as a full tab.
 
 ### Key Entities
 
@@ -221,7 +233,7 @@ methods, and managing actions; the page should visually resemble browser setting
 - **Agent Session**: The transient execution state of the agent loop (plan, pending
   actions, caps) for an active conversation.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
