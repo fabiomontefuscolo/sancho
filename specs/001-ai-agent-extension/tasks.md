@@ -80,13 +80,13 @@ verify streamed responses and that native form validation accepts filled values
 ### Tests for User Story 1
 
 - [x] T021 [P] [US1] Unit tests for the agent loop state machine: transitions `idle → planning → acting → verifying → planning … → done|stopped|error`, forced `stopped` at `iteration >= maxIterations` (25) with user-facing message in tests/unit/agent-loop.test.ts
-- [ ] T022 [P] [US1] Unit tests for tool executors: Zod argument validation, native event dispatch (InputEvent/ChangeEvent/MouseEvent sequence), `readPage` output capped at ~8k tokens with raw HTML stripped in tests/unit/tools.test.ts
+- [x] T022 [P] [US1] Unit tests for tool executors: Zod argument validation, native event dispatch (InputEvent/ChangeEvent/MouseEvent sequence), `readPage` output capped at ~8k tokens with raw HTML stripped in tests/unit/tools.test.ts
 - [x] T023 [P] [US1] Component tests for the side panel: streaming render, tool-call display, consent prompt on `consent_required` in tests/component/sidepanel.test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T024 [P] [US1] Implement Zod schemas and executors for readPage, fillField, clickElement, selectOption, captureScreenshot in src/agent/tools.ts per contracts/tools.md (declarative only, no eval)
-- [ ] T025 [US1] Implement captureScreenshot consent gate: fail with `{ ok: false, error: "consent_required" }` unless `Conversation.screenshotConsent === true`; image held in-memory as base64 in src/agent/tools.ts
+- [x] T024 [P] [US1] Implement Zod schemas and executors for readPage, fillField, clickElement, selectOption, captureScreenshot in src/agent/tools.ts per contracts/tools.md (declarative only, no eval)
+- [x] T025 [US1] Implement captureScreenshot consent gate: fail with `{ ok: false, error: "consent_required" }` unless `Conversation.screenshotConsent === true`; image held in-memory as base64 in src/agent/tools.ts
 - [x] T026 [US1] Implement deterministic Plan → Act → Verify loop with AgentSession persisted to local storage each iteration (service-worker-restart safe) in src/agent/loop.ts
 - [x] T027 [US1] Implement content-script handlers for `page.read` (structural minification + semantic chunking), `page.fill`, `page.click`, `page.select`, `selection.get`, `selection.replace` with native events in entrypoints/content.ts per contracts/runtime-messages.md
 - [x] T028 [US1] Build side panel UI with assistant-ui Thread wired to a custom ExternalStoreRuntime bridged over the `sancho-ui` port (chat.send/chat.delta/chat.tool/chat.done/chat.error, conversation.get/conversation.state, screenshot.consent) in entrypoints/sidepanel/main.tsx and src/ui/hooks/useSanchoRuntime.ts
@@ -162,7 +162,7 @@ shown), verify saved values restore on reopen (quickstart.md Scenario 4).
 
 ### Implementation for User Story 5
 
-- [ ] T044 [US5] Implement settings.get / settings.set handlers; settings.set MUST move API keys to local storage and return only `apiKeyRef` in entrypoints/background.ts
+- [x] T044 [US5] Implement settings.get / settings.set handlers; settings.set MUST move API keys to local storage and return only `apiKeyRef` in entrypoints/background.ts
 - [x] T045 [US5] Build the settings page layout (side-nav sections, form rows, browser-settings look) with provider picker (`openai`, `kimi`, `deepseek`, `openrouter`, `custom`), baseUrl/model fields, and ACP host/token fields in entrypoints/options/main.tsx and src/ui/components/settings/
 
 **Checkpoint**: Full configuration manageable from a browser-native-looking settings page
