@@ -35,6 +35,8 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [toolActivity, setToolActivity] = useState<string[]>([]);
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const streamingRef = useRef<Map<string, string>>(new Map());
+  const tabIdRef = useRef(tabId);
+  tabIdRef.current = tabId;
 
   useEffect(() => {
     const port = chrome.runtime.connect({ name: UI_PORT_NAME });
@@ -114,7 +116,9 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
           createdAt: new Date(),
         },
       ]);
-      portRef.current?.postMessage(makeEnvelope("request", "chat.send", { text, tabId }));
+      portRef.current?.postMessage(
+        makeEnvelope("request", "chat.send", { text, tabId: tabIdRef.current }),
+      );
     },
   });
 
