@@ -1,0 +1,18 @@
+import { defineConfig } from "vitest/config";
+import { WxtVitest } from "wxt/testing";
+
+export default defineConfig({
+  plugins: [WxtVitest()],
+  test: {
+    environment: "jsdom",
+    include: ["tests/unit/**/*.test.ts", "tests/component/**/*.test.tsx"],
+    coverage: {
+      provider: "v8",
+      include: ["src/agent/**", "src/providers/**", "src/storage/**"],
+      thresholds: {
+        statements: 80,
+        branches: 80,
+      },
+    },
+  },
+});
