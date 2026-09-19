@@ -30,6 +30,12 @@ import {
   handleSettingsSet,
 } from "../src/agent/settings-handler";
 import { logEvent } from "../src/agent/log";
+import {
+  startPersistentKeepAlive,
+  stopPersistentKeepAlive,
+  touchKeepAlive,
+} from "../src/agent/keepalive";
+import { getProviderConfig } from "../src/storage/settings";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -39,7 +45,17 @@ export function registerHandler(type: UiToBackground["type"], handler: UiHandler
   handlers.set(type, handler);
 }
 
+async function applyKeepAliveForConfig(): Promise<void> {
+  const config = await getProviderConfig();
+  if (config?.method === "acp") {
+    startPersistentKeepAlive();
+  } else {
+    stopPersistentKeepAlive();
+  }
+}
+
 async function dispatch(envelope: UiToBackground, port: chrome.runtime.Port): Promise<void> {
+  touchKeepAlive();
   const handler = handlers.get(envelope.type);
   if (!handler) {
     console.warn(`no handler for message type ${envelope.type}`);
@@ -62,6 +78,10 @@ export function handlePortConnection(port: chrome.runtime.Port): void {
 
 export default defineBackground(() => {
   logEvent("background started");
+  void applyKeepAliveForConfig();
+  chrome.storage.sync.onChanged.addListener((changes) => {
+    if ("providerConfig" in changes) void applyKeepAliveForConfig();
+  });
   registerHandler("chat.send", async (envelope, port) => {
     if (envelope.type !== "chat.send") return;
     await handleChatSend(envelope.payload, port);
