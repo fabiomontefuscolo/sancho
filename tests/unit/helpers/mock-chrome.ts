@@ -78,6 +78,7 @@ export function installMockChrome() {
       onConnect: { addListener: vi.fn() },
       onInstalled: { addListener: vi.fn() },
       onStartup: { addListener: vi.fn() },
+      getPlatformInfo: vi.fn(async () => ({ os: "linux", arch: "x86-64", nacl_arch: "x86-64" })),
       connectNative: vi.fn(() => {
         throw new Error("Specified native messaging host not found.");
       }),

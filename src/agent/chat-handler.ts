@@ -26,6 +26,7 @@ import {
 } from "../storage/conversations";
 import type { Conversation, Message, ToolCall } from "../types";
 import { runAgentLoop } from "./loop";
+import { startKeepAlive } from "./keepalive";
 import { RestrictedPageError } from "./inject";
 import { executeTool } from "./tools";
 import { formatTimestamp, systemClockMessage } from "./time";
@@ -164,6 +165,7 @@ export async function handleChatSend(
       : newAgentSession(conversationId);
   const abort = new AbortController();
   runAborts.set(conversationId, abort);
+  const stopKeepAlive = startKeepAlive();
   let assistantText = "";
 
   if (provider instanceof AcpProvider) {
@@ -216,65 +218,73 @@ export async function handleChatSend(
     });
   }
 
-  const finalSession = await runAgentLoop(
-    {
-      provider,
-      getMessages: async () => buildProviderMessages(conversation, payload.tabId),
-      signal: abort.signal,
-      onDelta: (text) => {
-        assistantText += text;
-        postToPort(
-          port,
-          makeEnvelope("event", "chat.delta", { messageId: assistantId, text, conversationId }),
-        );
-      },
-      onStateChange: () => {},
-      saveSession: saveAgentSession,
-      executeTool: async (call: ToolCall) => {
-        const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
-        postToPort(
-          port,
-          makeEnvelope("event", "chat.tool", {
-            toolCall,
-            status: "started" as const,
-            conversationId,
-          }),
-        );
-        try {
-          const result = await executeTool(toolCall.name, toolCall.arguments, toolCall.tabId);
+  let finalSession;
+  try {
+    finalSession = await runAgentLoop(
+      {
+        provider,
+        getMessages: async () => buildProviderMessages(conversation, payload.tabId),
+        signal: abort.signal,
+        onDelta: (text) => {
+          assistantText += text;
+          postToPort(
+            port,
+            makeEnvelope("event", "chat.delta", { messageId: assistantId, text, conversationId }),
+          );
+        },
+        onStateChange: () => {},
+        saveSession: saveAgentSession,
+        executeTool: async (call: ToolCall) => {
+          const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
           postToPort(
             port,
             makeEnvelope("event", "chat.tool", {
               toolCall,
-              status: "finished" as const,
+              status: "started" as const,
               conversationId,
             }),
           );
-          if (
-            typeof result === "object" &&
-            result !== null &&
-            (result as Record<string, unknown>).error === "consent_required"
-          ) {
+          try {
+            const result = await executeTool(toolCall.name, toolCall.arguments, toolCall.tabId);
             postToPort(
               port,
-              makeEnvelope("event", "chat.error", { message: "consent_required", conversationId }),
+              makeEnvelope("event", "chat.tool", {
+                toolCall,
+                status: "finished" as const,
+                conversationId,
+              }),
             );
+            if (
+              typeof result === "object" &&
+              result !== null &&
+              (result as Record<string, unknown>).error === "consent_required"
+            ) {
+              postToPort(
+                port,
+                makeEnvelope("event", "chat.error", {
+                  message: "consent_required",
+                  conversationId,
+                }),
+              );
+            }
+            await maybeAppendScreenshot(port, conversation, toolCall, result);
+            return result;
+          } catch (error) {
+            if (error instanceof RestrictedPageError) {
+              return {
+                ok: false,
+                error: "page interaction unavailable on this page (restricted)",
+              };
+            }
+            throw error;
           }
-          await maybeAppendScreenshot(port, conversation, toolCall, result);
-          return result;
-        } catch (error) {
-          if (error instanceof RestrictedPageError) {
-            return {
-              ok: false,
-              error: "page interaction unavailable on this page (restricted)",
-            };
-          }
-          throw error;
-        }
+        },
       },
-    },
-    session,
-  );
+      session,
+    );
+  } finally {
+    stopKeepAlive();
+  }
 
   if (assistantText) {
     conversation.messages.push({
