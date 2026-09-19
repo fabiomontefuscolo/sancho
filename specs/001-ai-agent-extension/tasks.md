@@ -111,15 +111,15 @@ page is untouched (quickstart.md Scenario 3).
 
 ### Tests for User Story 3
 
-- [ ] T033 [P] [US3] Unit tests for action dispatch: editable → `selection.replace`, read-only → `action.result` to chat; failure leaves selection untouched and notifies user in tests/unit/actions.test.ts
+- [x] T033 [P] [US3] Unit tests for action dispatch: editable → `selection.replace`, read-only → `action.result` to chat; failure leaves selection untouched and notifies user in tests/unit/actions.test.ts
 - [ ] T034 [P] [US3] E2E test: context-menu action on a real reactive form field replaces selection with native events in tests/e2e/selection-actions.spec.ts
 
 ### Implementation for User Story 3
 
 - [ ] T035 [US3] Register context menus from enabled Action records and rebuild the menu on every storage change in entrypoints/background.ts
-- [ ] T036 [US3] Implement action.run handler: detect `editable` via `selection.get`, run the action prompt through the provider, then `selection.replace` (editable, native events) or append result to the sidebar conversation (read-only) in entrypoints/background.ts
+- [x] T036 [US3] Implement action.run handler: detect `editable` via `selection.get`, run the action prompt through the provider, then `selection.replace` (editable, native events) or append result to the sidebar conversation (read-only) in entrypoints/background.ts
 - [ ] T037 [US3] Seed built-in actions (`improve-writing`, `make-formal`, `fix-grammar`) with `builtin: true` and their prompts on install in src/storage/settings.ts
-- [ ] T038 [US3] Guard concurrent actions on the same field so replacements cannot interleave in src/agent/actions.ts
+- [x] T038 [US3] Guard concurrent actions on the same field so replacements cannot interleave in src/agent/actions.ts
 
 **Checkpoint**: Built-in selection actions work on editable and read-only text
 

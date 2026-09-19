@@ -83,12 +83,12 @@ describe("runSelectionAction", () => {
   });
 
   it("rejects concurrent actions on the same tab", async () => {
-    let release: (() => void) | null = null;
+    let release: () => void = () => {};
     const slow = new (class extends BaseLLMProvider {
       readonly id = "slow";
       async streamChat(_m: never[], _t: never[], events: StreamEvents) {
         await new Promise<void>((resolve) => {
-          release = resolve;
+          release = resolve as () => void;
         });
         events.onDelta("late");
         events.onDone();
@@ -100,7 +100,7 @@ describe("runSelectionAction", () => {
     const second = await runSelectionAction(action, 9, deps);
     expect(second.ok).toBe(false);
     expect(second.error).toMatch(/already running/i);
-    release?.();
+    release();
     await first;
   });
 });
