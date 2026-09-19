@@ -186,4 +186,22 @@ describe("conversation handlers", () => {
     const done = port.posted.find((envelope) => envelope.type === "chat.done");
     expect((done?.payload as { conversationId: string }).conversationId).toBe(a.id);
   });
+
+  it("does not resume another conversation's agent session", async () => {
+    const a = await createConversation();
+    const b = await createConversation();
+    const { newAgentSession, saveAgentSession } = await import("../../src/storage/local");
+    const stale = newAgentSession(a.id);
+    stale.iteration = stale.maxIterations;
+    await saveAgentSession(stale);
+
+    const port = makePort();
+    await handleChatSend({ text: "for b", tabId: 1, conversationId: b.id }, port);
+    const deltas = port.posted
+      .filter((envelope) => envelope.type === "chat.delta")
+      .map((envelope) => String(envelope.payload.text))
+      .join("");
+    expect(deltas).toContain("echo:");
+    expect(deltas).not.toContain("safety limit");
+  });
 });

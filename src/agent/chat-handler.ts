@@ -157,7 +157,11 @@ export async function handleChatSend(
     return;
   }
 
-  const session = (await getAgentSession()) ?? newAgentSession(conversationId);
+  const storedSession = await getAgentSession();
+  const session =
+    storedSession && storedSession.conversationId === conversationId
+      ? storedSession
+      : newAgentSession(conversationId);
   const abort = new AbortController();
   runAborts.set(conversationId, abort);
   let assistantText = "";

@@ -105,4 +105,4 @@ US2 → US3 → US4 as independent increments, each commit-ready, finishing with
 
 ## Phase 9: Convergence
 
-- [ ] T034 Scope agent loop sessions per conversation in `src/agent/chat-handler.ts` + `src/storage/local.ts`: store sessions keyed by conversation id (or validate `session.conversationId === conversationId` before resuming and start a fresh session on mismatch), so a send in one conversation never resumes another conversation's run state per FR-012 (partial)
+- [x] T034 Scope agent loop sessions per conversation in `src/agent/chat-handler.ts` + `src/storage/local.ts`: store sessions keyed by conversation id (or validate `session.conversationId === conversationId` before resuming and start a fresh session on mismatch), so a send in one conversation never resumes another conversation's run state per FR-012 (partial)
