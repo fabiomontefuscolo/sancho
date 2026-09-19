@@ -53,12 +53,12 @@ losing conversation state (quickstart.md Scenario 2).
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Unit tests for BaseLLMProvider contract: uniform message schema, streaming deltas, tool-call parsing in tests/unit/providers.test.ts
+- [x] T014 [P] [US2] Unit tests for BaseLLMProvider contract: uniform message schema, streaming deltas, tool-call parsing in tests/unit/providers.test.ts
 - [ ] T015 [P] [US2] Unit tests for ACP transport handshake (token mismatch closes port, NDJSON framing) in tests/unit/acp.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement BaseLLMProvider abstract class (stream, message history schema, structural tool output) in src/providers/base.ts
+- [x] T016 [US2] Implement BaseLLMProvider abstract class (stream, message history schema, structural tool output) in src/providers/base.ts
 - [ ] T017 [US2] Implement OpenAI-compatible provider using Vercel AI SDK v5 (`ai` + `@ai-sdk/openai-compatible`, browser-safe build) with configurable `baseUrl` (https required, http allowed on loopback) and `model` in src/providers/openai-compatible.ts
 - [ ] T018 [US2] Implement ACP provider using `@agentclientprotocol/sdk` over Native Messaging (`chrome.runtime.connectNative` to `ProviderConfig.acp.hostName`, `{ "type": "handshake", "token" }` first message, `initialize`/`session/new`/`session/prompt`/`session/cancel`) in src/providers/acp.ts per contracts/acp-transport.md
 - [ ] T019 [US2] Implement provider factory reading ProviderConfig from sync storage and resolving ApiKey from local storage in src/providers/factory.ts

@@ -16,13 +16,13 @@ importers:
         version: 0.4.9
       '@ai-sdk/openai-compatible':
         specifier: ^1.0.0
-        version: 1.0.54(zod@3.25.76)
+        version: 1.0.54(zod@4.6.5)
       '@assistant-ui/react':
         specifier: ^0.11.0
         version: 0.11.58(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ai:
         specifier: ^5.0.0
-        version: 5.0.260(zod@3.25.76)
+        version: 5.0.260(zod@4.6.5)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -30,8 +30,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       zod:
-        specifier: ^3.24.0
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -3521,26 +3521,26 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  '@ai-sdk/gateway@2.0.153(zod@3.25.76)':
+  '@ai-sdk/gateway@2.0.153(zod@4.6.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.4
-      '@ai-sdk/provider-utils': 3.0.37(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.37(zod@4.6.5)
       '@vercel/oidc': 3.1.0
-      zod: 3.25.76
+      zod: 4.6.5
 
-  '@ai-sdk/openai-compatible@1.0.54(zod@3.25.76)':
+  '@ai-sdk/openai-compatible@1.0.54(zod@4.6.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.4
-      '@ai-sdk/provider-utils': 3.0.37(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.37(zod@4.6.5)
+      zod: 4.6.5
 
-  '@ai-sdk/provider-utils@3.0.37(zod@3.25.76)':
+  '@ai-sdk/provider-utils@3.0.37(zod@4.6.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.4
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.1.1
       undici: 5.29.0
-      zod: 3.25.76
+      zod: 4.6.5
 
   '@ai-sdk/provider@2.0.4':
     dependencies:
@@ -4644,13 +4644,13 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@5.0.260(zod@3.25.76):
+  ai@5.0.260(zod@4.6.5):
     dependencies:
-      '@ai-sdk/gateway': 2.0.153(zod@3.25.76)
+      '@ai-sdk/gateway': 2.0.153(zod@4.6.5)
       '@ai-sdk/provider': 2.0.4
-      '@ai-sdk/provider-utils': 3.0.37(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.37(zod@4.6.5)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.6.5
 
   ajv@6.15.0:
     dependencies:
