@@ -1,2 +1,12 @@
 __pycache__/
 target/
+node_modules/
+dist/
+.output/
+.wxt/
+*.log
+.env*
+coverage/
+playwright-report/
+test-results/
+.DS_Store
