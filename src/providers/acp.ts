@@ -10,6 +10,7 @@ import {
   connectAcpHost,
   openNativePort,
   type AcpHostOptions,
+  type McpServerSpec,
   type NativePort,
 } from "./acp-transport";
 
@@ -43,15 +44,40 @@ function portToStreams(port: NativePort): PortStreams {
   return { readable, writable };
 }
 
+export interface ToolInvokeRequest {
+  id: string;
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
+export type ToolInvokeHandler = (request: ToolInvokeRequest) => Promise<unknown>;
+
+function isToolInvoke(value: unknown): value is ToolInvokeRequest & { type: "tool.invoke" } {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    candidate.type === "tool.invoke" &&
+    typeof candidate.id === "string" &&
+    typeof candidate.name === "string"
+  );
+}
+
 export class AcpProvider extends BaseLLMProvider {
   readonly id = "acp";
   private readonly options: AcpHostOptions;
   private connection: ClientSideConnection | null = null;
   private sessionId: string | null = null;
+  private port: NativePort | null = null;
+  private mcpServer: McpServerSpec | null = null;
+  private toolInvokeHandler: ToolInvokeHandler | null = null;
 
   constructor(options: AcpHostOptions) {
     super();
     this.options = options;
+  }
+
+  setToolInvokeHandler(handler: ToolInvokeHandler | null): void {
+    this.toolInvokeHandler = handler;
   }
 
   private onSessionText: ((text: string) => void) | null = null;
@@ -59,7 +85,26 @@ export class AcpProvider extends BaseLLMProvider {
   private async ensureConnection(): Promise<ClientSideConnection> {
     if (this.connection) return this.connection;
     const port = openNativePort(this.options.hostName);
-    await connectAcpHost(port, this.options);
+    const { mcpServer } = await connectAcpHost(port, this.options);
+    this.port = port;
+    this.mcpServer = mcpServer;
+
+    port.onMessage.addListener((message: unknown) => {
+      if (!isToolInvoke(message) || !this.toolInvokeHandler) return;
+      const handler = this.toolInvokeHandler;
+      void handler(message)
+        .then((result) => {
+          port.postMessage({ type: "tool.result", id: message.id, result });
+        })
+        .catch((error: unknown) => {
+          port.postMessage({
+            type: "tool.result",
+            id: message.id,
+            result: { ok: false, error: error instanceof Error ? error.message : String(error) },
+          });
+        });
+    });
+
     const { readable, writable } = portToStreams(port);
     const stream = ndJsonStream(writable, readable);
     this.connection = new ClientSideConnection(
@@ -92,12 +137,30 @@ export class AcpProvider extends BaseLLMProvider {
     try {
       const connection = await this.ensureConnection();
       if (!this.sessionId) {
-        const session = await connection.newSession({ cwd: "/", mcpServers: [] });
+        const mcpServers = this.mcpServer
+          ? [
+              {
+                name: this.mcpServer.name,
+                command: this.mcpServer.command,
+                args: this.mcpServer.args,
+                env: Object.entries(this.mcpServer.env).map(([name, value]) => ({
+                  name,
+                  value,
+                })),
+              },
+            ]
+          : [];
+        const session = await connection.newSession({ cwd: "/", mcpServers });
         this.sessionId = session.sessionId;
       }
       const sessionId = this.sessionId;
       this.onSessionText = (text) => events.onDelta(text);
       const clock = systemClockMessage().content;
+      const preamble =
+        `[${clock}] You are running inside a browser extension. ` +
+        (this.mcpServer
+          ? `Use the "${this.mcpServer.name}" MCP tools (read_page, fill_field, click_element, select_option, capture_screenshot) to read and interact with the user's active browser tab.`
+          : "Browser tools are unavailable in this session.");
 
       const last = messages[messages.length - 1];
       if (!last) {
@@ -113,7 +176,7 @@ export class AcpProvider extends BaseLLMProvider {
       try {
         await connection.prompt({
           sessionId,
-          prompt: [{ type: "text", text: `[${clock}]\n\n${last.content}` }],
+          prompt: [{ type: "text", text: `${preamble}\n\n${last.content}` }],
         });
       } finally {
         signal?.removeEventListener("abort", abort);
@@ -122,6 +185,8 @@ export class AcpProvider extends BaseLLMProvider {
     } catch (error) {
       this.connection = null;
       this.sessionId = null;
+      this.port = null;
+      this.mcpServer = null;
       events.onError(error instanceof Error ? error : new Error(String(error)));
     }
   }

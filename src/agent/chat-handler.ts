@@ -1,5 +1,6 @@
 import { makeEnvelope, postToPort } from "../bridge/messages";
 import { createProvider } from "../providers/factory";
+import { AcpProvider } from "../providers/acp";
 import type { ProviderMessage } from "../providers/base";
 import {
   clearAgentSession,
@@ -84,6 +85,32 @@ export async function handleChatSend(
   const session = (await getAgentSession()) ?? newAgentSession(conversation.id);
   activeAbort = new AbortController();
   let assistantText = "";
+
+  if (provider instanceof AcpProvider) {
+    provider.setToolInvokeHandler(async (request) => {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const tabId = tab?.id ?? payload.tabId;
+      const toolCall: ToolCall = { name: request.name, arguments: request.arguments, tabId };
+      postToPort(
+        port,
+        makeEnvelope("event", "chat.tool", { toolCall, status: "started" as const }),
+      );
+      try {
+        const result = await executeTool(request.name, request.arguments, tabId);
+        postToPort(
+          port,
+          makeEnvelope("event", "chat.tool", { toolCall, status: "finished" as const }),
+        );
+        await maybeAppendScreenshot(port, conversation, toolCall, result);
+        return result;
+      } catch (error) {
+        if (error instanceof RestrictedPageError) {
+          return { ok: false, error: "page interaction unavailable on this page (restricted)" };
+        }
+        throw error;
+      }
+    });
+  }
 
   const finalSession = await runAgentLoop(
     {

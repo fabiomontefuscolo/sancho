@@ -35,7 +35,36 @@ describe("ACP native host handshake", () => {
     const pending = connectAcpHost(port, { hostName: "sancho-host", token: "abc" });
     expect(port.sent[0]).toEqual({ type: "handshake", token: "abc" });
     port.emit({ type: "handshake.ok" });
-    await expect(pending).resolves.toBe(port);
+    await expect(pending).resolves.toEqual({ port, mcpServer: null });
+  });
+
+  it("parses the mcpServer spec from handshake.ok", async () => {
+    const port = makeFakePort();
+    const pending = connectAcpHost(port, { hostName: "sancho-host" });
+    port.emit({
+      type: "handshake.ok",
+      mcpServer: {
+        name: "sancho-browser",
+        command: "/usr/bin/node",
+        args: ["/path/com.sancho.mcp_server.mjs"],
+        env: { SANCHO_BRIDGE_SOCK: "/tmp/sock" },
+      },
+    });
+    const connection = await pending;
+    expect(connection.mcpServer).toEqual({
+      name: "sancho-browser",
+      command: "/usr/bin/node",
+      args: ["/path/com.sancho.mcp_server.mjs"],
+      env: { SANCHO_BRIDGE_SOCK: "/tmp/sock" },
+    });
+  });
+
+  it("ignores malformed mcpServer payloads", async () => {
+    const port = makeFakePort();
+    const pending = connectAcpHost(port, { hostName: "sancho-host" });
+    port.emit({ type: "handshake.ok", mcpServer: { name: 5 } });
+    const connection = await pending;
+    expect(connection.mcpServer).toBeNull();
   });
 
   it("rejects when the host closes the port on token mismatch", async () => {
@@ -50,7 +79,7 @@ describe("ACP native host handshake", () => {
     const pending = connectAcpHost(port, { hostName: "sancho-host" });
     expect(port.sent[0]).toEqual({ type: "handshake" });
     port.emit({ type: "handshake.ok" });
-    await expect(pending).resolves.toBe(port);
+    await expect(pending).resolves.toEqual({ port, mcpServer: null });
   });
 
   it("times out when the host never answers", async () => {
