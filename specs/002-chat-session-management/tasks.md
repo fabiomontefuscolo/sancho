@@ -32,7 +32,7 @@ history renders and new messages append to it.
 - [x] T011 [US1] Create conversations list view in `src/ui/components/conversation-list.tsx`: renders `ConversationSummary[]` in received order, each entry showing title; clicking an entry emits `conversations.select` and switches panel view back to chat
 - [x] T012 [US1] Add top bar with hamburger icon button (top-left) in `src/ui/components/chat.tsx`; local view state `chat | list`; hamburger emits `conversations.list` and shows `ConversationList`; successful select returns to chat view
 - [x] T013 [P] [US1] Component tests in `tests/component/conversation-list.test.tsx`: hamburger opens list with entries in order; entry click sends `conversations.select` and closes list; history renders from `conversation.state`
-- [ ] T014 [US1] Unit tests for scoped chat flow in `tests/unit/chat-handler.test.ts`: send targets the given conversation id only; run events carry `conversationId`; selecting unknown id yields `chat.error` "unknown conversation"
+- [x] T014 [US1] Unit tests for scoped chat flow in `tests/unit/chat-handler.test.ts`: send targets the given conversation id only; run events carry `conversationId`; selecting unknown id yields `chat.error` "unknown conversation"
 
 ## Phase 4: User Story 2 — Start a New Conversation (P2)
 
@@ -65,10 +65,10 @@ active one lands the user in a fresh empty conversation.
 **Independent test**: delete active → empty chat; delete non-active → active unchanged;
 restart → deleted stays gone.
 
-- [ ] T021 [US4] Background handler `conversations.delete` in `src/agent/chat-handler.ts` (registered in `entrypoints/background.ts`): cancel in-flight run bound to that id (existing abort path), remove record + index entry; if active, `createConversation()` and emit empty `conversation.state`; always emit `conversations.state`
+- [x] T021 [US4] Background handler `conversations.delete` in `src/agent/chat-handler.ts` (registered in `entrypoints/background.ts`): cancel in-flight run bound to that id (existing abort path), remove record + index entry; if active, `createConversation()` and emit empty `conversation.state`; always emit `conversations.state`
 - [x] T022 [US4] Delete button on each entry in `src/ui/components/conversation-list.tsx`: emits `conversations.delete { conversationId }`; list refreshes from pushed `conversations.state` (no confirmation dialog, single-click per spec assumption)
-- [ ] T023 [US4] Redefine `chat.clear` in `src/agent/chat-handler.ts` as delete-active-and-create-fresh (equivalent to `conversations.delete` on the active id) per `contracts/conversations.md`
-- [ ] T024 [P] [US4] Unit tests in `tests/unit/conversations.test.ts`: delete removes record + index entry; deleting active creates fresh empty active conversation; deleting last conversation behaves as delete-active; deleted id never reappears after simulated restart (SC-004)
+- [x] T023 [US4] Redefine `chat.clear` in `src/agent/chat-handler.ts` as delete-active-and-create-fresh (equivalent to `conversations.delete` on the active id) per `contracts/conversations.md`
+- [x] T024 [P] [US4] Unit tests in `tests/unit/conversations.test.ts`: delete removes record + index entry; deleting active creates fresh empty active conversation; deleting last conversation behaves as delete-active; deleted id never reappears after simulated restart (SC-004)
 - [x] T025 [P] [US4] Component tests in `tests/component/conversation-list.test.tsx`: delete button sends `conversations.delete` with correct id; entry disappears on `conversations.state`
 
 ## Phase 7: Polish & Cross-Cutting
