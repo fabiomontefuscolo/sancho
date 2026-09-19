@@ -106,6 +106,7 @@ export class AcpProvider extends BaseLLMProvider {
   private activeConversationId: string | null = null;
   private sessionCreatedHandler: ((sessionId: string) => void) | null = null;
   private sessionInvalidHandler: ((conversationKey: string) => void) | null = null;
+  private disconnectHandler: (() => void) | null = null;
   private port: NativePort | null = null;
   private mcpServer: McpServerSpec | null = null;
   private toolInvokeHandler: ToolInvokeHandler | null = null;
@@ -139,6 +140,10 @@ export class AcpProvider extends BaseLLMProvider {
     this.sessionInvalidHandler = handler;
   }
 
+  setDisconnectHandler(handler: (() => void) | null): void {
+    this.disconnectHandler = handler;
+  }
+
   private onSessionText: ((text: string) => void) | null = null;
 
   private async ensureConnection(): Promise<ClientSideConnection> {
@@ -151,6 +156,7 @@ export class AcpProvider extends BaseLLMProvider {
     logEvent("acp handshake ok", { mcpServer: mcpServer?.name ?? null });
     port.onDisconnect.addListener(() => {
       logEvent("acp native port disconnected");
+      this.disconnectHandler?.();
       this.connection = null;
       for (const conversationKey of this.sessions.keys()) {
         this.sessionInvalidHandler?.(conversationKey);

@@ -18,6 +18,7 @@ vi.mock("../../src/providers/acp", () => {
     setSessionInvalidHandler(handler: unknown): void {
       this.handlers.invalid = handler as (() => void) | undefined;
     }
+    setDisconnectHandler(): void {}
     setPermissionHandler(handler: unknown): void {
       this.handlers.permission = handler;
     }

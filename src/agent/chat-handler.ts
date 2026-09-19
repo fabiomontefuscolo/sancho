@@ -196,6 +196,15 @@ export async function handleChatSend(
       conversation.acpSessionId = null;
       void saveConversationRecord(conversation);
     });
+    provider.setDisconnectHandler(() => {
+      postToPort(
+        port,
+        makeEnvelope("event", "chat.error", {
+          message: "local agent stopped — it will restart on your next message",
+          conversationId,
+        }),
+      );
+    });
     provider.setPermissionHandler((request) => requestPermissionFromUser(port, request));
     provider.setToolInvokeHandler(async (request) => {
       armWatchdog();
