@@ -178,9 +178,9 @@ test("layout: composer keeps a bottom gap", async ({ context, extensionId }) => 
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
   const gap = await panel.evaluate(() => {
-    const composer = document.querySelector(".sancho-composer");
-    if (!composer) throw new Error("composer missing");
-    return window.innerHeight - composer.getBoundingClientRect().bottom;
+    const input = document.querySelector(".sancho-input");
+    if (!input) throw new Error("composer input missing");
+    return window.innerHeight - input.getBoundingClientRect().bottom;
   });
   expect(gap).toBeGreaterThanOrEqual(8);
 });
