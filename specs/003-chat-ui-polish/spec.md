@@ -5,6 +5,12 @@
 **Status**: Draft
 **Input**: User description: "UI improvements using the assistant-ui library as much as possible, avoiding custom solutions where one is already available: (1) chat view must occupy the sidebar completely — remove side margins/padding and eliminate the double vertical scrollbar; (2) input box needs a little padding from the bottom; (3) messages show the date/time they were sent or received (e.g. 'Sat Sep 19 22:56'); (4) message content must never cause horizontal scrolling of the whole message list — images fit the message max-width, and horizontal scrolling for wide content like code blocks happens inside the message itself."
 
+## Clarifications
+
+### Session 2026-09-19
+
+- Q: For messages saved before this feature exists (no recorded send time), what should the timestamp area show? → A: Show no timestamp on legacy messages; only messages sent after this feature record and display times (no migration/backfill).
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Chat fills the sidebar with a single scrollbar (Priority: P1)
@@ -84,7 +90,7 @@ Message content adapts to the message's maximum width: images shrink to fit, and
 - **FR-002**: The sidebar MUST present exactly one vertical scrolling region — the message history. The outer view MUST NOT scroll; the header and composer MUST remain visible at all times.
 - **FR-003**: The composer (message input area) MUST have a small visible gap between its bottom edge and the bottom of the sidebar.
 - **FR-004**: Every user and assistant message MUST display the date and time it was sent or received in a compact format including day-of-week, month, day, and time (e.g. "Sat Sep 19 22:56").
-- **FR-005**: Timestamps of persisted messages MUST reflect the original send/receive time after a conversation is reloaded from storage (requires send/receive time to be recorded with the message).
+- **FR-005**: Timestamps of persisted messages MUST reflect the original send/receive time after a conversation is reloaded from storage (requires send/receive time to be recorded with the message). Messages stored before this feature (without a recorded time) MUST render without a timestamp rather than a backfilled or fallback date; no data migration is performed.
 - **FR-006**: The message list MUST NEVER display a horizontal scrollbar regardless of message content.
 - **FR-007**: Images inside messages MUST scale to fit the message's maximum width while preserving aspect ratio.
 - **FR-008**: Horizontally overflowing content such as code blocks MUST scroll horizontally only within its own container inside the message.
@@ -93,7 +99,7 @@ Message content adapts to the message's maximum width: images shrink to fit, and
 
 ### Key Entities
 
-- **Chat message**: gains (or already carries) a creation timestamp used for display; persisted with the conversation so history renders original times.
+- **Chat message**: gains (or already carries) a creation timestamp used for display; persisted with the conversation so history renders original times. The timestamp is optional — absent on messages stored before this feature.
 
 ## Success Criteria _(mandatory)_
 
@@ -110,5 +116,5 @@ Message content adapts to the message's maximum width: images shrink to fit, and
 - Timestamp display uses the user's locale conventions for day/month names and 24-hour time, matching the "Sat Sep 19 22:56" shape (day-of-week, month, day-of-month, HH:MM); seconds and year are omitted for compactness.
 - Timestamps appear in a subdued style near the message (header or footer of the bubble) so they don't compete with content.
 - Existing assistant-ui primitives (Thread, Message, Composer and their part components) already expose the layout structure needed; work is primarily configuration and CSS within those primitives rather than new components, per FR-010.
-- Messages already carry enough data to know when they were created; if not, a creation timestamp is added to the stored message shape with a sensible fallback (e.g. migration/default for old messages).
+- Messages already carry enough data to know when they were created; if not, a creation timestamp is added to the stored message shape. Legacy messages without one simply render no timestamp (clarified 2026-09-19: no backfill, no migration).
 - No changes to message content, markdown rendering features, or theming beyond what the four fixes require.
