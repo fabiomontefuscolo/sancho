@@ -6,6 +6,7 @@ export interface MockPort {
   postMessage(message: unknown): void;
   onMessage: { addListener(listener: (message: unknown) => void): void };
   onDisconnect: { addListener(listener: () => void): void };
+  disconnect(): void;
   name: string;
 }
 
@@ -23,6 +24,7 @@ export function installMockPort(): MockPort {
       },
     },
     onDisconnect: { addListener: () => {} },
+    disconnect: () => {},
     emit(message: unknown) {
       listeners.forEach((listener) => listener(message));
     },

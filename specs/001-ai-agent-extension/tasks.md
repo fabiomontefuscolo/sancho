@@ -81,7 +81,7 @@ verify streamed responses and that native form validation accepts filled values
 
 - [x] T021 [P] [US1] Unit tests for the agent loop state machine: transitions `idle → planning → acting → verifying → planning … → done|stopped|error`, forced `stopped` at `iteration >= maxIterations` (25) with user-facing message in tests/unit/agent-loop.test.ts
 - [ ] T022 [P] [US1] Unit tests for tool executors: Zod argument validation, native event dispatch (InputEvent/ChangeEvent/MouseEvent sequence), `readPage` output capped at ~8k tokens with raw HTML stripped in tests/unit/tools.test.ts
-- [ ] T023 [P] [US1] Component tests for the side panel: streaming render, tool-call display, consent prompt on `consent_required` in tests/component/sidepanel.test.tsx
+- [x] T023 [P] [US1] Component tests for the side panel: streaming render, tool-call display, consent prompt on `consent_required` in tests/component/sidepanel.test.tsx
 
 ### Implementation for User Story 1
 
@@ -89,7 +89,7 @@ verify streamed responses and that native form validation accepts filled values
 - [ ] T025 [US1] Implement captureScreenshot consent gate: fail with `{ ok: false, error: "consent_required" }` unless `Conversation.screenshotConsent === true`; image held in-memory as base64 in src/agent/tools.ts
 - [x] T026 [US1] Implement deterministic Plan → Act → Verify loop with AgentSession persisted to local storage each iteration (service-worker-restart safe) in src/agent/loop.ts
 - [x] T027 [US1] Implement content-script handlers for `page.read` (structural minification + semantic chunking), `page.fill`, `page.click`, `page.select`, `selection.get`, `selection.replace` with native events in entrypoints/content.ts per contracts/runtime-messages.md
-- [ ] T028 [US1] Build side panel UI with assistant-ui Thread wired to a custom ExternalStoreRuntime bridged over the `sancho-ui` port (chat.send/chat.delta/chat.tool/chat.done/chat.error, conversation.get/conversation.state, screenshot.consent) in entrypoints/sidepanel/main.tsx and src/ui/hooks/useSanchoRuntime.ts
+- [x] T028 [US1] Build side panel UI with assistant-ui Thread wired to a custom ExternalStoreRuntime bridged over the `sancho-ui` port (chat.send/chat.delta/chat.tool/chat.done/chat.error, conversation.get/conversation.state, screenshot.consent) in entrypoints/sidepanel/main.tsx and src/ui/hooks/useSanchoRuntime.ts
 - [ ] T029 [US1] Implement active-tab page context: `tabId` tracked per message, context follows the newly active tab in the single global conversation in entrypoints/background.ts
 - [ ] T030 [US1] Implement chat.cancel (maps to ACP `session/cancel`) and chat.clear (resets conversation AND `screenshotConsent`) in entrypoints/background.ts
 - [ ] T031 [US1] Implement graceful degradation on restricted pages: chat stays available, page tools report unavailable in entrypoints/background.ts and entrypoints/content.ts
