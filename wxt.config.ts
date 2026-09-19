@@ -5,7 +5,15 @@ export default defineConfig({
   manifest: {
     name: "Sancho",
     description: "AI agent sidebar for your browser",
-    permissions: ["storage", "activeTab", "scripting", "contextMenus", "sidePanel", "nativeMessaging", "tabs"],
-    host_permissions: [],
+    permissions: [
+      "storage",
+      "activeTab",
+      "scripting",
+      "contextMenus",
+      "sidePanel",
+      "nativeMessaging",
+      "tabs",
+    ],
+    host_permissions: ["<all_urls>"],
   },
 });

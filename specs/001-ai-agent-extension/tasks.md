@@ -112,7 +112,7 @@ page is untouched (quickstart.md Scenario 3).
 ### Tests for User Story 3
 
 - [x] T033 [P] [US3] Unit tests for action dispatch: editable → `selection.replace`, read-only → `action.result` to chat; failure leaves selection untouched and notifies user in tests/unit/actions.test.ts
-- [ ] T034 [P] [US3] E2E test: context-menu action on a real reactive form field replaces selection with native events in tests/e2e/selection-actions.spec.ts
+- [x] T034 [P] [US3] E2E test: context-menu action on a real reactive form field replaces selection with native events in tests/e2e/selection-actions.spec.ts
 
 ### Implementation for User Story 3
 

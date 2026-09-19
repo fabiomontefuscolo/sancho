@@ -29,6 +29,15 @@ function editableTargetOf(selection: Selection): HTMLElement | null {
 }
 
 function getSelectionInfo(): SelectionInfo {
+  const active = document.activeElement;
+  if (
+    (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) &&
+    active.selectionStart !== null &&
+    active.selectionEnd !== null &&
+    active.selectionEnd > active.selectionStart
+  ) {
+    return { text: active.value.slice(active.selectionStart, active.selectionEnd), editable: true };
+  }
   const selection = window.getSelection();
   const text = selection?.toString() ?? "";
   const editable = selection ? editableTargetOf(selection) !== null : false;
@@ -170,8 +179,13 @@ function handleMessage(message: { type: string; [key: string]: unknown }): unkno
       return selectOption(String(message.selector), String(message.value));
     case "selection.get": {
       const info = getSelectionInfo();
-      const selection = window.getSelection();
-      lastEditableTarget = selection ? editableTargetOf(selection) : null;
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
+        lastEditableTarget = active.selectionEnd !== active.selectionStart ? active : null;
+      } else {
+        const selection = window.getSelection();
+        lastEditableTarget = selection ? editableTargetOf(selection) : null;
+      }
       return info;
     }
     case "selection.replace":
