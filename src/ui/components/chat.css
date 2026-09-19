@@ -107,6 +107,22 @@ body,
   word-break: break-word;
 }
 
+.sancho-message img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sancho-message pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.sancho-message p,
+.sancho-message {
+  overflow-wrap: anywhere;
+}
+
 .sancho-message-user {
   align-self: flex-end;
   background: var(--chat-accent);
