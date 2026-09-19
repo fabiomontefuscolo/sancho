@@ -28,8 +28,8 @@ orchestration logic.
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [x] T007 [P] Define all data-model interfaces (ProviderConfig with `method: "api" | "acp"`, ApiKey, Action with `builtin: boolean`, Conversation with `screenshotConsent: boolean`, Message, AgentSession with states `"idle" | "planning" | "acting" | "verifying" | "done" | "stopped" | "error"` and `maxIterations` default 25, ToolCall) in src/types.ts
-- [ ] T008 Implement sync storage wrapper for ProviderConfig and Action collections in src/storage/settings.ts
-- [ ] T009 [P] Implement local storage wrapper for ApiKey (keyed by `apiKeyRef`, never synced), Conversation, and transient AgentSession in src/storage/local.ts
+- [x] T008 Implement sync storage wrapper for ProviderConfig and Action collections in src/storage/settings.ts
+- [x] T009 [P] Implement local storage wrapper for ApiKey (keyed by `apiKeyRef`, never synced), Conversation, and transient AgentSession in src/storage/local.ts
 - [ ] T010 [P] Implement typed message Envelope (`kind: "request" | "response" | "event"`, correlation `id`; unknown types ignored, malformed envelopes dropped and logged) and port helpers in src/bridge/messages.ts per contracts/runtime-messages.md
 - [ ] T011 Create background service worker entrypoint with port listener for `sancho-ui` and message router in entrypoints/background.ts (event-driven only, no persistent in-memory state)
 - [ ] T012 Implement on-demand content-script injector using chrome.scripting.executeScript with least-privilege host access in src/agent/inject.ts
