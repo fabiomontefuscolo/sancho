@@ -4,7 +4,8 @@ import { WxtVitest } from "wxt/testing";
 export default defineConfig({
   plugins: await WxtVitest(),
   test: {
-    environment: "jsdom",
+    environment: "node",
+    environmentMatchGlobs: [["tests/component/**", "jsdom"]],
     include: ["tests/unit/**/*.test.ts", "tests/component/**/*.test.tsx"],
     coverage: {
       provider: "v8",
