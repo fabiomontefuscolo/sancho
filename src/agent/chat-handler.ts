@@ -34,6 +34,9 @@ import { formatTimestamp, systemClockMessage } from "./time";
 
 const runAborts = new Map<string, AbortController>();
 
+export const RUN_WATCHDOG_MS = 60_000;
+export const WATCHDOG_MESSAGE = "agent not responding — check the local agent connection";
+
 function abortRun(conversationId: string | null): boolean {
   if (!conversationId) return false;
   const controller = runAborts.get(conversationId);
@@ -168,6 +171,19 @@ export async function handleChatSend(
   runAborts.set(conversationId, abort);
   const stopKeepAlive = startKeepAlive();
   logEvent("run start", { conversationId, provider: provider.id });
+  let watchdog: ReturnType<typeof setTimeout> | null = null;
+  const armWatchdog = () => {
+    if (watchdog) clearTimeout(watchdog);
+    watchdog = setTimeout(() => {
+      logEvent("run watchdog fired", { conversationId });
+      postToPort(
+        port,
+        makeEnvelope("event", "chat.error", { message: WATCHDOG_MESSAGE, conversationId }),
+      );
+      abortRun(conversationId);
+    }, RUN_WATCHDOG_MS);
+  };
+  armWatchdog();
   let assistantText = "";
 
   if (provider instanceof AcpProvider) {
@@ -178,6 +194,7 @@ export async function handleChatSend(
     });
     provider.setPermissionHandler((request) => requestPermissionFromUser(port, request));
     provider.setToolInvokeHandler(async (request) => {
+      armWatchdog();
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const tabId = tab?.id ?? payload.tabId;
       const toolCall: ToolCall = { name: request.name, arguments: request.arguments, tabId };
@@ -228,6 +245,7 @@ export async function handleChatSend(
         getMessages: async () => buildProviderMessages(conversation, payload.tabId),
         signal: abort.signal,
         onDelta: (text) => {
+          armWatchdog();
           assistantText += text;
           postToPort(
             port,
@@ -237,6 +255,7 @@ export async function handleChatSend(
         onStateChange: () => {},
         saveSession: saveAgentSession,
         executeTool: async (call: ToolCall) => {
+          armWatchdog();
           const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
           postToPort(
             port,
@@ -285,6 +304,7 @@ export async function handleChatSend(
       session,
     );
   } finally {
+    if (watchdog) clearTimeout(watchdog);
     stopKeepAlive();
     logEvent("run end", { conversationId, provider: provider.id });
   }
