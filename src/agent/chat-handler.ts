@@ -144,6 +144,11 @@ export async function handleChatSend(
   let assistantText = "";
 
   if (provider instanceof AcpProvider) {
+    provider.useConversation(conversationId, conversation.acpSessionId);
+    provider.setSessionCreatedHandler((sessionId) => {
+      conversation.acpSessionId = sessionId;
+      void saveConversationRecord(conversation);
+    });
     provider.setPermissionHandler((request) => requestPermissionFromUser(port, request));
     provider.setToolInvokeHandler(async (request) => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

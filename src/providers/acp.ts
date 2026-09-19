@@ -96,7 +96,9 @@ export class AcpProvider extends BaseLLMProvider {
   readonly id = "acp";
   private readonly options: AcpHostOptions;
   private connection: ClientSideConnection | null = null;
-  private sessionId: string | null = null;
+  private sessions = new Map<string, string>();
+  private activeConversationId: string | null = null;
+  private sessionCreatedHandler: ((sessionId: string) => void) | null = null;
   private port: NativePort | null = null;
   private mcpServer: McpServerSpec | null = null;
   private toolInvokeHandler: ToolInvokeHandler | null = null;
@@ -113,6 +115,17 @@ export class AcpProvider extends BaseLLMProvider {
 
   setPermissionHandler(handler: PermissionHandler | null): void {
     this.permissionHandler = handler;
+  }
+
+  useConversation(conversationId: string, knownSessionId: string | null): void {
+    this.activeConversationId = conversationId;
+    if (knownSessionId && !this.sessions.has(conversationId)) {
+      this.sessions.set(conversationId, knownSessionId);
+    }
+  }
+
+  setSessionCreatedHandler(handler: ((sessionId: string) => void) | null): void {
+    this.sessionCreatedHandler = handler;
   }
 
   private onSessionText: ((text: string) => void) | null = null;
@@ -187,7 +200,9 @@ export class AcpProvider extends BaseLLMProvider {
   ): Promise<void> {
     try {
       const connection = await this.ensureConnection();
-      if (!this.sessionId) {
+      const conversationKey = this.activeConversationId ?? "default";
+      let sessionId = this.sessions.get(conversationKey);
+      if (!sessionId) {
         const mcpServers = this.mcpServer
           ? [
               {
@@ -202,9 +217,10 @@ export class AcpProvider extends BaseLLMProvider {
             ]
           : [];
         const session = await connection.newSession({ cwd: "/", mcpServers });
-        this.sessionId = session.sessionId;
+        sessionId = session.sessionId;
+        this.sessions.set(conversationKey, sessionId);
+        this.sessionCreatedHandler?.(sessionId);
       }
-      const sessionId = this.sessionId;
       this.onSessionText = (text) => events.onDelta(text);
       const clock = systemClockMessage().content;
       const preamble =
@@ -235,7 +251,7 @@ export class AcpProvider extends BaseLLMProvider {
       events.onDone();
     } catch (error) {
       this.connection = null;
-      this.sessionId = null;
+      this.sessions.clear();
       this.port = null;
       this.mcpServer = null;
       events.onError(error instanceof Error ? error : new Error(String(error)));
@@ -243,12 +259,14 @@ export class AcpProvider extends BaseLLMProvider {
   }
 
   async cancelSession(): Promise<void> {
-    if (this.connection && this.sessionId) {
-      await this.connection.cancel({ sessionId: this.sessionId });
+    const conversationKey = this.activeConversationId ?? "default";
+    const sessionId = this.sessions.get(conversationKey);
+    if (this.connection && sessionId) {
+      await this.connection.cancel({ sessionId });
     }
   }
 
   resetSession(): void {
-    this.sessionId = null;
+    this.sessions.clear();
   }
 }

@@ -74,7 +74,7 @@ restart → deleted stays gone.
 ## Phase 7: Polish & Cross-Cutting
 
 - [x] T026 Remove legacy single-conversation helpers (`getConversation`, `saveConversation`, `clearConversation`, `emptyConversation`) from `src/storage/local.ts` and migrate all callers to `src/storage/conversations.ts`; keep API-key and agent-session helpers
-- [ ] T027 ACP session binding per research decision 5 in `src/providers/acp.ts` + `src/agent/chat-handler.ts`: `session/new` keyed by conversation id; persist `acpSessionId` on the conversation record; resuming reuses the stored session; new conversation starts a new session
+- [x] T027 ACP session binding per research decision 5 in `src/providers/acp.ts` + `src/agent/chat-handler.ts`: `session/new` keyed by conversation id; persist `acpSessionId` on the conversation record; resuming reuses the stored session; new conversation starts a new session
 - [ ] T028 E2E test in `tests/e2e/conversations.spec.ts` per `quickstart.md`: two conversations via chat sends; hamburger opens list with recency order and derived titles; select older renders its history; delete active yields empty chat; fresh browser context confirms persistence (SC-003) and deleted-id absence (SC-004); latency assertions: list render < 1s after hamburger click with ~100 seeded conversations (SC-001) and history render < 1s after selecting a conversation (SC-002)
 - [x] T029 Push `conversations.state` after any message append that changes ordering or title in `src/agent/chat-handler.ts` (contract invariant: list always current)
 - [ ] T030 Validate gates: `pnpm exec vitest run --coverage` (≥80% statements/branches on `src/agent`, `src/providers`, `src/storage`), `pnpm lint`, `pnpm typecheck`, `pnpm build`
