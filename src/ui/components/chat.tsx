@@ -4,15 +4,25 @@ import {
   ComposerPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
+  useMessage,
 } from "@assistant-ui/react";
 import { useSanchoRuntime } from "../hooks/useSanchoRuntime";
+import { formatMessageTime } from "../utils/format-time";
 import { ConversationList } from "./conversation-list";
 import "./chat.css";
+
+function MessageTimestamp() {
+  const createdAt = useMessage((state) => state.createdAt);
+  const epochMs = createdAt instanceof Date ? createdAt.getTime() : Number.NaN;
+  if (Number.isNaN(epochMs)) return null;
+  return <div className="sancho-message-time">{formatMessageTime(epochMs)}</div>;
+}
 
 function UserMessage() {
   return (
     <MessagePrimitive.Root className="sancho-message sancho-message-user">
       <MessagePrimitive.Parts />
+      <MessageTimestamp />
     </MessagePrimitive.Root>
   );
 }
@@ -21,6 +31,7 @@ function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="sancho-message sancho-message-assistant">
       <MessagePrimitive.Parts />
+      <MessageTimestamp />
     </MessagePrimitive.Root>
   );
 }

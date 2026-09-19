@@ -123,6 +123,17 @@ body,
   overflow-wrap: anywhere;
 }
 
+.sancho-message-time {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--chat-text-secondary);
+}
+
+.sancho-message-user .sancho-message-time {
+  color: color-mix(in srgb, var(--chat-accent-text) 75%, transparent);
+  text-align: right;
+}
+
 .sancho-message-user {
   align-self: flex-end;
   background: var(--chat-accent);
