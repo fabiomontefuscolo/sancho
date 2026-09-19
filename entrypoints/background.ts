@@ -17,6 +17,13 @@ import {
   runActionById,
   setActiveUiPort,
 } from "../src/agent/action-handler";
+import {
+  handleActionDelete,
+  handleActionsList,
+  handleActionUpsert,
+  handleSettingsGet,
+  handleSettingsSet,
+} from "../src/agent/settings-handler";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -60,6 +67,20 @@ export default defineBackground(() => {
   registerHandler("action.run", async (envelope, port) => {
     if (envelope.type !== "action.run") return;
     await runActionById(envelope.payload.actionId, envelope.payload.tabId, port);
+  });
+  registerHandler("actions.list", async (_envelope, port) => handleActionsList(port));
+  registerHandler("actions.upsert", async (envelope, port) => {
+    if (envelope.type !== "actions.upsert") return;
+    await handleActionUpsert(envelope.payload.action, port);
+  });
+  registerHandler("actions.delete", async (envelope, port) => {
+    if (envelope.type !== "actions.delete") return;
+    await handleActionDelete(envelope.payload.actionId, port);
+  });
+  registerHandler("settings.get", async (_envelope, port) => handleSettingsGet(port));
+  registerHandler("settings.set", async (envelope, port) => {
+    if (envelope.type !== "settings.set") return;
+    await handleSettingsSet(envelope.payload, port);
   });
   chrome.runtime.onConnect.addListener((port) => {
     handlePortConnection(port);

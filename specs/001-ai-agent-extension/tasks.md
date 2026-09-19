@@ -141,7 +141,7 @@ Scenario 3, step 3).
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Implement actions.list / actions.upsert / actions.delete message handlers over the `sancho-ui` port with validation in entrypoints/background.ts
+- [x] T041 [US4] Implement actions.list / actions.upsert / actions.delete message handlers over the `sancho-ui` port with validation in entrypoints/background.ts
 - [ ] T042 [US4] Build the action management UI (list, editor form, enable/disable toggle) as part of the options page in entrypoints/options/main.tsx
 
 **Checkpoint**: Custom actions are manageable and immediately usable from the context menu
