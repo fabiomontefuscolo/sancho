@@ -1,4 +1,5 @@
 import { ClientSideConnection, ndJsonStream, PROTOCOL_VERSION } from "@agentclientprotocol/sdk";
+import { systemClockMessage } from "../agent/time";
 import {
   BaseLLMProvider,
   type ProviderMessage,
@@ -96,6 +97,7 @@ export class AcpProvider extends BaseLLMProvider {
       }
       const sessionId = this.sessionId;
       this.onSessionText = (text) => events.onDelta(text);
+      const clock = systemClockMessage().content;
 
       const last = messages[messages.length - 1];
       if (!last) {
@@ -111,7 +113,7 @@ export class AcpProvider extends BaseLLMProvider {
       try {
         await connection.prompt({
           sessionId,
-          prompt: [{ type: "text", text: last.content }],
+          prompt: [{ type: "text", text: `[${clock}]\n\n${last.content}` }],
         });
       } finally {
         signal?.removeEventListener("abort", abort);
