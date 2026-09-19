@@ -31,8 +31,8 @@ describe("SettingsPanel", () => {
   it("shows only API fields when the api method is selected", async () => {
     render(<SettingsPanel bridge={makeBridge()} />);
     await userEvent.click(screen.getByRole("radio", { name: /api key/i }));
-    expect(screen.getByLabelText(/provider/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/api key/i, { selector: "input" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/^provider$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^api key$/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/native host/i)).not.toBeInTheDocument();
   });
 
@@ -40,12 +40,12 @@ describe("SettingsPanel", () => {
     render(<SettingsPanel bridge={makeBridge()} />);
     await userEvent.click(screen.getByRole("radio", { name: /local agent/i }));
     expect(screen.getByLabelText(/native host/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/provider/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^provider$/i)).not.toBeInTheDocument();
   });
 
   it("restores saved values on load", () => {
     render(<SettingsPanel bridge={makeBridge(savedConfig, true)} />);
-    expect(screen.getByLabelText(/provider/i)).toHaveValue("kimi");
+    expect(screen.getByLabelText(/^provider$/i)).toHaveValue("kimi");
     expect(screen.getByLabelText(/model/i)).toHaveValue("kimi-k2");
     expect(screen.getByLabelText(/endpoint/i)).toHaveValue("https://api.moonshot.ai/v1");
   });
@@ -54,7 +54,7 @@ describe("SettingsPanel", () => {
     const bridge = makeBridge();
     render(<SettingsPanel bridge={bridge} />);
     await userEvent.click(screen.getByRole("radio", { name: /api key/i }));
-    await userEvent.selectOptions(screen.getByLabelText(/provider/i), "deepseek");
+    await userEvent.selectOptions(screen.getByLabelText(/^provider$/i), "deepseek");
     await userEvent.type(screen.getByLabelText(/model/i), "deepseek-chat");
     await userEvent.type(screen.getByLabelText(/^api key$/i), "sk-test");
     await userEvent.click(screen.getByRole("button", { name: /save/i }));
@@ -75,7 +75,7 @@ describe("SettingsPanel", () => {
   it("prefills the default endpoint when switching providers", async () => {
     render(<SettingsPanel bridge={makeBridge()} />);
     await userEvent.click(screen.getByRole("radio", { name: /api key/i }));
-    await userEvent.selectOptions(screen.getByLabelText(/provider/i), "openrouter");
+    await userEvent.selectOptions(screen.getByLabelText(/^provider$/i), "openrouter");
     expect(screen.getByLabelText(/endpoint/i)).toHaveValue("https://openrouter.ai/api/v1");
   });
 });

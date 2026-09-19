@@ -1,0 +1,64 @@
+import { StrictMode, useMemo } from "react";
+import { createRoot } from "react-dom/client";
+import { ActionManager, type OptionsBridge } from "../../src/ui/components/action-manager";
+import { SettingsPanel, type SettingsBridge } from "../../src/ui/components/settings-panel";
+import { useOptionsBridge } from "../../src/ui/hooks/useOptionsBridge";
+import type { Action } from "../../src/types";
+import type { ProviderConfig } from "../../src/types";
+import "./options.css";
+
+function OptionsPage() {
+  const bridge = useOptionsBridge();
+
+  const actionBridge = useMemo<OptionsBridge>(
+    () => ({
+      requestActions: () => {},
+      upsertAction: (action: Action) => bridge.upsertAction(action),
+      deleteAction: (actionId: string) => bridge.deleteAction(actionId),
+      onActions: (listener) => bridge.subscribeActions(listener),
+    }),
+    [bridge],
+  );
+
+  const settingsBridge = useMemo<SettingsBridge>(
+    () => ({
+      requestSettings: () => {},
+      saveSettings: (config: ProviderConfig, apiKey?: string) =>
+        bridge.saveSettings(config, apiKey),
+      onSettings: (listener) => bridge.subscribeSettings(listener),
+    }),
+    [bridge],
+  );
+
+  return (
+    <div className="options-layout">
+      <nav className="options-nav">
+        <h1>Sancho</h1>
+        <a href="#connection">Connection</a>
+        <a href="#actions">Actions</a>
+      </nav>
+      <main className="options-main">
+        {bridge.error && (
+          <div className="options-error" role="alert">
+            {bridge.error}
+            <button onClick={bridge.clearError}>Dismiss</button>
+          </div>
+        )}
+        <div id="connection">
+          <SettingsPanel bridge={settingsBridge} />
+        </div>
+        <div id="actions">
+          <ActionManager bridge={actionBridge} />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("missing #root");
+createRoot(rootElement).render(
+  <StrictMode>
+    <OptionsPage />
+  </StrictMode>,
+);

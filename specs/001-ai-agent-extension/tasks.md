@@ -158,12 +158,12 @@ shown), verify saved values restore on reopen (quickstart.md Scenario 4).
 
 ### Tests for User Story 5
 
-- [ ] T043 [P] [US5] Component tests: method switch toggles api/acp field groups; settings persist and restore via settings.get/settings.set in tests/component/options.test.tsx
+- [x] T043 [P] [US5] Component tests: method switch toggles api/acp field groups; settings persist and restore via settings.get/settings.set in tests/component/options.test.tsx
 
 ### Implementation for User Story 5
 
 - [ ] T044 [US5] Implement settings.get / settings.set handlers; settings.set MUST move API keys to local storage and return only `apiKeyRef` in entrypoints/background.ts
-- [ ] T045 [US5] Build the settings page layout (side-nav sections, form rows, browser-settings look) with provider picker (`openai`, `kimi`, `deepseek`, `openrouter`, `custom`), baseUrl/model fields, and ACP host/token fields in entrypoints/options/main.tsx and src/ui/components/settings/
+- [x] T045 [US5] Build the settings page layout (side-nav sections, form rows, browser-settings look) with provider picker (`openai`, `kimi`, `deepseek`, `openrouter`, `custom`), baseUrl/model fields, and ACP host/token fields in entrypoints/options/main.tsx and src/ui/components/settings/
 
 **Checkpoint**: Full configuration manageable from a browser-native-looking settings page
 

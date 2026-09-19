@@ -1,0 +1,170 @@
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: #f8f9fa;
+  color: #1f1f1f;
+}
+
+.options-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.options-nav {
+  width: 220px;
+  padding: 24px 16px;
+  border-right: 1px solid #e8eaed;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.options-nav h1 {
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+.options-nav a {
+  color: #1f1f1f;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.options-nav a:hover {
+  background: #f1f3f4;
+}
+
+.options-main {
+  flex: 1;
+  max-width: 720px;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.options-section {
+  background: #fff;
+  border: 1px solid #e8eaed;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.options-section h2 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.method-picker {
+  border: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.method-picker label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.settings-grid label,
+.action-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #5f6368;
+}
+
+.settings-grid input,
+.settings-grid select,
+.action-form input,
+.action-form textarea {
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  background: #1a73e8;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #dadce0;
+  cursor: default;
+}
+
+.action-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f3f4;
+  font-size: 14px;
+}
+
+.action-name {
+  flex: 1;
+}
+
+.action-badge {
+  font-size: 11px;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  padding: 1px 8px;
+}
+
+.action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 480px;
+}
+
+.saved-indicator {
+  margin-left: 10px;
+  color: #137333;
+  font-size: 13px;
+}
+
+.options-error {
+  background: #fce8e6;
+  border: 1px solid #f5c6c2;
+  color: #a50e0e;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
