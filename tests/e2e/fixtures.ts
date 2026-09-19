@@ -10,7 +10,7 @@ export const test = base.extend<{ context: BrowserContext; extensionId: string }
     if (!fs.existsSync(path.join(extensionPath, "manifest.json"))) {
       throw new Error("Extension not built. Run `pnpm build` before `pnpm test:e2e`.");
     }
-    const userDataDir = path.resolve("test-results/.userdata");
+    const userDataDir = path.resolve(`test-results/.userdata-${crypto.randomUUID()}`);
     const context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
       args: [

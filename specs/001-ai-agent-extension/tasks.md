@@ -171,7 +171,7 @@ shown), verify saved values restore on reopen (quickstart.md Scenario 4).
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T046 [P] E2E test for loop-cap simulation: runaway loop stops at 25 iterations with user-facing stop message in tests/e2e/agent-loop.spec.ts
+- [x] T046 [P] E2E test for loop-cap simulation: runaway loop stops at 25 iterations with user-facing stop message in tests/e2e/agent-loop.spec.ts
 - [ ] T047 [P] E2E test for screenshot consent flow: prompt → grant → works for conversation → cleared conversation requires consent again in tests/e2e/screenshot-consent.spec.ts
 - [ ] T048 Verify coverage gates (≥80% statements/branches on src/agent, src/providers, src/storage) and wire into CI in vitest.config.ts
 - [ ] T049 [P] Restricted-page degradation E2E on chrome:// and web store pages in tests/e2e/restricted-pages.spec.ts
