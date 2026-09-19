@@ -32,7 +32,7 @@ orchestration logic.
 - [x] T009 [P] Implement local storage wrapper for ApiKey (keyed by `apiKeyRef`, never synced), Conversation, and transient AgentSession in src/storage/local.ts
 - [x] T010 [P] Implement typed message Envelope (`kind: "request" | "response" | "event"`, correlation `id`; unknown types ignored, malformed envelopes dropped and logged) and port helpers in src/bridge/messages.ts per contracts/runtime-messages.md
 - [x] T011 Create background service worker entrypoint with port listener for `sancho-ui` and message router in entrypoints/background.ts (event-driven only, no persistent in-memory state)
-- [ ] T012 Implement on-demand content-script injector using chrome.scripting.executeScript with least-privilege host access in src/agent/inject.ts
+- [x] T012 Implement on-demand content-script injector using chrome.scripting.executeScript with least-privilege host access in src/agent/inject.ts
 - [ ] T013 [P] Unit tests for storage wrappers and message envelope round-trip in tests/unit/storage.test.ts and tests/unit/messages.test.ts
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
