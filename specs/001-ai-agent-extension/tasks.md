@@ -137,12 +137,12 @@ Scenario 3, step 3).
 ### Tests for User Story 4
 
 - [x] T039 [P] [US4] Unit tests for Action CRUD validation: name uniqueness, length limits, built-ins can be hidden (`enabled: false`) but not deleted in tests/unit/action-crud.test.ts
-- [ ] T040 [P] [US4] Component test for the action editor form (create, edit, delete flows) in tests/component/action-editor.test.tsx
+- [x] T040 [P] [US4] Component test for the action editor form (create, edit, delete flows) in tests/component/action-editor.test.tsx
 
 ### Implementation for User Story 4
 
 - [x] T041 [US4] Implement actions.list / actions.upsert / actions.delete message handlers over the `sancho-ui` port with validation in entrypoints/background.ts
-- [ ] T042 [US4] Build the action management UI (list, editor form, enable/disable toggle) as part of the options page in entrypoints/options/main.tsx
+- [x] T042 [US4] Build the action management UI (list, editor form, enable/disable toggle) as part of the options page in entrypoints/options/main.tsx
 
 **Checkpoint**: Custom actions are manageable and immediately usable from the context menu
 

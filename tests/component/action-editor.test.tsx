@@ -38,7 +38,7 @@ describe("ActionManager", () => {
     expect(screen.getByText("Fix grammar")).toBeInTheDocument();
 
     await userEvent.type(screen.getByLabelText(/action name/i), "Translate to Spanish");
-    await userEvent.type(screen.getByLabelText(/prompt/i), "Translate: {{selection}}");
+    await userEvent.type(screen.getByLabelText(/prompt/i), "Translate: {{{{selection}}");
     await userEvent.click(screen.getByRole("button", { name: /add action/i }));
 
     expect(bridge.upsertAction).toHaveBeenCalledWith(
