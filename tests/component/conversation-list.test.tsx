@@ -121,6 +121,30 @@ describe("ConversationList", () => {
     );
   });
 
+  it("permission banner is visible and actionable while the list view is open", async () => {
+    render(<ChatPanel tabId={7} />);
+    await openList(port);
+    port.emit({
+      kind: "event",
+      type: "permission.request",
+      id: "p1",
+      payload: {
+        requestId: "perm-list",
+        title: "run command",
+        options: [{ optionId: "allow-once", name: "Allow once", kind: "allow_once" }],
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/run command/)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "Allow once" }));
+    expect(port.sent).toContainEqual(
+      expect.objectContaining({
+        type: "permission.response",
+        payload: { requestId: "perm-list", optionId: "allow-once" },
+      }),
+    );
+    expect(screen.getByRole("button", { name: "newer chat" })).toBeInTheDocument();
+  });
+
   it("list refreshes from pushed conversations.state after delete", async () => {
     render(<ChatPanel tabId={7} />);
     await openList(port);
