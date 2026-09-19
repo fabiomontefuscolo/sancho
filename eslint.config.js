@@ -6,7 +6,15 @@ import prettier from "eslint-config-prettier";
 
 export default [
   {
-    ignores: [".output/", ".wxt/", "node_modules/", "dist/", "coverage/", "playwright-report/", "test-results/"],
+    ignores: [
+      ".output/",
+      ".wxt/",
+      "node_modules/",
+      "dist/",
+      "coverage/",
+      "playwright-report/",
+      "test-results/",
+    ],
   },
   js.configs.recommended,
   {
@@ -29,6 +37,12 @@ export default [
       "no-undef": "off",
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/explicit-function-return-type": "off",
+    },
+  },
+  {
+    files: ["tests/e2e/**/*.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
     },
   },
   {

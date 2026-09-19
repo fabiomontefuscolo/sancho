@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import { WxtVitest } from "wxt/testing";
 
 export default defineConfig({
-  plugins: [WxtVitest()],
+  plugins: await WxtVitest(),
   test: {
     environment: "jsdom",
     include: ["tests/unit/**/*.test.ts", "tests/component/**/*.test.tsx"],
