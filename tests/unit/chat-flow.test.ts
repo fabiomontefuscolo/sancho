@@ -49,7 +49,11 @@ describe("chat.send flow", () => {
 
     expect(
       port.posted.some(
-        (envelope) => envelope.type === "chat.delta" && envelope.payload.text === "echo: hello",
+        (envelope) =>
+          envelope.type === "chat.delta" &&
+          typeof envelope.payload.text === "string" &&
+          envelope.payload.text.startsWith("echo: [") &&
+          envelope.payload.text.endsWith("] hello"),
       ),
     ).toBe(true);
     expect(port.posted.some((envelope) => envelope.type === "chat.done")).toBe(true);
@@ -57,6 +61,30 @@ describe("chat.send flow", () => {
     const conversation = await getConversation();
     expect(conversation.messages).toHaveLength(2);
     expect(conversation.messages[1]?.role).toBe("assistant");
+  });
+
+  it("prepends a system clock message with the active tab context", async () => {
+    let received: { role: string; content: string }[] = [];
+    class InspectProvider extends BaseLLMProvider {
+      readonly id = "inspect";
+      async streamChat(
+        messages: { role: string; content: string }[],
+        _tools: never[],
+        events: StreamEvents,
+      ) {
+        received = messages;
+        events.onDelta("ok");
+        events.onDone();
+      }
+    }
+    vi.mocked(createProvider).mockResolvedValue(new InspectProvider());
+    const port = makePort();
+    await handleChatSend({ text: "hi", tabId: 1 }, port);
+
+    expect(received[0]?.role).toBe("system");
+    expect(received[0]?.content).toContain("Current local time:");
+    expect(received[0]?.content).toContain("UTC");
+    expect(received[1]?.content).toMatch(/^\[\d{2}:\d{2}\] hi$/);
   });
 
   it("emits chat.error when no provider is configured", async () => {

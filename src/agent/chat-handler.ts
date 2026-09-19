@@ -14,6 +14,7 @@ import type { Conversation, Message, ToolCall } from "../types";
 import { runAgentLoop } from "./loop";
 import { RestrictedPageError } from "./inject";
 import { executeTool } from "./tools";
+import { formatTimestamp, systemClockMessage } from "./time";
 
 let activeAbort: AbortController | null = null;
 
@@ -31,11 +32,27 @@ function toProviderMessages(conversation: Conversation): ProviderMessage[] {
     const result: ProviderMessage = {
       role:
         message.role === "system" ? "system" : message.role === "assistant" ? "assistant" : "user",
-      content: text,
+      content: `${formatTimestamp(message.createdAt)} ${text}`,
     };
     if (image && image.type === "image") result.imageBase64 = image.imageBase64;
     return result;
   });
+}
+
+async function buildProviderMessages(
+  conversation: Conversation,
+  tabId: number,
+): Promise<ProviderMessage[]> {
+  let title: string | undefined;
+  let url: string | undefined;
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    title = tab.title ?? undefined;
+    url = tab.url ?? undefined;
+  } catch {
+    // restricted or missing tab: clock still works without tab context
+  }
+  return [systemClockMessage(title, url), ...toProviderMessages(conversation)];
 }
 
 export async function handleChatSend(
@@ -71,7 +88,7 @@ export async function handleChatSend(
   const finalSession = await runAgentLoop(
     {
       provider,
-      getMessages: async () => toProviderMessages(conversation),
+      getMessages: async () => buildProviderMessages(conversation, payload.tabId),
       signal: activeAbort.signal,
       onDelta: (text) => {
         assistantText += text;
