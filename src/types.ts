@@ -18,6 +18,12 @@ export interface ApiKey {
   key: string;
 }
 
+export type FontSize = "small" | "medium" | "large";
+
+export interface UiPrefs {
+  fontSize: FontSize;
+}
+
 export interface Action {
   id: string;
   name: string;

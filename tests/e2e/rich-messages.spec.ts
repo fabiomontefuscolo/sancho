@@ -98,3 +98,68 @@ test("rendered markdown never scrolls the message list horizontally", async ({
   expect(metrics.viewportScrollWidth).toBe(metrics.viewportClientWidth);
   expect(metrics.bodyScrollWidth).toBe(metrics.bodyClientWidth);
 });
+
+test("font size applies immediately, syncs, and persists across reload", async ({
+  context,
+  extensionId,
+}) => {
+  const panel = await context.newPage();
+  await panel.setViewportSize({ width: 360, height: 600 });
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await seedConversation(panel, [assistantMessage("m1", "some **markdown** text")]);
+
+  await panel.getByRole("button", { name: /settings/i }).click();
+  await panel.getByRole("combobox", { name: /font size/i }).selectOption("large");
+  await panel.getByRole("button", { name: /back to chat/i }).click();
+
+  await expect(panel.locator(".sancho-chat-root")).toHaveClass(/sancho-font-large/);
+
+  await panel.reload();
+  await expect(panel.locator(".sancho-chat-root")).toHaveClass(/sancho-font-large/);
+
+  const metrics = await panel.evaluate(() => {
+    const viewport = document.querySelector(".sancho-viewport");
+    if (!viewport) throw new Error("viewport missing");
+    return {
+      scrollWidth: viewport.scrollWidth,
+      clientWidth: viewport.clientWidth,
+      timestamps: document.querySelectorAll(".sancho-message-time").length,
+    };
+  });
+  expect(metrics.scrollWidth).toBe(metrics.clientWidth);
+  expect(metrics.timestamps).toBe(1);
+});
+
+test("100 markdown-rich messages render under one second", async ({ context, extensionId }) => {
+  const panel = await context.newPage();
+  await panel.setViewportSize({ width: 360, height: 600 });
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  const messages = Array.from({ length: 100 }, (_, index) =>
+    assistantMessage(
+      `m${index}`,
+      `## Heading ${index}\n\n- item one\n- item two\n\n\`\`\`typescript\nconst value${index}: number = ${index};\n\`\`\`\n\nSome **bold** and a [link](https://example.com).`,
+    ),
+  );
+  await seedConversation(panel, messages);
+
+  const renderMs = await panel.evaluate(async () => {
+    const start = performance.now();
+    await new Promise<void>((resolve) => {
+      const check = () => {
+        if (document.querySelectorAll(".sancho-message").length >= 100) resolve();
+        else requestAnimationFrame(check);
+      };
+      check();
+    });
+    return performance.now() - start;
+  });
+  await expect(panel.locator(".sancho-message")).toHaveCount(100);
+  expect(renderMs).toBeLessThan(1000);
+
+  const viewport = await panel.evaluate(() => {
+    const el = document.querySelector(".sancho-viewport");
+    if (!el) throw new Error("viewport missing");
+    return { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth };
+  });
+  expect(viewport.scrollWidth).toBe(viewport.clientWidth);
+});

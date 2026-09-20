@@ -25,6 +25,8 @@ function MessageCopyButton() {
   );
 }
 import { ConversationList } from "./conversation-list";
+import { SettingsView } from "./settings-view";
+import { useUiPrefs } from "../hooks/use-ui-prefs";
 import "./chat.css";
 
 function MessageTimestamp() {
@@ -69,12 +71,13 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     deleteConversation,
     getMessageRawText,
   } = useSanchoRuntime(tabId);
-  const [view, setView] = useState<"chat" | "list">("chat");
+  const { prefs, setFontSize } = useUiPrefs();
+  const [view, setView] = useState<"chat" | "list" | "settings">("chat");
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <RawTextContext.Provider value={getMessageRawText}>
-        <div className="sancho-chat-root">
+        <div className={`sancho-chat-root sancho-font-${prefs.fontSize}`}>
           <div className="sancho-topbar">
             <button
               aria-label="Open conversations"
@@ -85,6 +88,13 @@ export function ChatPanel({ tabId }: { tabId: number }) {
               }}
             >
               ☰
+            </button>
+            <button
+              aria-label="Open settings"
+              className="sancho-icon-button"
+              onClick={() => setView("settings")}
+            >
+              ⚙
             </button>
           </div>
           {pendingPermission && (
@@ -104,7 +114,9 @@ export function ChatPanel({ tabId }: { tabId: number }) {
               <button onClick={grantConsent}>Allow screenshots</button>
             </div>
           )}
-          {view === "list" ? (
+          {view === "settings" ? (
+            <SettingsView prefs={prefs} onFontSize={setFontSize} onBack={() => setView("chat")} />
+          ) : view === "list" ? (
             <ConversationList
               conversations={conversations}
               activeConversationId={activeConversationId}

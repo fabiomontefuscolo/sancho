@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
-import type { ConnectionMethod, ProviderConfig } from "../../types";
-import { DEFAULT_BASE_URLS, DEFAULT_PROVIDER_IDS } from "../../storage/settings";
+import type { ConnectionMethod, FontSize, ProviderConfig } from "../../types";
+import {
+  DEFAULT_BASE_URLS,
+  DEFAULT_PROVIDER_IDS,
+  DEFAULT_UI_PREFS,
+  getUiPrefs,
+  onUiPrefsChanged,
+  saveUiPrefs,
+} from "../../storage/settings";
 
 export interface SettingsBridge {
   requestSettings(): void;
@@ -19,6 +26,7 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
   const [hostName, setHostName] = useState("com.sancho.acp_host");
   const [token, setToken] = useState("");
   const [saved, setSaved] = useState(false);
+  const [fontSize, setFontSize] = useState<FontSize>(DEFAULT_UI_PREFS.fontSize);
 
   useEffect(() => {
     bridge.requestSettings();
@@ -34,6 +42,25 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
       }
     });
   }, [bridge]);
+
+  useEffect(() => {
+    let active = true;
+    void getUiPrefs().then((prefs) => {
+      if (active) setFontSize(prefs.fontSize);
+    });
+    const unsubscribe = onUiPrefsChanged((prefs) => {
+      if (active) setFontSize(prefs.fontSize);
+    });
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  const changeFontSize = (next: FontSize) => {
+    setFontSize(next);
+    void saveUiPrefs({ fontSize: next });
+  };
 
   const selectProvider = (next: string) => {
     setProviderId(next);
@@ -127,6 +154,21 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
 
       <button onClick={save}>Save</button>
       {saved && <span className="saved-indicator">Saved</span>}
+
+      <h2>Appearance</h2>
+      <div className="settings-grid">
+        <label>
+          Message font size
+          <select
+            value={fontSize}
+            onChange={(event) => changeFontSize(event.target.value as FontSize)}
+          >
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+      </div>
     </section>
   );
 }

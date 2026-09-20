@@ -1,4 +1,4 @@
-import type { Action, ProviderConfig } from "../types";
+import type { Action, FontSize, ProviderConfig, UiPrefs } from "../types";
 
 const PROVIDER_KEY = "providerConfig";
 const ACTIONS_KEY = "actions";
@@ -35,6 +35,35 @@ export function onActionsChanged(listener: (actions: Action[]) => void): () => v
   const handler = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
     if (areaName === "sync" && changes[ACTIONS_KEY]) {
       listener((changes[ACTIONS_KEY].newValue as Action[] | undefined) ?? []);
+    }
+  };
+  chrome.storage.onChanged.addListener(handler);
+  return () => chrome.storage.onChanged.removeListener(handler);
+}
+
+const UI_PREFS_KEY = "uiPrefs";
+const FONT_SIZES: readonly FontSize[] = ["small", "medium", "large"];
+
+export const DEFAULT_UI_PREFS: UiPrefs = { fontSize: "medium" };
+
+function normalizeUiPrefs(raw: unknown): UiPrefs {
+  const candidate = (raw as Partial<UiPrefs> | undefined)?.fontSize;
+  return { fontSize: candidate && FONT_SIZES.includes(candidate) ? candidate : "medium" };
+}
+
+export async function getUiPrefs(): Promise<UiPrefs> {
+  const result = await chrome.storage.sync.get(UI_PREFS_KEY);
+  return normalizeUiPrefs(result[UI_PREFS_KEY]);
+}
+
+export async function saveUiPrefs(prefs: UiPrefs): Promise<void> {
+  await chrome.storage.sync.set({ [UI_PREFS_KEY]: prefs });
+}
+
+export function onUiPrefsChanged(listener: (prefs: UiPrefs) => void): () => void {
+  const handler = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+    if (areaName === "sync" && changes[UI_PREFS_KEY]) {
+      listener(normalizeUiPrefs(changes[UI_PREFS_KEY].newValue));
     }
   };
   chrome.storage.onChanged.addListener(handler);

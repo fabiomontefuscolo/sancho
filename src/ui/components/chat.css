@@ -44,10 +44,8 @@ body,
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--chat-font-size);
   background: var(--chat-bg);
   color: var(--chat-text);
 }
@@ -464,4 +462,53 @@ body,
 .sancho-message-copy[data-state="copied"],
 .sancho-message-copy[data-state="failed"] {
   opacity: 1;
+}
+
+.sancho-chat-root.sancho-font-small {
+  --chat-font-size: 12px;
+}
+
+.sancho-chat-root.sancho-font-medium {
+  --chat-font-size: 14px;
+}
+
+.sancho-chat-root.sancho-font-large {
+  --chat-font-size: 16px;
+}
+
+.sancho-message {
+  font-size: var(--chat-font-size);
+}
+
+.sancho-settings {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.sancho-settings-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sancho-settings-header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.sancho-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.sancho-settings-field select {
+  padding: 6px 8px;
+  border: 1px solid var(--chat-border);
+  border-radius: 6px;
+  background: var(--chat-bg);
+  color: var(--chat-text);
 }
