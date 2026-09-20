@@ -197,3 +197,9 @@ Task: "Create tests/e2e/rich-messages.spec.ts with clipboard + no-hscroll assert
 - Mark each task `[X]` here when completed
 - After implementation, run `/speckit.converge` to reconcile code against spec/plan/tasks
 - User messages intentionally keep plain-text rendering (spec FR-009 / non-goal)
+
+---
+
+## Phase 8: Convergence
+
+- [ ] T026 Block remote image loading in rendered markdown — override the `img` component in src/ui/components/markdown-text.tsx so only `data:` URLs render and remote sources degrade to alt text, with a component test asserting no remote request element is created, per spec edge case "remote image loading follows the same no-remote-content safety rule" (contradicts)
