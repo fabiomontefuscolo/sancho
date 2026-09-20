@@ -64,7 +64,7 @@
 ### Tests for User Story 2 ⚠️
 
 - [ ] T008 [P] [US2] Extend tests/component/markdown-rendering.test.tsx: tagged block renders highlighted with visible language label (US2/AC1, FR-004); untagged block renders plain monospaced without errors (US2/AC4); wide lines scroll within the block only (US2/AC3, FR-008, contract 8)
-- [ ] T009 [P] [US2] Extend tests/component/copy-controls.test.tsx: code copy places exactly the code content (no fences, no extra whitespace) on the clipboard with "Copied" confirmation (US2/AC2, FR-005, contract 7)
+- [ ] T009 [P] [US2] Create tests/component/copy-controls.test.tsx: code copy places exactly the code content (no fences, no extra whitespace) on the clipboard with "Copied" confirmation (US2/AC2, FR-005, contract 7)
 - [ ] T010 [P] [US2] Create tests/e2e/rich-messages.spec.ts: real-extension test seeding a conversation with a highlighted code block; assert clipboard receives exactly the code content on copy click, and `scrollWidth === clientWidth` on `.sancho-viewport` (003 invariant preserved)
 
 ### Implementation for User Story 2
@@ -89,7 +89,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Add the message-level copy control in src/ui/components/chat.tsx — `CopyButton` positioned at the top right of `AssistantMessage` (`MessagePrimitive.Root`), fed from the T003 raw-text accessor via the message context; absolute-positioned within the relative message bubble; not added to `UserMessage` (spec non-goal)
+- [ ] T015 [US3] Add the message-level copy control in src/ui/components/chat.tsx — `CopyButton` positioned at the top right of `AssistantMessage` (`MessagePrimitive.Root`), fed from the T003 raw-text accessor, keyed by the message id obtained from `useMessage`; absolute-positioned within the relative message bubble; not added to `UserMessage` (spec non-goal)
 
 **Checkpoint**: US3 independently verifiable — message copy yields verbatim raw markdown
 
@@ -124,6 +124,7 @@
 
 - [ ] T023 Run the full gates: `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — coverage gates ≥ 80% unchanged, all e2e suites (003 layout + 004 rich-messages) green
 - [ ] T024 [P] Manual quickstart validation in Brave per specs/004-rich-message-rendering/quickstart.md (markdown demo, code copy, message copy, wide-line containment, script/img safety probe, font-size sync + persistence, timestamp regression)
+- [ ] T025 Add a perf assertion for SC-005 in tests/e2e/rich-messages.spec.ts — seed a conversation with 100 markdown-rich messages, assert initial render completes under 1 second and the message list scrolls without layout jank (no horizontal scroll, single scrollbar)
 
 ---
 
