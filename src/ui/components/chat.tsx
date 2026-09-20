@@ -8,6 +8,7 @@ import {
 } from "@assistant-ui/react";
 import { useSanchoRuntime } from "../hooks/useSanchoRuntime";
 import { formatMessageTime } from "../utils/format-time";
+import { MarkdownText } from "./markdown-text";
 import { ConversationList } from "./conversation-list";
 import "./chat.css";
 
@@ -30,7 +31,7 @@ function UserMessage() {
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="sancho-message sancho-message-assistant">
-      <MessagePrimitive.Parts />
+      <MessagePrimitive.Parts components={{ Text: MarkdownText }} />
       <MessageTimestamp />
     </MessagePrimitive.Root>
   );

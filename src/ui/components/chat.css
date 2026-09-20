@@ -309,3 +309,75 @@ body,
 .sancho-copy-button[data-state="failed"] {
   color: var(--chat-danger);
 }
+
+.sancho-message-assistant h1,
+.sancho-message-assistant h2,
+.sancho-message-assistant h3,
+.sancho-message-assistant h4 {
+  margin: 12px 0 6px;
+  line-height: 1.3;
+}
+
+.sancho-message-assistant h1 {
+  font-size: 1.25em;
+}
+
+.sancho-message-assistant h2 {
+  font-size: 1.15em;
+}
+
+.sancho-message-assistant h3,
+.sancho-message-assistant h4 {
+  font-size: 1em;
+}
+
+.sancho-message-assistant p {
+  margin: 6px 0;
+}
+
+.sancho-message-assistant ul,
+.sancho-message-assistant ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.sancho-message-assistant a {
+  color: var(--chat-accent);
+  overflow-wrap: anywhere;
+}
+
+.sancho-message-assistant blockquote {
+  margin: 6px 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--chat-border);
+  color: var(--chat-text-secondary);
+}
+
+.sancho-message-assistant code {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.sancho-message-assistant :not(pre) > code {
+  background: var(--chat-border);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.sancho-message-assistant table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.sancho-message-assistant th,
+.sancho-message-assistant td {
+  border: 1px solid var(--chat-border);
+  padding: 4px 8px;
+}
+
+.sancho-message-assistant img {
+  max-width: 100%;
+  height: auto;
+}
