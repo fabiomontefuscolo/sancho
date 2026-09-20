@@ -14,6 +14,7 @@ body,
   --chat-border: #e8eaed;
   --chat-input-border: #dadce0;
   --chat-bubble-assistant: #f1f3f4;
+  --chat-code-bg: #f6f8fa;
   --chat-accent: #1a73e8;
   --chat-accent-text: #fff;
   --chat-danger: #d93025;
@@ -31,6 +32,7 @@ body,
     --chat-border: #3c4043;
     --chat-input-border: #5f6368;
     --chat-bubble-assistant: #3c4043;
+    --chat-code-bg: #17191d;
     --chat-accent: #8ab4f8;
     --chat-danger: #f28b82;
     --chat-accent-text: #202124;
@@ -390,7 +392,7 @@ body,
   border: 1px solid var(--chat-border);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
-  background: var(--chat-composer-bg, var(--chat-border));
+  background: var(--chat-code-bg);
   font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
   font-size: 11px;
   color: var(--chat-text-secondary);
@@ -406,7 +408,7 @@ body,
   padding: 10px;
   border: 1px solid var(--chat-border);
   border-radius: 0 0 8px 8px;
-  background: var(--chat-composer-bg, transparent);
+  background: var(--chat-code-bg);
   overflow-x: auto;
   max-width: 100%;
   white-space: pre;
