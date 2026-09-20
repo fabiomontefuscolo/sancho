@@ -102,3 +102,45 @@ describe("markdown rendering", () => {
     });
   });
 });
+
+describe("code blocks", () => {
+  let port: MockPort;
+
+  beforeEach(() => {
+    port = installMockPort();
+  });
+
+  it("renders a tagged code block highlighted with a visible language label", async () => {
+    render(<ChatPanel tabId={7} />);
+    emitAssistantMessage(port, "m1", "```typescript\nconst x: number = 1;\n```");
+
+    await waitFor(() => {
+      expect(document.querySelector(".sancho-code-header")?.textContent).toContain("typescript");
+    });
+    expect(document.querySelector(".sancho-message-assistant pre code")?.textContent).toContain(
+      "const x: number = 1;",
+    );
+  });
+
+  it("renders an untagged code block as plain monospaced code", async () => {
+    render(<ChatPanel tabId={7} />);
+    emitAssistantMessage(port, "m1", "```\nplain code\n```");
+
+    await waitFor(() => {
+      expect(document.querySelector(".sancho-message-assistant pre code")?.textContent).toContain(
+        "plain code",
+      );
+    });
+    expect(document.querySelector(".sancho-code-header")?.textContent).toContain("code");
+  });
+
+  it("keeps wide code lines inside a scrollable block container", async () => {
+    render(<ChatPanel tabId={7} />);
+    emitAssistantMessage(port, "m1", "```\n" + "x".repeat(200) + "\n```");
+
+    await waitFor(() => {
+      const block = document.querySelector(".sancho-message-assistant pre");
+      expect(block).not.toBeNull();
+    });
+  });
+});

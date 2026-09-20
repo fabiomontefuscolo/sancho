@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import {
   AssistantRuntimeProvider,
   ComposerPrimitive,
@@ -9,6 +9,21 @@ import {
 import { useSanchoRuntime } from "../hooks/useSanchoRuntime";
 import { formatMessageTime } from "../utils/format-time";
 import { MarkdownText } from "./markdown-text";
+import { CopyButton } from "./copy-button";
+
+const RawTextContext = createContext<(messageId: string) => string>(() => "");
+
+function MessageCopyButton() {
+  const getRawText = useContext(RawTextContext);
+  const id = useMessage((state) => state.id);
+  return (
+    <CopyButton
+      className="sancho-message-copy"
+      label="Copy message"
+      getText={() => getRawText(id)}
+    />
+  );
+}
 import { ConversationList } from "./conversation-list";
 import "./chat.css";
 
@@ -31,6 +46,7 @@ function UserMessage() {
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="sancho-message sancho-message-assistant">
+      <MessageCopyButton />
       <MessagePrimitive.Parts components={{ Text: MarkdownText }} />
       <MessageTimestamp />
     </MessagePrimitive.Root>
@@ -51,91 +67,94 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     selectConversation,
     newConversation,
     deleteConversation,
+    getMessageRawText,
   } = useSanchoRuntime(tabId);
   const [view, setView] = useState<"chat" | "list">("chat");
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="sancho-chat-root">
-        <div className="sancho-topbar">
-          <button
-            aria-label="Open conversations"
-            className="sancho-icon-button"
-            onClick={() => {
-              requestConversations();
-              setView("list");
-            }}
-          >
-            ☰
-          </button>
+      <RawTextContext.Provider value={getMessageRawText}>
+        <div className="sancho-chat-root">
+          <div className="sancho-topbar">
+            <button
+              aria-label="Open conversations"
+              className="sancho-icon-button"
+              onClick={() => {
+                requestConversations();
+                setView("list");
+              }}
+            >
+              ☰
+            </button>
+          </div>
+          {pendingPermission && (
+            <div className="sancho-consent-banner" role="alert">
+              <span>The agent requests permission: {pendingPermission.title}</span>
+              {pendingPermission.options.map((option) => (
+                <button key={option.optionId} onClick={() => resolvePermission(option.optionId)}>
+                  {option.name}
+                </button>
+              ))}
+              <button onClick={() => resolvePermission(null)}>Deny</button>
+            </div>
+          )}
+          {consentRequired && (
+            <div className="sancho-consent-banner">
+              <span>The agent wants to capture a screenshot of this page.</span>
+              <button onClick={grantConsent}>Allow screenshots</button>
+            </div>
+          )}
+          {view === "list" ? (
+            <ConversationList
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              onSelect={(conversationId) => {
+                selectConversation(conversationId);
+                setView("chat");
+              }}
+              onNew={() => {
+                newConversation();
+                setView("chat");
+              }}
+              onDelete={(conversationId) => {
+                deleteConversation(conversationId);
+                if (conversationId === activeConversationId) setView("chat");
+              }}
+              onBack={() => setView("chat")}
+            />
+          ) : (
+            <>
+              <ThreadPrimitive.Root className="sancho-thread">
+                <ThreadPrimitive.Viewport className="sancho-viewport">
+                  <ThreadPrimitive.Empty>
+                    <div className="sancho-empty">Ask the agent anything about this page.</div>
+                  </ThreadPrimitive.Empty>
+                  <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
+                </ThreadPrimitive.Viewport>
+              </ThreadPrimitive.Root>
+              {toolActivity.length > 0 && (
+                <div className="sancho-activity">
+                  {toolActivity.map((entry, index) => (
+                    <div key={index} className="sancho-activity-entry">
+                      {entry}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <ComposerPrimitive.Root className="sancho-composer">
+                <ComposerPrimitive.Input
+                  aria-label="Message"
+                  placeholder="Message the agent…"
+                  className="sancho-input"
+                />
+                <ComposerPrimitive.Send aria-label="Send" className="sancho-send">
+                  Send
+                </ComposerPrimitive.Send>
+              </ComposerPrimitive.Root>
+            </>
+          )}
         </div>
-        {pendingPermission && (
-          <div className="sancho-consent-banner" role="alert">
-            <span>The agent requests permission: {pendingPermission.title}</span>
-            {pendingPermission.options.map((option) => (
-              <button key={option.optionId} onClick={() => resolvePermission(option.optionId)}>
-                {option.name}
-              </button>
-            ))}
-            <button onClick={() => resolvePermission(null)}>Deny</button>
-          </div>
-        )}
-        {consentRequired && (
-          <div className="sancho-consent-banner">
-            <span>The agent wants to capture a screenshot of this page.</span>
-            <button onClick={grantConsent}>Allow screenshots</button>
-          </div>
-        )}
-        {view === "list" ? (
-          <ConversationList
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            onSelect={(conversationId) => {
-              selectConversation(conversationId);
-              setView("chat");
-            }}
-            onNew={() => {
-              newConversation();
-              setView("chat");
-            }}
-            onDelete={(conversationId) => {
-              deleteConversation(conversationId);
-              if (conversationId === activeConversationId) setView("chat");
-            }}
-            onBack={() => setView("chat")}
-          />
-        ) : (
-          <>
-            <ThreadPrimitive.Root className="sancho-thread">
-              <ThreadPrimitive.Viewport className="sancho-viewport">
-                <ThreadPrimitive.Empty>
-                  <div className="sancho-empty">Ask the agent anything about this page.</div>
-                </ThreadPrimitive.Empty>
-                <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
-              </ThreadPrimitive.Viewport>
-            </ThreadPrimitive.Root>
-            {toolActivity.length > 0 && (
-              <div className="sancho-activity">
-                {toolActivity.map((entry, index) => (
-                  <div key={index} className="sancho-activity-entry">
-                    {entry}
-                  </div>
-                ))}
-              </div>
-            )}
-            <ComposerPrimitive.Root className="sancho-composer">
-              <ComposerPrimitive.Input
-                aria-label="Message"
-                placeholder="Message the agent…"
-                className="sancho-input"
-              />
-              <ComposerPrimitive.Send aria-label="Send" className="sancho-send">
-                Send
-              </ComposerPrimitive.Send>
-            </ComposerPrimitive.Root>
-          </>
-        )}
-      </div>
+      </RawTextContext.Provider>
     </AssistantRuntimeProvider>
   );
 }

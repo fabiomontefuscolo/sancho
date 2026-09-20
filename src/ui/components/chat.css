@@ -381,3 +381,87 @@ body,
   max-width: 100%;
   height: auto;
 }
+
+.sancho-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--chat-border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: var(--chat-composer-bg, var(--chat-border));
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  font-size: 11px;
+  color: var(--chat-text-secondary);
+}
+
+.sancho-code-header + pre {
+  margin-top: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+.sancho-message-assistant pre {
+  margin: 0 0 8px;
+  padding: 10px;
+  border: 1px solid var(--chat-border);
+  border-radius: 0 0 8px 8px;
+  background: var(--chat-composer-bg, transparent);
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: pre;
+}
+
+.sancho-message-assistant pre code {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.sancho-message-assistant pre .token.comment,
+.sancho-message-assistant pre .token.prolog,
+.sancho-message-assistant pre .token.cdata {
+  color: var(--chat-text-secondary);
+}
+
+.sancho-message-assistant pre .token.keyword,
+.sancho-message-assistant pre .token.tag,
+.sancho-message-assistant pre .token.important {
+  color: var(--chat-accent);
+}
+
+.sancho-message-assistant pre .token.string,
+.sancho-message-assistant pre .token.attr-value {
+  color: var(--chat-danger);
+}
+
+.sancho-message-assistant pre .token.function,
+.sancho-message-assistant pre .token.class-name {
+  color: var(--chat-text);
+  font-weight: 600;
+}
+
+.sancho-message-assistant pre .token.number,
+.sancho-message-assistant pre .token.boolean,
+.sancho-message-assistant pre .token.operator {
+  color: var(--chat-text-secondary);
+}
+
+.sancho-message {
+  position: relative;
+}
+
+.sancho-message-copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  opacity: 0;
+}
+
+.sancho-message:hover .sancho-message-copy,
+.sancho-message-copy:focus-visible,
+.sancho-message-copy[data-state="copied"],
+.sancho-message-copy[data-state="failed"] {
+  opacity: 1;
+}
