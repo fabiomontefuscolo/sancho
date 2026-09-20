@@ -29,6 +29,13 @@ export const clickElementArgs = z.object({ ...targetShape }).superRefine(exactly
 export const selectOptionArgs = z
   .object({ ...targetShape, value: z.string() })
   .superRefine(exactlyOneTarget);
+export const setEditorTextArgs = z
+  .object({
+    ...targetShape,
+    text: z.string(),
+    mode: z.enum(["replace", "insert"]).default("replace"),
+  })
+  .superRefine(exactlyOneTarget);
 export const captureScreenshotArgs = z.object({});
 
 export const toolDefinitions: ToolDefinition[] = [
@@ -61,6 +68,12 @@ export const toolDefinitions: ToolDefinition[] = [
     description:
       "Select an option of a <select> element. Target it by ref from snapshotPage (preferred) or by CSS selector.",
     parameters: selectOptionArgs,
+  },
+  {
+    name: "setEditorText",
+    description:
+      "Set text in an editable element: rich text/code editors (CodeMirror, Monaco, contenteditable) and plain inputs/textareas. mode=replace replaces all content; mode=insert inserts at the cursor. Target by ref from snapshotPage (preferred) or by CSS selector.",
+    parameters: setEditorTextArgs,
   },
   {
     name: "captureScreenshot",
@@ -111,6 +124,8 @@ export async function executeTool(
       return sendToContent<typeof parsed, OkResult>(tabId, { type: "page.click", ...parsed });
     case "selectOption":
       return sendToContent<typeof parsed, OkResult>(tabId, { type: "page.select", ...parsed });
+    case "setEditorText":
+      return sendToContent<typeof parsed, OkResult>(tabId, { type: "page.setText", ...parsed });
     case "captureScreenshot":
       return captureScreenshot(tabId);
     default:

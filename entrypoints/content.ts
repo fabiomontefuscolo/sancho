@@ -2,6 +2,7 @@ const GUARD_KEY = "__sanchoContentLoaded";
 
 import { getSharedRefRegistry } from "../src/content/refs";
 import { buildSnapshot, computeRole, accessibleName } from "../src/content/snapshot";
+import { setEditorText } from "../src/content/edit-text";
 
 const refRegistry = getSharedRefRegistry(globalThis as unknown as Record<string, unknown>);
 
@@ -211,6 +212,12 @@ function handleMessage(message: { type: string; [key: string]: unknown }): unkno
       const target = resolveTarget(message);
       if ("failure" in target) return target.failure;
       return narrated(target.element, selectOptionOn(target.element, String(message.value)));
+    }
+    case "page.setText": {
+      const target = resolveTarget(message);
+      if ("failure" in target) return target.failure;
+      const mode = message.mode === "insert" ? "insert" : "replace";
+      return narrated(target.element, setEditorText(target.element, String(message.text), mode));
     }
     case "selection.get": {
       const info = getSelectionInfo();
