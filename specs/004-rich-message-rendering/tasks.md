@@ -18,7 +18,7 @@
 
 **Purpose**: Install rendering dependencies pinned to the installed `@assistant-ui/react@0.11.58` line (research R1–R3)
 
-- [ ] T001 Install dependencies: `@assistant-ui/react-markdown@0.11.10`, `@assistant-ui/react-syntax-highlighter@0.11.10`, `react-syntax-highlighter@^16`, `@types/react-syntax-highlighter`, `remark-gfm` in package.json
+- [x] T001 Install dependencies: `@assistant-ui/react-markdown@0.11.10`, `@assistant-ui/react-syntax-highlighter@0.11.10`, `react-syntax-highlighter@^16`, `@types/react-syntax-highlighter`, `remark-gfm` in package.json
 
 ---
 
@@ -28,8 +28,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Create shared copy control in src/ui/components/copy-button.tsx — props: `getText: () => string`, `className?: string`; states `idle | copied | failed`; uses `navigator.clipboard.writeText` with `<textarea>` + `document.execCommand("copy")` fallback; shows transient "Copied" (~1.5s) or "Copy failed" feedback per FR-007 (research R4)
-- [ ] T003 [P] Add raw markdown text accessor in src/ui/hooks/useSanchoRuntime.ts — expose a helper (e.g., `getMessageRawText(messageId)`) that returns the persisted `Message.parts[].text` concatenated verbatim from the conversation state, so message copy never re-serializes the DOM (research R4)
+- [x] T002 Create shared copy control in src/ui/components/copy-button.tsx — props: `getText: () => string`, `className?: string`; states `idle | copied | failed`; uses `navigator.clipboard.writeText` with `<textarea>` + `document.execCommand("copy")` fallback; shows transient "Copied" (~1.5s) or "Copy failed" feedback per FR-007 (research R4)
+- [x] T003 [P] Add raw markdown text accessor in src/ui/hooks/useSanchoRuntime.ts — expose a helper (e.g., `getMessageRawText(messageId)`) that returns the persisted `Message.parts[].text` concatenated verbatim from the conversation state, so message copy never re-serializes the DOM (research R4)
 
 **Checkpoint**: Copy control renders and copies in isolation; raw-text accessor returns exact source
 
@@ -43,13 +43,13 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T004 [P] [US1] Create tests/component/markdown-rendering.test.tsx: (a) heading/list/link/emphasis render formatted with no raw syntax visible (US1/AC1, FR-001); (b) mid-stream unclosed bold/fence renders as plain text without broken layout, final text renders complete (US1/AC2, FR-002); (c) message containing `<script>alert(1)</script>` and `<img src="https://evil.example/x.png">` executes nothing, loads no remote resource, degrades to text (FR-003, edge case); (d) malformed markdown degrades to readable plain text (US1/AC3)
+- [x] T004 [P] [US1] Create tests/component/markdown-rendering.test.tsx: (a) heading/list/link/emphasis render formatted with no raw syntax visible (US1/AC1, FR-001); (b) mid-stream unclosed bold/fence renders as plain text without broken layout, final text renders complete (US1/AC2, FR-002); (c) message containing `<script>alert(1)</script>` and `<img src="https://evil.example/x.png">` executes nothing, loads no remote resource, degrades to text (FR-003, edge case); (d) malformed markdown degrades to readable plain text (US1/AC3)
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Create src/ui/components/markdown-text.tsx — export `MarkdownText` built on `MarkdownTextPrimitive` from `@assistant-ui/react-markdown` with `remarkPlugins={[remarkGfm]}` (research R1/R2); no `rehype-raw` (FR-003)
-- [ ] T006 [US1] Wire `MarkdownText` as the assistant message text part in src/ui/components/chat.tsx — `<MessagePrimitive.Parts components={{ Text: MarkdownText }} />` in `AssistantMessage` only; `UserMessage` keeps plain rendering (FR-009)
-- [ ] T007 [P] [US1] Add markdown element styles in src/ui/components/chat.css — headings, lists, links, blockquotes, inline code scoped under `.sancho-message-assistant`; all using `var(--chat-*)` tokens; long links wrap via existing `overflow-wrap: anywhere`; no rule may cause `.sancho-viewport` horizontal scroll (contract 4, FR-012)
+- [x] T005 [US1] Create src/ui/components/markdown-text.tsx — export `MarkdownText` built on `MarkdownTextPrimitive` from `@assistant-ui/react-markdown` with `remarkPlugins={[remarkGfm]}` (research R1/R2); no `rehype-raw` (FR-003)
+- [x] T006 [US1] Wire `MarkdownText` as the assistant message text part in src/ui/components/chat.tsx — `<MessagePrimitive.Parts components={{ Text: MarkdownText }} />` in `AssistantMessage` only; `UserMessage` keeps plain rendering (FR-009)
+- [x] T007 [P] [US1] Add markdown element styles in src/ui/components/chat.css — headings, lists, links, blockquotes, inline code scoped under `.sancho-message-assistant`; all using `var(--chat-*)` tokens; long links wrap via existing `overflow-wrap: anywhere`; no rule may cause `.sancho-viewport` horizontal scroll (contract 4, FR-012)
 
 **Checkpoint**: US1 independently verifiable — `pnpm exec vitest run tests/component/markdown-rendering.test.tsx` green; assistant answers render formatted, user messages unchanged
 
@@ -63,14 +63,14 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T008 [P] [US2] Extend tests/component/markdown-rendering.test.tsx: tagged block renders highlighted with visible language label (US2/AC1, FR-004); untagged block renders plain monospaced without errors (US2/AC4); wide lines scroll within the block only (US2/AC3, FR-008, contract 8)
-- [ ] T009 [P] [US2] Create tests/component/copy-controls.test.tsx: code copy places exactly the code content (no fences, no extra whitespace) on the clipboard with "Copied" confirmation (US2/AC2, FR-005, contract 7)
-- [ ] T010 [P] [US2] Create tests/e2e/rich-messages.spec.ts: real-extension test seeding a conversation with a highlighted code block; assert clipboard receives exactly the code content on copy click, and `scrollWidth === clientWidth` on `.sancho-viewport` (003 invariant preserved)
+- [x] T008 [P] [US2] Extend tests/component/markdown-rendering.test.tsx: tagged block renders highlighted with visible language label (US2/AC1, FR-004); untagged block renders plain monospaced without errors (US2/AC4); wide lines scroll within the block only (US2/AC3, FR-008, contract 8)
+- [x] T009 [P] [US2] Create tests/component/copy-controls.test.tsx: code copy places exactly the code content (no fences, no extra whitespace) on the clipboard with "Copied" confirmation (US2/AC2, FR-005, contract 7)
+- [x] T010 [P] [US2] Create tests/e2e/rich-messages.spec.ts: real-extension test seeding a conversation with a highlighted code block; assert clipboard receives exactly the code content on copy click, and `scrollWidth === clientWidth` on `.sancho-viewport` (003 invariant preserved)
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] Create src/ui/components/code-block.tsx — custom `CodeHeader`/code override for `MarkdownTextPrimitive` using `makePrismAsyncLightSyntaxHighlighter` from `@assistant-ui/react-syntax-highlighter` (research R3); register exactly: typescript, javascript, python, rust, go, java, c, cpp, json, bash; header shows the language label (or "code" when untagged) and embeds the `CopyButton` from T002 fed with exactly the code content
-- [ ] T012 [US2] Map Prism token colors to `var(--chat-*)` variables and style code blocks (header, internal `overflow-x: auto`, containment) in src/ui/components/chat.css (research R8, FR-008)
+- [x] T011 [US2] Create src/ui/components/code-block.tsx — custom `CodeHeader`/code override for `MarkdownTextPrimitive` using `makePrismAsyncLightSyntaxHighlighter` from `@assistant-ui/react-syntax-highlighter` (research R3); register exactly: typescript, javascript, python, rust, go, java, c, cpp, json, bash; header shows the language label (or "code" when untagged) and embeds the `CopyButton` from T002 fed with exactly the code content
+- [x] T012 [US2] Map Prism token colors to `var(--chat-*)` variables and style code blocks (header, internal `overflow-x: auto`, containment) in src/ui/components/chat.css (research R8, FR-008)
 
 **Checkpoint**: US1+US2 independently verifiable — new component tests + `tests/e2e/rich-messages.spec.ts` green
 
@@ -84,12 +84,12 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T013 [P] [US3] Extend tests/component/copy-controls.test.tsx: message copy places the raw markdown source verbatim on the clipboard (US3/AC1, FR-006); clipboard failure surfaces visible "Copy failed" feedback instead of a silent no-op (US3/AC2, FR-007)
-- [ ] T014 [P] [US3] Extend tests/e2e/rich-messages.spec.ts: message copy in the real extension yields the exact raw markdown on the clipboard
+- [x] T013 [P] [US3] Extend tests/component/copy-controls.test.tsx: message copy places the raw markdown source verbatim on the clipboard (US3/AC1, FR-006); clipboard failure surfaces visible "Copy failed" feedback instead of a silent no-op (US3/AC2, FR-007)
+- [x] T014 [P] [US3] Extend tests/e2e/rich-messages.spec.ts: message copy in the real extension yields the exact raw markdown on the clipboard
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Add the message-level copy control in src/ui/components/chat.tsx — `CopyButton` positioned at the top right of `AssistantMessage` (`MessagePrimitive.Root`), fed from the T003 raw-text accessor, keyed by the message id obtained from `useMessage`; absolute-positioned within the relative message bubble; not added to `UserMessage` (spec non-goal)
+- [x] T015 [US3] Add the message-level copy control in src/ui/components/chat.tsx — `CopyButton` positioned at the top right of `AssistantMessage` (`MessagePrimitive.Root`), fed from the T003 raw-text accessor, keyed by the message id obtained from `useMessage`; absolute-positioned within the relative message bubble; not added to `UserMessage` (spec non-goal)
 
 **Checkpoint**: US3 independently verifiable — message copy yields verbatim raw markdown
 
@@ -103,16 +103,16 @@
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T016 [P] [US4] Create tests/component/font-size.test.tsx: `uiPrefs` read/write helpers default to `"medium"` on missing/unknown values (data-model validation rule); `useUiPrefs` hook applies `sancho-font-*` class and reacts to `chrome.storage.sync.onChanged` (US4/AC2); persistence wiring stores the choice under the sync key `uiPrefs` with field `fontSize` (US4/AC3)
-- [ ] T017 [P] [US4] Extend tests/e2e/rich-messages.spec.ts: set font size via the sidebar settings view, reload the extension page, assert the choice persists; assert layout intact (timestamps visible, no horizontal scroll) at every size (US4/AC4, contract 12)
+- [x] T016 [P] [US4] Create tests/component/font-size.test.tsx: `uiPrefs` read/write helpers default to `"medium"` on missing/unknown values (data-model validation rule); `useUiPrefs` hook applies `sancho-font-*` class and reacts to `chrome.storage.sync.onChanged` (US4/AC2); persistence wiring stores the choice under the sync key `uiPrefs` with field `fontSize` (US4/AC3)
+- [x] T017 [P] [US4] Extend tests/e2e/rich-messages.spec.ts: set font size via the sidebar settings view, reload the extension page, assert the choice persists; assert layout intact (timestamps visible, no horizontal scroll) at every size (US4/AC4, contract 12)
 
 ### Implementation for User Story 4
 
-- [ ] T018 [US4] Add `UiPrefs` type (`fontSize: "small" | "medium" | "large"`, default `"medium"`) in src/types.ts and `uiPrefs` sync read/write + defaulting helpers in src/storage/settings.ts
-- [ ] T019 [US4] Create src/ui/hooks/use-ui-prefs.ts — reads `uiPrefs` from `chrome.storage.sync`, subscribes to `onChanged`, returns current prefs + setter
-- [ ] T020 [US4] Create src/ui/components/settings-view.tsx — sidebar settings view with a font-size select (small/medium/large) writing via T019; add a settings entry point (icon button) in the chat header and extend the existing `"chat" | "list"` view state in src/ui/components/chat.tsx with `"settings"`; apply the `sancho-font-*` class on `.sancho-chat-root` from T019
-- [ ] T021 [P] [US4] Add the same font-size select to the options page in src/ui/components/settings-panel.tsx, bound to the same `uiPrefs` key (clarification: both surfaces, kept in sync)
-- [ ] T022 [P] [US4] Update fonts and font-size scale in src/ui/components/chat.css — body: system UI stack `-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`; code: `ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace` (research R7); define `--chat-font-size` per `sancho-font-small|medium|large` and consume it in messages, code blocks, composer, and timestamps (FR-010, FR-011)
+- [x] T018 [US4] Add `UiPrefs` type (`fontSize: "small" | "medium" | "large"`, default `"medium"`) in src/types.ts and `uiPrefs` sync read/write + defaulting helpers in src/storage/settings.ts
+- [x] T019 [US4] Create src/ui/hooks/use-ui-prefs.ts — reads `uiPrefs` from `chrome.storage.sync`, subscribes to `onChanged`, returns current prefs + setter
+- [x] T020 [US4] Create src/ui/components/settings-view.tsx — sidebar settings view with a font-size select (small/medium/large) writing via T019; add a settings entry point (icon button) in the chat header and extend the existing `"chat" | "list"` view state in src/ui/components/chat.tsx with `"settings"`; apply the `sancho-font-*` class on `.sancho-chat-root` from T019
+- [x] T021 [P] [US4] Add the same font-size select to the options page in src/ui/components/settings-panel.tsx, bound to the same `uiPrefs` key (clarification: both surfaces, kept in sync)
+- [x] T022 [P] [US4] Update fonts and font-size scale in src/ui/components/chat.css — body: system UI stack `-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`; code: `ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace` (research R7); define `--chat-font-size` per `sancho-font-small|medium|large` and consume it in messages, code blocks, composer, and timestamps (FR-010, FR-011)
 
 **Checkpoint**: US4 independently verifiable — immediate rescale, cross-surface sync, persistence across reload
 
@@ -122,9 +122,9 @@
 
 **Purpose**: Whole-feature verification
 
-- [ ] T023 Run the full gates: `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — coverage gates ≥ 80% unchanged, all e2e suites (003 layout + 004 rich-messages) green
+- [x] T023 Run the full gates: `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — coverage gates ≥ 80% unchanged, all e2e suites (003 layout + 004 rich-messages) green
 - [ ] T024 [P] Manual quickstart validation in Brave per specs/004-rich-message-rendering/quickstart.md (markdown demo, code copy, message copy, wide-line containment, script/img safety probe, font-size sync + persistence, timestamp regression)
-- [ ] T025 Add a perf assertion for SC-005 in tests/e2e/rich-messages.spec.ts — seed a conversation with 100 markdown-rich messages, assert initial render completes under 1 second and the message list scrolls without layout jank (no horizontal scroll, single scrollbar)
+- [x] T025 Add a perf assertion for SC-005 in tests/e2e/rich-messages.spec.ts — seed a conversation with 100 markdown-rich messages, assert initial render completes under 1 second and the message list scrolls without layout jank (no horizontal scroll, single scrollbar)
 
 ---
 
