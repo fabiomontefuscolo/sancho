@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   captureScreenshotArgs,
   clickElementArgs,
+  fillFieldArgs,
   readPageArgs,
   selectOptionArgs,
+  setEditorTextArgs,
+  snapshotPageArgs,
   toolDefinitions,
   validateToolArguments,
 } from "../../src/agent/tools";
@@ -46,6 +49,36 @@ describe("tool schemas", () => {
 
   it("captureScreenshot takes no arguments", () => {
     expect(captureScreenshotArgs.parse({})).toEqual({});
+  });
+
+  it("accepts ref as an alternative to selector on interactive tools", () => {
+    expect(clickElementArgs.parse({ ref: "e3" }).ref).toBe("e3");
+    expect(fillFieldArgs.parse({ ref: "e3", value: "x" }).ref).toBe("e3");
+    expect(selectOptionArgs.parse({ ref: "e3", value: "v" }).ref).toBe("e3");
+    expect(setEditorTextArgs.parse({ ref: "e3", text: "t" }).ref).toBe("e3");
+  });
+
+  it("requires exactly one of selector or ref", () => {
+    expect(() => clickElementArgs.parse({})).toThrow();
+    expect(() => clickElementArgs.parse({ selector: "#a", ref: "e3" })).toThrow();
+    expect(() => fillFieldArgs.parse({ value: "x" })).toThrow();
+    expect(() => fillFieldArgs.parse({ selector: "#a", ref: "e3", value: "x" })).toThrow();
+    expect(() => setEditorTextArgs.parse({ text: "t" })).toThrow();
+    expect(() => setEditorTextArgs.parse({ selector: "#a", ref: "e3", text: "t" })).toThrow();
+  });
+
+  it("snapshotPage defaults maxElements to 300", () => {
+    expect(snapshotPageArgs.parse({}).maxElements).toBe(300);
+    expect(snapshotPageArgs.parse({ maxElements: 50 }).maxElements).toBe(50);
+    expect(() => snapshotPageArgs.parse({ maxElements: 0 })).toThrow();
+  });
+
+  it("setEditorText defaults mode to replace", () => {
+    expect(setEditorTextArgs.parse({ selector: "#e", text: "t" }).mode).toBe("replace");
+    expect(setEditorTextArgs.parse({ selector: "#e", text: "t", mode: "insert" }).mode).toBe(
+      "insert",
+    );
+    expect(() => setEditorTextArgs.parse({ selector: "#e", text: "t", mode: "bogus" })).toThrow();
   });
 
   it("rejects unknown tools", () => {

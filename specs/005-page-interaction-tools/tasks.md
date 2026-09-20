@@ -173,4 +173,4 @@ Task: "Create src/content/edit-text.ts (US2)"
 
 ## Phase 7: Convergence
 
-- [ ] T017 Add unit tests to tests/unit/tools.test.ts for the ref argument paths per FR-003/FR-004 (partial): ref accepted by clickElement/fillField/selectOption/setEditorText; exactly one of selector/ref required (neither and both rejected); snapshotPage defaults maxElements to 300; setEditorText defaults mode to "replace"
+- [x] T017 Add unit tests to tests/unit/tools.test.ts for the ref argument paths per FR-003/FR-004 (partial): ref accepted by clickElement/fillField/selectOption/setEditorText; exactly one of selector/ref required (neither and both rejected); snapshotPage defaults maxElements to 300; setEditorText defaults mode to "replace"
