@@ -170,3 +170,7 @@ Task: "Create src/content/edit-text.ts (US2)"
 - Mark each task `[X]` here when completed
 - After implementation, run `/speckit.converge` to reconcile code against spec/plan/tasks
 - Selector-based interaction stays backward compatible; refs are additive (spec assumption)
+
+## Phase 7: Convergence
+
+- [ ] T017 Add unit tests to tests/unit/tools.test.ts for the ref argument paths per FR-003/FR-004 (partial): ref accepted by clickElement/fillField/selectOption/setEditorText; exactly one of selector/ref required (neither and both rejected); snapshotPage defaults maxElements to 300; setEditorText defaults mode to "replace"
