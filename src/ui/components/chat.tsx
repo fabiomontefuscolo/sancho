@@ -61,6 +61,8 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     consentRequired,
     grantConsent,
     toolActivity,
+    agentState,
+    isRunning,
     pendingPermission,
     resolvePermission,
     conversations,
@@ -144,6 +146,16 @@ export function ChatPanel({ tabId }: { tabId: number }) {
                   <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
                 </ThreadPrimitive.Viewport>
               </ThreadPrimitive.Root>
+              {(agentState || isRunning) && (
+                <div className="sancho-status" role="status" aria-live="polite">
+                  <span className="sancho-status-dot" />
+                  {agentState === "acting"
+                    ? `Working: ${toolActivity[toolActivity.length - 1] ?? "tool"}`
+                    : agentState === "verifying"
+                      ? "Checking results…"
+                      : "Thinking…"}
+                </div>
+              )}
               {toolActivity.length > 0 && (
                 <div className="sancho-activity">
                   {toolActivity.map((entry, index) => (

@@ -32,6 +32,8 @@ export interface SanchoRuntime {
   consentRequired: boolean;
   grantConsent: () => void;
   toolActivity: string[];
+  agentState: string | null;
+  isRunning: boolean;
   pendingPermission: PendingPermission | null;
   resolvePermission: (optionId: string | null) => void;
   conversations: ConversationSummary[];
@@ -48,6 +50,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [isRunning, setIsRunning] = useState(false);
   const [consentRequired, setConsentRequired] = useState(false);
   const [toolActivity, setToolActivity] = useState<string[]>([]);
+  const [agentState, setAgentState] = useState<string | null>(null);
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [activeConversationId, setActiveConversationId] = useState("");
@@ -99,14 +102,20 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       } else if (envelope.type === "chat.done") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
         setIsRunning(false);
+        setAgentState(null);
       } else if (envelope.type === "chat.error") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
         setIsRunning(false);
+        setAgentState(null);
         if (envelope.payload.message === "consent_required") {
           setConsentRequired(true);
         } else {
           appendDelta(envelope.id, `Error: ${envelope.payload.message}`);
         }
+      } else if (envelope.type === "chat.state") {
+        if (!isForActiveConversation(envelope.payload.conversationId)) return;
+        const state = envelope.payload.state;
+        setAgentState(state === "done" || state === "stopped" || state === "error" ? null : state);
       } else if (envelope.type === "chat.tool") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
         const label = `${envelope.payload.toolCall.name} (${envelope.payload.status})`;
@@ -189,6 +198,8 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         );
       },
       toolActivity,
+      agentState,
+      isRunning,
       pendingPermission,
       resolvePermission: (optionId: string | null) => {
         if (!pendingPermission) return;
@@ -224,6 +235,8 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       runtime,
       consentRequired,
       toolActivity,
+      agentState,
+      isRunning,
       pendingPermission,
       conversations,
       activeConversationId,

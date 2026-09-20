@@ -139,3 +139,46 @@ describe("ChatPanel", () => {
     );
   });
 });
+
+describe("agent activity status", () => {
+  let port: MockPort;
+
+  beforeEach(() => {
+    port = installMockPort();
+  });
+
+  it("shows a thinking indicator while the run is planning and clears on done", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.state",
+      id: "s1",
+      payload: { state: "planning", conversationId: "" },
+    });
+    await screen.findByText("Thinking…");
+
+    port.emit({
+      kind: "event",
+      type: "chat.state",
+      id: "s2",
+      payload: { state: "acting", conversationId: "" },
+    });
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "s3",
+      payload: { toolCall: { name: "readPage", arguments: {}, tabId: 7 }, status: "started" },
+    });
+    await screen.findByText(/Working: readPage/);
+
+    port.emit({
+      kind: "event",
+      type: "chat.done",
+      id: "s4",
+      payload: { messageId: "m9" },
+    });
+    await waitFor(() => {
+      expect(screen.queryByText(/Thinking|Working/)).toBeNull();
+    });
+  });
+});

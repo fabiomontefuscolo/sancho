@@ -101,11 +101,17 @@ export type UiToBackground =
   | Envelope<"actions.upsert", ActionUpsertPayload>
   | Envelope<"actions.delete", ActionDeletePayload>;
 
+export interface ChatStatePayload {
+  conversationId: string;
+  state: "planning" | "acting" | "verifying" | "done" | "stopped" | "error";
+}
+
 export type BackgroundToUi =
   | Envelope<"chat.delta", ChatDeltaPayload>
   | Envelope<"chat.tool", ChatToolPayload>
   | Envelope<"chat.done", ChatDonePayload>
   | Envelope<"chat.error", ChatErrorPayload>
+  | Envelope<"chat.state", ChatStatePayload>
   | Envelope<"conversation.state", Conversation>
   | Envelope<"conversations.state", ConversationsStatePayload>
   | Envelope<"action.result", ActionResultPayload>

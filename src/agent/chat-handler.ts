@@ -265,7 +265,11 @@ export async function handleChatSend(
             makeEnvelope("event", "chat.delta", { messageId: assistantId, text, conversationId }),
           );
         },
-        onStateChange: () => {},
+        onStateChange: (state) => {
+          if (state !== "idle") {
+            postToPort(port, makeEnvelope("event", "chat.state", { state, conversationId }));
+          }
+        },
         saveSession: saveAgentSession,
         executeTool: async (call: ToolCall) => {
           armWatchdog();
