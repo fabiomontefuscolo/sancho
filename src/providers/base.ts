@@ -5,6 +5,8 @@ export interface ProviderMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string;
   toolCallId?: string;
+  toolName?: string;
+  toolCalls?: ToolCall[];
   imageBase64?: string;
 }
 

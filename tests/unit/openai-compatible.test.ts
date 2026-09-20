@@ -112,3 +112,47 @@ describe("OpenAICompatibleProvider", () => {
     expect(getError()).toBeTruthy();
   });
 });
+
+describe("tool-call message conversion", () => {
+  it("serializes assistant tool-calls and tool results as a valid sequence", async () => {
+    const fetchMock = vi.fn(async () => new Response(sseBody("ok"), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = new OpenAICompatibleProvider({
+      providerId: "custom",
+      baseUrl: "http://127.0.0.1:9/v1",
+      model: "m",
+      apiKey: "k",
+    });
+    const { events } = collect();
+
+    await provider.streamChat(
+      [
+        { role: "user", content: "read the page" },
+        {
+          role: "assistant",
+          content: "",
+          toolCalls: [{ id: "call-1", name: "readPage", arguments: {}, tabId: 1 }],
+        },
+        {
+          role: "tool",
+          toolCallId: "call-1",
+          toolName: "readPage",
+          content: '{"ok":true}',
+        },
+      ],
+      [],
+      events,
+    );
+
+    const body = JSON.parse((fetchMock.mock.calls[0] as unknown[])[1]!.body as string) as {
+      messages: Array<Record<string, unknown>>;
+    };
+    const assistant = body.messages[1]!;
+    const tool = body.messages[2]!;
+    expect(assistant.tool_calls).toEqual([
+      expect.objectContaining({ id: "call-1", type: "function" }),
+    ]);
+    expect(tool.role).toBe("tool");
+    expect(tool.tool_call_id).toBe("call-1");
+  });
+});

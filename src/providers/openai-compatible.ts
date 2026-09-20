@@ -58,6 +58,7 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
           events.onDelta(part.text);
         } else if (part.type === "tool-call") {
           events.onToolCall({
+            id: part.toolCallId,
             name: part.toolName,
             arguments: (part.input ?? {}) as Record<string, unknown>,
             tabId: 0,
@@ -81,9 +82,23 @@ function toModelMessage(message: ProviderMessage): ModelMessage {
         {
           type: "tool-result",
           toolCallId: message.toolCallId ?? "unknown",
-          toolName: "unknown",
+          toolName: message.toolName ?? "unknown",
           output: { type: "text", value: message.content },
         },
+      ],
+    };
+  }
+  if (message.role === "assistant" && message.toolCalls?.length) {
+    return {
+      role: "assistant",
+      content: [
+        ...(message.content ? [{ type: "text" as const, text: message.content }] : []),
+        ...message.toolCalls.map((call) => ({
+          type: "tool-call" as const,
+          toolCallId: call.id ?? call.name,
+          toolName: call.name,
+          input: call.arguments,
+        })),
       ],
     };
   }

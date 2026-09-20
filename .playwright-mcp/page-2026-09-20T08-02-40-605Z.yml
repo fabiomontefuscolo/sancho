@@ -1,0 +1,29 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "Open conversations" [ref=e5] [cursor=pointer]: ☰
+    - button "Open settings" [ref=e6] [cursor=pointer]: ⚙
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: Read https://lobehub.com/skills/bfollington-terma-strudel/skill.md to understand how to install and use this skill. Install it as documented, then open the installed SKILL.md and follow its instructions. Ask for confirmation before any credential use, external service setup, or irreversible action.
+      - generic [ref=e11]: Sun Sep 20 09:55
+    - generic [ref=e12]:
+      - button "Copy message" [ref=e13] [cursor=pointer]
+      - paragraph [ref=e15]: I'll start by reading the current page to understand what's available.
+      - generic [ref=e16]: Sun Sep 20 09:55
+    - generic [ref=e17]:
+      - paragraph [ref=e18]: did you read that?
+      - generic [ref=e19]: Sun Sep 20 09:56
+    - generic [ref=e20]:
+      - button "Copy message" [ref=e21] [cursor=pointer]
+      - paragraph [ref=e23]: "I have to be honest: no, I haven't read it yet. My previous message said I'd start by reading the current page, but I didn't actually complete that either. Let me do it now."
+      - generic [ref=e24]: Sun Sep 20 09:56
+    - generic [ref=e25]:
+      - paragraph [ref=e26]: "--- name: strudel description: This skill should be used when working with Strudel.cc, a live-coding music environment. Use when creating musical patterns, drum sequences, melodies, basslines, or generative compositions. The user will always want to run Strudel code in the browser, either by copy-pasting or by providing a clickable URL with the code encoded in base64. --- # Strudel ## Overview Strudel is a browser-based live-coding environment that ports TidalCycles' pattern language to JavaScript. It uses pure functional programming to create musical patterns that can include drums, melodies, synthesis, and effects. Patterns are immutable query functions that transform time spans into event streams, supporting mini-notation DSL, Euclidean rhythms, and extensive audio processing. ## When to Use This Skill Use this skill when: - Creating drum patterns, melodies, basslines, or full compositions - Generating algorithmic or generative music - Applying effects like filters, reverb, delay, or distortion - Debugging Strudel code or explaining pattern behavior - Encoding Strudel code into shareable URLs ## Core Workflow ### 1. Understanding the User's Musical Intent When a user requests a pattern, clarify: - **Genre/style** (techno, ambient, jazz, etc.) - **Artist references** (Lorn, Clams Casino, Aphex Twin, etc.) - **Tempo** (BPM or cycles per minute) - **Elements needed** (drums only, drums + bass, full arrangement) - **Complexity level** (simple loop vs. generative/evolving) **For genre/artist-specific techniques**, consult `references/genre-styles.md` which provides: - Sonic characteristics for common genres and artists - Strudel implementation patterns - Concrete code examples for each style - Typical tempo ranges, effects, and structural elements ### 2. Writing the Pattern Build patterns using Strudel's functional, compositional approach: **Basic structure:** ```javascript // Simple drum pattern s(\"bd hh sd hh\") // With tempo s(\"bd hh sd hh\").cpm(120) // Layered with stack stack( s(\"bd(3,8)\"), // Kick drum s(\"hh*8\"), // Hi-hats s(\"~ sd ~ sd\") // Snare on backbeat ).cpm(120) ``` **Key patterns:** - Use mini-notation (`\"bd hh sd\"`) for concise rhythm specification - Use `stack()` to layer multiple patterns - Use `.cpm()` for tempo in cycles per minute - Use Euclidean rhythms `(pulses, steps)` for interesting distributions - Use lambda functions for transformations: `.off(1/8, x => x.add(7))`"
+      - generic [ref=e27]: Sun Sep 20 10:00
+    - generic [ref=e28]:
+      - paragraph [ref=e29]: can you create a harmonic field example in this website?
+      - generic [ref=e30]: Sun Sep 20 10:01
+  - generic [ref=e31]:
+    - textbox "Message" [ref=e32]:
+      - /placeholder: Message the agent…
+    - button "Send" [disabled] [ref=e33]

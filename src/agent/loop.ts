@@ -86,7 +86,9 @@ export async function runAgentLoop(deps: LoopDeps, session: AgentSession): Promi
       return session;
     }
 
-    if (round.text) messages.push({ role: "assistant", content: round.text });
+    if (round.text || round.toolCalls.length > 0) {
+      messages.push({ role: "assistant", content: round.text, toolCalls: round.toolCalls });
+    }
 
     for (const call of round.toolCalls) {
       await transition(session, "acting", deps);
@@ -104,7 +106,8 @@ export async function runAgentLoop(deps: LoopDeps, session: AgentSession): Promi
       session.pendingToolCall = null;
       messages.push({
         role: "tool",
-        toolCallId: call.name,
+        toolCallId: call.id ?? call.name,
+        toolName: call.name,
         content: JSON.stringify(output),
       });
     }

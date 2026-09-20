@@ -98,3 +98,42 @@ describe("agent loop", () => {
     expect(saved.every((session) => session.conversationId === "global")).toBe(true);
   });
 });
+
+describe("tool-call history", () => {
+  it("sends the second round an assistant message carrying tool-call parts and matching tool results", async () => {
+    const seen: ProviderMessage[][] = [];
+    class RecordingProvider extends BaseLLMProvider {
+      readonly id = "recording";
+      calls = 0;
+      async streamChat(
+        messages: ProviderMessage[],
+        _tools: never[],
+        events: StreamEvents,
+      ): Promise<void> {
+        this.calls += 1;
+        seen.push(messages.map((message) => ({ ...message })));
+        if (this.calls === 1) {
+          events.onToolCall({ id: "call-1", name: "readPage", arguments: {}, tabId: 1 });
+        } else {
+          events.onDelta("done");
+        }
+        events.onDone();
+      }
+    }
+
+    const provider = new RecordingProvider();
+    const { deps } = makeDeps(provider);
+    await runAgentLoop(deps, newAgentSession("global"));
+
+    const secondRound = seen[1]!;
+    const assistant = secondRound[secondRound.length - 2]!;
+    const tool = secondRound[secondRound.length - 1]!;
+    expect(assistant.role).toBe("assistant");
+    expect(assistant.toolCalls).toEqual([
+      expect.objectContaining({ id: "call-1", name: "readPage" }),
+    ]);
+    expect(tool).toEqual(
+      expect.objectContaining({ role: "tool", toolCallId: "call-1", toolName: "readPage" }),
+    );
+  });
+});
