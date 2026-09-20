@@ -74,6 +74,7 @@ export async function runAgentLoop(deps: LoopDeps, session: AgentSession): Promi
     const round = await runRound(deps.provider, messages, deps);
 
     if (round.error) {
+      session.lastError = round.error.message;
       await transition(session, "error", deps);
       return session;
     }

@@ -144,7 +144,9 @@ describe("tool-call message conversion", () => {
       events,
     );
 
-    const body = JSON.parse((fetchMock.mock.calls[0] as unknown[])[1]!.body as string) as {
+    const body = JSON.parse(
+      ((fetchMock.mock.calls[0] as unknown[])[1] as { body: string }).body,
+    ) as {
       messages: Array<Record<string, unknown>>;
     };
     const assistant = body.messages[1]!;

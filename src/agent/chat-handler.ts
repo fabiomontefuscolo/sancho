@@ -322,16 +322,29 @@ export async function handleChatSend(
     logEvent("run end", { conversationId, provider: provider.id });
   }
 
-  if (assistantText) {
+  const finalText =
+    finalSession.state === "error"
+      ? `${assistantText}${assistantText ? "\n\n" : ""}Error: ${finalSession.lastError ?? "the run failed"}`
+      : assistantText;
+  if (finalText) {
     conversation.messages.push({
       id: assistantId,
       role: "assistant",
-      parts: [{ type: "text", text: assistantText }],
+      parts: [{ type: "text", text: finalText }],
       tabId: payload.tabId,
       createdAt: Date.now(),
     });
     await saveConversationRecord(conversation);
     void postConversationsState(port);
+  }
+  if (finalSession.state === "error") {
+    postToPort(
+      port,
+      makeEnvelope("event", "chat.error", {
+        message: finalSession.lastError ?? "the run failed",
+        conversationId,
+      }),
+    );
   }
   if (finalSession.state === "done" || finalSession.state === "stopped") {
     await clearAgentSession();

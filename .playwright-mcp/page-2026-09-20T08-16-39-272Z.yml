@@ -1,0 +1,22 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "Open conversations" [ref=e5] [cursor=pointer]: ☰
+    - button "Open settings" [ref=e6] [cursor=pointer]: ⚙
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: We are at the strudel.cc website. Are you able to create a basic demonstration of harmonic fields by creating some code in this website?
+      - generic [ref=e11]: Sun Sep 20 10:12
+    - generic [ref=e12]:
+      - paragraph [ref=e13]: nothing?
+      - generic [ref=e14]: Sun Sep 20 10:13
+    - generic [ref=e18]:
+      - paragraph [ref=e19]: say hi
+      - generic [ref=e20]: Sun Sep 20 10:16
+    - generic [ref=e21]:
+      - button "Copy message" [ref=e22] [cursor=pointer]
+      - generic [ref=e23]: Sun Sep 20 10:16
+  - generic [ref=e24]: readPage (started)
+  - generic [ref=e15]:
+    - textbox "Message" [ref=e16]:
+      - /placeholder: Message the agent…
+    - button "Send" [disabled] [ref=e17]

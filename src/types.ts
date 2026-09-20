@@ -88,6 +88,7 @@ export interface AgentSession {
   iteration: number;
   maxIterations: number;
   pendingToolCall: ToolCall | null;
+  lastError?: string;
 }
 
 export interface ToolCall {
