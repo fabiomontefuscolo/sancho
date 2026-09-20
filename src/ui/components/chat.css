@@ -14,7 +14,8 @@ body,
   --chat-border: #e8eaed;
   --chat-input-border: #dadce0;
   --chat-bubble-assistant: #f1f3f4;
-  --chat-code-bg: #f6f8fa;
+  --chat-code-bg: #00000011;
+  --chat-code-border: #00000033;
   --chat-accent: #1a73e8;
   --chat-accent-text: #fff;
   --chat-danger: #d93025;
@@ -32,7 +33,8 @@ body,
     --chat-border: #3c4043;
     --chat-input-border: #5f6368;
     --chat-bubble-assistant: #3c4043;
-    --chat-code-bg: #17191d;
+    --chat-code-bg: #ffffff11;
+    --chat-code-border: #ffffff33;
     --chat-accent: #8ab4f8;
     --chat-danger: #f28b82;
     --chat-accent-text: #202124;
@@ -371,9 +373,15 @@ body,
   max-width: 100%;
 }
 
+.sancho-message-assistant table {
+  background: var(--chat-code-bg);
+  border: 1px solid var(--chat-code-border);
+  border-radius: 8px;
+}
+
 .sancho-message-assistant th,
 .sancho-message-assistant td {
-  border: 1px solid var(--chat-border);
+  border: 1px solid var(--chat-code-border);
   padding: 4px 8px;
 }
 
@@ -389,7 +397,7 @@ body,
   gap: 8px;
   margin-top: 8px;
   padding: 4px 10px;
-  border: 1px solid var(--chat-border);
+  border: 1px solid var(--chat-code-border);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
   background: var(--chat-code-bg);
@@ -406,7 +414,7 @@ body,
 .sancho-message-assistant pre {
   margin: 0 0 8px;
   padding: 10px;
-  border: 1px solid var(--chat-border);
+  border: 1px solid var(--chat-code-border);
   border-radius: 0 0 8px 8px;
   background: var(--chat-code-bg);
   overflow-x: auto;
