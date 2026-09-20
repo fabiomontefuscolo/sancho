@@ -4,7 +4,7 @@ import type { CodeHeaderProps } from "@assistant-ui/react-markdown";
 import { CopyButton } from "./copy-button";
 
 export const SyntaxHighlighter = makePrismAsyncLightSyntaxHighlighter({
-  customStyle: { margin: 0, background: "transparent", fontSize: "inherit" },
+  customStyle: { margin: 0, fontSize: "inherit" },
 });
 
 export const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {

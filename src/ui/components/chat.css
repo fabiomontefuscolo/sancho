@@ -416,7 +416,7 @@ body,
   padding: 10px;
   border: 1px solid var(--chat-code-border);
   border-radius: 0 0 8px 8px;
-  background: var(--chat-code-bg);
+  background: var(--chat-code-bg) !important;
   overflow-x: auto;
   max-width: 100%;
   white-space: pre;
