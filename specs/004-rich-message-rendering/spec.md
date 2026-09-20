@@ -5,6 +5,13 @@
 **Status**: Draft
 **Input**: User description: "Refine the messages UI: markdown rendering for agent messages, syntax highlighting for code blocks, a copy icon on each message and code block that copies the raw markdown, and accessible readable fonts."
 
+## Clarifications
+
+### Session 2026-09-20
+
+- Q: Where should the font-size setting live for users to adjust message text size? → A: Both — a control in the sidebar settings view and the options page, kept in sync.
+- Q: For the readable body font, should the extension use the user's system fonts or bundle a dedicated accessibility typeface? → A: System font stacks for body and monospace code.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Reading a formatted agent answer (Priority: P1)
@@ -57,7 +64,7 @@ The user wants to paste an agent answer into a note or an issue. They click a co
 
 ### User Story 4 - Comfortable reading typography (Priority: P2)
 
-The user reads long conversations comfortably. Body text and code use readable, accessibility-conscious fonts with adequate size and spacing; code uses a monospaced font. The user can adjust the message font size (small / medium / large) from the settings view, and the choice persists across sessions.
+The user reads long conversations comfortably. Body text and code use readable, accessibility-conscious fonts with adequate size and spacing; code uses a monospaced font. The user can adjust the message font size (small / medium / large) from the sidebar settings view or the options page (kept in sync), and the choice persists across sessions.
 
 **Why this priority**: Readability affects every interaction; a font-size option serves users with low vision or dyslexia preferences without redesigning the layout.
 
@@ -66,7 +73,7 @@ The user reads long conversations comfortably. Body text and code use readable, 
 **Acceptance Scenarios**:
 
 1. **Given** the chat view, **When** messages are displayed, **Then** body text and code render in clearly readable fonts with adequate size and line spacing at the default setting.
-2. **Given** the settings view, **When** the user selects a different message font size, **Then** message text rescales immediately in the chat view.
+2. **Given** the sidebar settings view or the options page, **When** the user selects a different message font size, **Then** message text rescales immediately in the chat view.
 3. **Given** a non-default font size was selected, **When** the extension is reloaded, **Then** the previously selected size is applied.
 4. **Given** any font-size setting, **When** messages contain headings, lists, code, and timestamps, **Then** the layout does not break and content does not overflow (003 layout guarantees are preserved).
 
@@ -92,8 +99,8 @@ The user reads long conversations comfortably. Body text and code use readable, 
 - **FR-007**: Copy failures MUST surface visible feedback to the user rather than failing silently.
 - **FR-008**: Code blocks wider than the message MUST scroll horizontally within the block; the message list MUST NOT scroll horizontally (003 guarantees preserved).
 - **FR-009**: User-authored messages MAY render as plain text; markdown rendering is required for agent messages.
-- **FR-010**: Message body text and code MUST use readable, accessibility-conscious fonts; code MUST use a monospaced font.
-- **FR-011**: The user MUST be able to choose a message font size from at least three options in the settings view; the choice MUST persist across sessions and apply immediately.
+- **FR-010**: Message body text and code MUST use readable, accessibility-conscious system font stacks (no bundled or downloaded font files); code MUST use a system monospaced font.
+- **FR-011**: The user MUST be able to choose a message font size from at least three options in both the sidebar settings view and the options page (a single synced preference); the choice MUST persist across sessions and apply immediately.
 - **FR-012**: Message timestamps and all layout guarantees from feature 003 MUST remain intact with the new rendering.
 
 ### Key Entities _(include if feature involves data)_
@@ -116,6 +123,6 @@ The user reads long conversations comfortably. Body text and code use readable, 
 - Markdown rendering applies to agent messages; user-authored messages continue to render as plain text (their content is typed by the user, not authored as markdown).
 - Copy icons are required on agent messages; user messages already hold user-typed text and do not need a copy affordance (copying the user's own input is rarely useful).
 - Syntax highlighting covers a curated set of common languages; unknown or untagged code blocks render as plain monospaced code.
-- Font-size adjustment is offered as a discrete setting (small / medium / large) in the existing settings view rather than free-form zoom.
-- The default font stack uses locally available system fonts chosen for readability; no font files are downloaded at runtime (consistent with the no-remote-content safety rule).
+- Font-size adjustment is offered as a discrete setting (small / medium / large) in the sidebar settings view and the options page (kept in sync) rather than free-form zoom.
+- Fonts use curated locally available system stacks (readable UI stack for body, system monospace for code); no font files are bundled or downloaded at runtime (consistent with the no-remote-content safety rule).
 - Copy confirmations use the existing lightweight feedback patterns of the sidebar (transient label on the control).
