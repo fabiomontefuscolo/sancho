@@ -18,7 +18,7 @@
 
 **Purpose**: No new dependencies or configuration — all logic uses the existing content-script injection, zod schemas, and test harness. Intentionally a single no-op checkpoint.
 
-- [ ] T001 Verify baseline gates pass before starting (`pnpm typecheck && pnpm exec vitest run && pnpm test:e2e`)
+- [x] T001 Verify baseline gates pass before starting (`pnpm typecheck && pnpm exec vitest run && pnpm test:e2e`)
 
 ---
 
@@ -28,8 +28,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 [P] Create tests/unit/refs.test.ts: mint returns `e<N>` ids and is idempotent per element; resolve returns the live element; after removing the element from the DOM, resolve reports stale; refs minted in one registry never collide
-- [ ] T003 Create src/content/refs.ts — per-tab registry on the isolated-world `globalThis` (guarded like `__sanchoContentLoaded` so repeated injections share it): `Map<string, WeakRef<Element>>` + `WeakMap<Element, string>`; API: `mintRef(el)`, `resolveRef(ref)` → `{ status: "ok", element } | { status: "stale" } | { status: "unknown" }` per research R1
+- [x] T002 [P] Create tests/unit/refs.test.ts: mint returns `e<N>` ids and is idempotent per element; resolve returns the live element; after removing the element from the DOM, resolve reports stale; refs minted in one registry never collide
+- [x] T003 Create src/content/refs.ts — per-tab registry on the isolated-world `globalThis` (guarded like `__sanchoContentLoaded` so repeated injections share it): `Map<string, WeakRef<Element>>` + `WeakMap<Element, string>`; API: `mintRef(el)`, `resolveRef(ref)` → `{ status: "ok", element } | { status: "stale" } | { status: "unknown" }` per research R1
 
 **Checkpoint**: refs unit tests green; registry usable by later stories
 
@@ -43,14 +43,14 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T004 [P] [US1] Create tests/unit/snapshot.test.ts: interactive elements collected with role and accessible name (aria-label → aria-labelledby → label → text ≤ "80 chars" → placeholder/title/alt/value) per research R2; non-interactive noise omitted; password inputs appear with role+name but never value (FR-010); cap default 300 with `truncated` count (FR-002); open shadow roots pierced (FR-008 partial); same-origin iframe entries marked, cross-origin yields one inaccessible marker line (contract 4)
-- [ ] T005 [P] [US1] Create tests/e2e/page-tools.spec.ts: serve a local page with a labeled button among 50+ elements and a CodeMirror-stand-in contenteditable; drive tools via the real background path; assert snapshot names the button, click-by-ref works first attempt (SC-001), stale ref returns "stale reference" and acts on nothing (SC-004)
+- [x] T004 [P] [US1] Create tests/unit/snapshot.test.ts: interactive elements collected with role and accessible name (aria-label → aria-labelledby → label → text ≤ "80 chars" → placeholder/title/alt/value) per research R2; non-interactive noise omitted; password inputs appear with role+name but never value (FR-010); cap default 300 with `truncated` count (FR-002); open shadow roots pierced (FR-008 partial); same-origin iframe entries marked, cross-origin yields one inaccessible marker line (contract 4)
+- [x] T005 [P] [US1] Create tests/e2e/page-tools.spec.ts: serve a local page with a labeled button among 50+ elements and a CodeMirror-stand-in contenteditable; drive tools via the real background path; assert snapshot names the button, click-by-ref works first attempt (SC-001), stale ref returns "stale reference" and acts on nothing (SC-004)
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Create src/content/snapshot.ts — `buildSnapshot(maxElements = 300)`: collects `a[href], button, input, select, textarea, summary, [contenteditable], [role=button|link|checkbox|tab|menuitem|option|switch|textbox|combobox], [tabindex] >= 0` walking open shadow roots and same-origin iframes; accessible-name resolution order per research R2; mints a ref per element via T003; returns `{ elements: SnapshotEntry[], truncated: number }` where SnapshotEntry is `{ ref, role, name, frame }` with `frame` = `null` for top frame or `"[frame N]"` per data-model
-- [ ] T007 [US1] Extend src/agent/tools.ts — add `snapshotPage` tool definition `{ maxElements?: number }` (default 300, description tells the agent to snapshot before interacting per research R5); add optional `ref` to clickElement/fillField/selectOption schemas with a zod refinement requiring exactly one of `selector`/`ref`; route `page.snapshot` and ref-carrying actions in executeTool
-- [ ] T008 [US1] Wire entrypoints/content.ts — add `page.snapshot` case calling buildSnapshot; in the click/fill/select cases resolve `ref` via T003 when present (re-resolution at action time, FR-004): `{ status: "stale" }` or unknown ref returns `{ ok: false, error: "stale reference" }` and acts on nothing; selector path unchanged
+- [x] T006 [US1] Create src/content/snapshot.ts — `buildSnapshot(maxElements = 300)`: collects `a[href], button, input, select, textarea, summary, [contenteditable], [role=button|link|checkbox|tab|menuitem|option|switch|textbox|combobox], [tabindex] >= 0` walking open shadow roots and same-origin iframes; accessible-name resolution order per research R2; mints a ref per element via T003; returns `{ elements: SnapshotEntry[], truncated: number }` where SnapshotEntry is `{ ref, role, name, frame }` with `frame` = `null` for top frame or `"[frame N]"` per data-model
+- [x] T007 [US1] Extend src/agent/tools.ts — add `snapshotPage` tool definition `{ maxElements?: number }` (default 300, description tells the agent to snapshot before interacting per research R5); add optional `ref` to clickElement/fillField/selectOption schemas with a zod refinement requiring exactly one of `selector`/`ref`; route `page.snapshot` and ref-carrying actions in executeTool
+- [x] T008 [US1] Wire entrypoints/content.ts — add `page.snapshot` case calling buildSnapshot; in the click/fill/select cases resolve `ref` via T003 when present (re-resolution at action time, FR-004): `{ status: "stale" }` or unknown ref returns `{ ok: false, error: "stale reference" }` and acts on nothing; selector path unchanged
 
 **Checkpoint**: US1 independently verifiable — snapshot/refs unit tests + e2e click-by-ref green
 
@@ -64,13 +64,13 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T009 [P] [US2] Create tests/unit/edit-text.test.ts: contenteditable replace dispatches cancelable `beforeinput` with `inputType: "insertReplacementText"` and updates the editable; insert dispatches `inputType: "insertText"` at caret preserving surroundings (FR-007); input/textarea path uses the prototype native setter and fires bubbling `input` + `change` (FR-006); missing target returns `{ ok: false, error }` and changes nothing (contract 13)
+- [x] T009 [P] [US2] Create tests/unit/edit-text.test.ts: contenteditable replace dispatches cancelable `beforeinput` with `inputType: "insertReplacementText"` and updates the editable; insert dispatches `inputType: "insertText"` at caret preserving surroundings (FR-007); input/textarea path uses the prototype native setter and fires bubbling `input` + `change` (FR-006); missing target returns `{ ok: false, error }` and changes nothing (contract 13)
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Create src/content/edit-text.ts — `setEditorText(target, text, mode)` per research R3: focus target; contenteditable replace = select-all then `beforeinput` `InputEvent` `insertReplacementText`, fallback `document.execCommand("insertText")` when content unchanged; insert = `beforeinput` `insertText` at caret; input/textarea = native setter + `input`/`change` events
-- [ ] T011 [US2] Extend src/agent/tools.ts and entrypoints/content.ts — add `setEditorText` tool `{ selector?: string, ref?: string, text: string, mode: "replace" | "insert" }` with exactly-one-of refinement and default mode `replace` per data-model; route `page.setText` resolving selector or ref via the T003 registry
-- [ ] T012 [P] [US2] Extend tests/e2e/page-tools.spec.ts: replace on the CodeMirror stand-in → host-mirrored state equals new text (SC-002); insert at caret preserves surroundings; plain input path fires events
+- [x] T010 [US2] Create src/content/edit-text.ts — `setEditorText(target, text, mode)` per research R3: focus target; contenteditable replace = select-all then `beforeinput` `InputEvent` `insertReplacementText`, fallback `document.execCommand("insertText")` when content unchanged; insert = `beforeinput` `insertText` at caret; input/textarea = native setter + `input`/`change` events
+- [x] T011 [US2] Extend src/agent/tools.ts and entrypoints/content.ts — add `setEditorText` tool `{ selector?: string, ref?: string, text: string, mode: "replace" | "insert" }` with exactly-one-of refinement and default mode `replace` per data-model; route `page.setText` resolving selector or ref via the T003 registry
+- [x] T012 [P] [US2] Extend tests/e2e/page-tools.spec.ts: replace on the CodeMirror stand-in → host-mirrored state equals new text (SC-002); insert at caret preserves surroundings; plain input path fires events
 
 **Checkpoint**: US2 independently verifiable — edit-text unit tests + e2e green
 
@@ -84,11 +84,11 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T013 [P] [US3] Extend tests/unit/snapshot.test.ts and tests/e2e/page-tools.spec.ts: ref-based click/fill/setEditorText results include role and name identical to the snapshot entry
+- [x] T013 [P] [US3] Extend tests/unit/snapshot.test.ts and tests/e2e/page-tools.spec.ts: ref-based click/fill/setEditorText results include role and name identical to the snapshot entry
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Return `{ ok: true, role, name }` from the ref-based click/fill/select/setEditorText paths in entrypoints/content.ts (role+name looked up from the resolved element using the snapshot.ts naming helpers)
+- [x] T014 [US3] Return `{ ok: true, role, name }` from the ref-based click/fill/select/setEditorText paths in entrypoints/content.ts (role+name looked up from the resolved element using the snapshot.ts naming helpers)
 
 **Checkpoint**: US3 verifiable — narration fields present in all ref-based results
 
@@ -98,7 +98,7 @@
 
 **Purpose**: Whole-feature verification
 
-- [ ] T015 Run the full gates: `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — coverage gates ≥ 80% unchanged, all e2e suites green
+- [x] T015 Run the full gates: `pnpm typecheck && pnpm exec vitest run --coverage && pnpm lint && pnpm build && pnpm test:e2e` — coverage gates ≥ 80% unchanged, all e2e suites green
 - [ ] T016 [P] Manual quickstart validation in Brave per specs/005-page-interaction-tools/quickstart.md (snapshot+click on strudel.cc, stale ref, CodeMirror replace, insert mode, plain form, busy-page bounds)
 
 ---
