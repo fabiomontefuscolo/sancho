@@ -16,6 +16,7 @@ body,
   --chat-bubble-assistant: #f1f3f4;
   --chat-accent: #1a73e8;
   --chat-accent-text: #fff;
+  --chat-danger: #d93025;
   --chat-disabled: #dadce0;
   --chat-banner-bg: #fef7e0;
   --chat-banner-border: #f2e3ac;
@@ -31,6 +32,7 @@ body,
     --chat-input-border: #5f6368;
     --chat-bubble-assistant: #3c4043;
     --chat-accent: #8ab4f8;
+    --chat-danger: #f28b82;
     --chat-accent-text: #202124;
     --chat-disabled: #3c4043;
     --chat-banner-bg: #3d3423;
@@ -284,4 +286,26 @@ body,
 
 .sancho-conversation-delete:hover {
   color: var(--chat-text);
+}
+
+.sancho-copy-button {
+  border: 1px solid var(--chat-border);
+  background: var(--chat-bg);
+  color: var(--chat-text-secondary);
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.sancho-copy-button:hover {
+  color: var(--chat-text);
+}
+
+.sancho-copy-button[data-state="copied"] {
+  color: var(--chat-accent);
+}
+
+.sancho-copy-button[data-state="failed"] {
+  color: var(--chat-danger);
 }

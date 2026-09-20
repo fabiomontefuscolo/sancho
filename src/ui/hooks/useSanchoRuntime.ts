@@ -40,6 +40,7 @@ export interface SanchoRuntime {
   selectConversation: (conversationId: string) => void;
   newConversation: () => void;
   deleteConversation: (conversationId: string) => void;
+  getMessageRawText: (messageId: string) => string;
 }
 
 export function useSanchoRuntime(tabId: number): SanchoRuntime {
@@ -52,6 +53,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [activeConversationId, setActiveConversationId] = useState("");
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const streamingRef = useRef<Map<string, string>>(new Map());
+  const rawTextRef = useRef<Map<string, string>>(new Map());
   const tabIdRef = useRef(tabId);
   tabIdRef.current = tabId;
   const activeConversationRef = useRef("");
@@ -65,6 +67,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       const current = streamingRef.current.get(messageId) ?? "";
       const next = current + text;
       streamingRef.current.set(messageId, next);
+      rawTextRef.current.set(messageId, next);
       setMessages((prev) => {
         const existing = prev.findIndex((message) => message.id === messageId);
         const threadMessage: ThreadMessageLike = {
@@ -118,6 +121,16 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         const conversation = envelope.payload as Conversation;
         setActiveConversationId(conversation.id);
         streamingRef.current.clear();
+        rawTextRef.current.clear();
+        for (const message of conversation.messages) {
+          rawTextRef.current.set(
+            message.id,
+            message.parts
+              .filter((part) => part.type === "text")
+              .map((part) => part.text)
+              .join("\n\n"),
+          );
+        }
         setMessages(conversation.messages.map(toThreadMessage));
       } else if (envelope.type === "conversations.state") {
         setConversations(envelope.payload.conversations);
@@ -200,6 +213,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       newConversation: () => {
         portRef.current?.postMessage(makeEnvelope("request", "conversations.new", {}));
       },
+      getMessageRawText: (messageId: string) => rawTextRef.current.get(messageId) ?? "",
       deleteConversation: (conversationId: string) => {
         portRef.current?.postMessage(
           makeEnvelope("request", "conversations.delete", { conversationId }),
