@@ -1,14 +1,34 @@
 import { z } from "zod";
 import type { ToolDefinition } from "../providers/base";
+import type { PageSnapshot } from "../content/snapshot";
 import { getActiveConversation } from "../storage/conversations";
 import { sendToContent } from "./inject";
 
 export const readPageArgs = z.object({
   mode: z.enum(["full", "selection"]).default("full"),
 });
-export const fillFieldArgs = z.object({ selector: z.string(), value: z.string() });
-export const clickElementArgs = z.object({ selector: z.string() });
-export const selectOptionArgs = z.object({ selector: z.string(), value: z.string() });
+
+const targetShape = { selector: z.string().optional(), ref: z.string().optional() };
+
+function exactlyOneTarget(
+  value: { selector?: string | undefined; ref?: string | undefined },
+  ctx: z.RefinementCtx,
+) {
+  if (Boolean(value.selector) === Boolean(value.ref)) {
+    ctx.addIssue({ code: "custom", message: "provide exactly one of selector or ref" });
+  }
+}
+
+export const snapshotPageArgs = z.object({
+  maxElements: z.number().int().positive().default(300),
+});
+export const fillFieldArgs = z
+  .object({ ...targetShape, value: z.string() })
+  .superRefine(exactlyOneTarget);
+export const clickElementArgs = z.object({ ...targetShape }).superRefine(exactlyOneTarget);
+export const selectOptionArgs = z
+  .object({ ...targetShape, value: z.string() })
+  .superRefine(exactlyOneTarget);
 export const captureScreenshotArgs = z.object({});
 
 export const toolDefinitions: ToolDefinition[] = [
@@ -19,19 +39,27 @@ export const toolDefinitions: ToolDefinition[] = [
     parameters: readPageArgs,
   },
   {
+    name: "snapshotPage",
+    description:
+      "Take a snapshot of the active tab's interactive elements (links, buttons, inputs, selects, textareas, editable regions) as a compact outline of role, accessible name, and a stable element reference (e.g. e3). ALWAYS snapshot before clicking, filling, selecting, or editing so you can target elements by reference instead of guessing selectors. References are valid until the page navigates.",
+    parameters: snapshotPageArgs,
+  },
+  {
     name: "fillField",
     description:
-      "Fill a text input, textarea, or contenteditable element identified by a CSS selector.",
+      "Fill a text input, textarea, or contenteditable element. Target it by ref from snapshotPage (preferred) or by CSS selector.",
     parameters: fillFieldArgs,
   },
   {
     name: "clickElement",
-    description: "Click an element identified by a CSS selector.",
+    description:
+      "Click an element. Target it by ref from snapshotPage (preferred) or by CSS selector.",
     parameters: clickElementArgs,
   },
   {
     name: "selectOption",
-    description: "Select an option of a <select> element identified by a CSS selector.",
+    description:
+      "Select an option of a <select> element. Target it by ref from snapshotPage (preferred) or by CSS selector.",
     parameters: selectOptionArgs,
   },
   {
@@ -72,6 +100,11 @@ export async function executeTool(
   switch (name) {
     case "readPage":
       return sendToContent<typeof parsed, PageReadResult>(tabId, { type: "page.read", ...parsed });
+    case "snapshotPage":
+      return sendToContent<typeof parsed, PageSnapshot>(tabId, {
+        type: "page.snapshot",
+        ...parsed,
+      });
     case "fillField":
       return sendToContent<typeof parsed, OkResult>(tabId, { type: "page.fill", ...parsed });
     case "clickElement":

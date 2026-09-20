@@ -1,5 +1,10 @@
 const GUARD_KEY = "__sanchoContentLoaded";
 
+import { getSharedRefRegistry } from "../src/content/refs";
+import { buildSnapshot, computeRole, accessibleName } from "../src/content/snapshot";
+
+const refRegistry = getSharedRefRegistry(globalThis as unknown as Record<string, unknown>);
+
 interface PageReadResult {
   title: string;
   url: string;
@@ -8,6 +13,8 @@ interface PageReadResult {
 interface OkResult {
   ok: boolean;
   error?: string;
+  role?: string;
+  name?: string;
 }
 interface SelectionInfo {
   text: string;
@@ -114,10 +121,26 @@ function findElement(selector: string): Element | null {
   }
 }
 
-function fillField(selector: string, value: string): OkResult {
-  const element = findElement(selector);
-  if (!element) return { ok: false, error: `no element matches ${selector}` };
+type TargetResolution = { element: Element } | { failure: OkResult };
 
+function resolveTarget(message: { [key: string]: unknown }): TargetResolution {
+  if (typeof message.ref === "string" && message.ref) {
+    const resolution = refRegistry.resolveRef(message.ref);
+    if (resolution.status === "ok") return { element: resolution.element };
+    return { failure: { ok: false, error: "stale reference" } };
+  }
+  const selector = String(message.selector);
+  const element = findElement(selector);
+  if (!element) return { failure: { ok: false, error: `no element matches ${selector}` } };
+  return { element };
+}
+
+function narrated(element: Element, result: OkResult): OkResult {
+  if (!result.ok) return result;
+  return { ...result, role: computeRole(element), name: accessibleName(element) };
+}
+
+function fillElement(element: Element, value: string): OkResult {
   if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
     element.focus();
     element.value = value;
@@ -138,10 +161,8 @@ function fillField(selector: string, value: string): OkResult {
   return { ok: false, error: "element is not fillable" };
 }
 
-function clickElement(selector: string): OkResult {
-  const element = findElement(selector);
-  if (!(element instanceof HTMLElement))
-    return { ok: false, error: `no element matches ${selector}` };
+function clickElementOn(element: Element): OkResult {
+  if (!(element instanceof HTMLElement)) return { ok: false, error: "element is not clickable" };
   const rect = element.getBoundingClientRect();
   const clientX = rect.left + rect.width / 2;
   const clientY = rect.top + rect.height / 2;
@@ -153,10 +174,9 @@ function clickElement(selector: string): OkResult {
   return { ok: true };
 }
 
-function selectOption(selector: string, value: string): OkResult {
-  const element = findElement(selector);
+function selectOptionOn(element: Element, value: string): OkResult {
   if (!(element instanceof HTMLSelectElement)) {
-    return { ok: false, error: `no <select> matches ${selector}` };
+    return { ok: false, error: "element is not a <select>" };
   }
   const option = Array.from(element.options).find(
     (candidate) => candidate.value === value || candidate.text === value,
@@ -171,12 +191,27 @@ function handleMessage(message: { type: string; [key: string]: unknown }): unkno
   switch (message.type) {
     case "page.read":
       return readPage(message.mode === "selection" ? "selection" : "full");
-    case "page.fill":
-      return fillField(String(message.selector), String(message.value));
-    case "page.click":
-      return clickElement(String(message.selector));
-    case "page.select":
-      return selectOption(String(message.selector), String(message.value));
+    case "page.snapshot":
+      return buildSnapshot(
+        typeof message.maxElements === "number" ? message.maxElements : 300,
+        refRegistry,
+        document,
+      );
+    case "page.fill": {
+      const target = resolveTarget(message);
+      if ("failure" in target) return target.failure;
+      return narrated(target.element, fillElement(target.element, String(message.value)));
+    }
+    case "page.click": {
+      const target = resolveTarget(message);
+      if ("failure" in target) return target.failure;
+      return narrated(target.element, clickElementOn(target.element));
+    }
+    case "page.select": {
+      const target = resolveTarget(message);
+      if ("failure" in target) return target.failure;
+      return narrated(target.element, selectOptionOn(target.element, String(message.value)));
+    }
     case "selection.get": {
       const info = getSelectionInfo();
       const active = document.activeElement;

@@ -9,13 +9,14 @@ import {
 } from "../../src/agent/tools";
 
 describe("tool schemas", () => {
-  it("exposes the five declared tools", () => {
+  it("exposes the six declared tools", () => {
     expect(toolDefinitions.map((tool) => tool.name).sort()).toEqual([
       "captureScreenshot",
       "clickElement",
       "fillField",
       "readPage",
       "selectOption",
+      "snapshotPage",
     ]);
   });
 
