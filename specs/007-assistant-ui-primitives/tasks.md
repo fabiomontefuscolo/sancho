@@ -46,9 +46,9 @@
 
 **Independent Test**: Type a multi-line message, send with Enter, stop a mid-run agent; quickstart.md S1
 
-- [ ] T009 [US1] Write failing component tests in tests/component/sidepanel.test.tsx: send disabled when empty, Enter sends / Shift+Enter newline, stop button visible while running and clicking it posts `chat.cancel`, composer returns to idle on `chat.done`
-- [ ] T010 [US1] Wire `onCancel` to the existing `chat.cancel` bridge op in the `useExternalStoreRuntime` options in src/ui/hooks/useSanchoRuntime.ts
-- [ ] T011 [US1] Restyle the composer in src/ui/components/chat.tsx and src/ui/components/chat.css: rounded card container, `ComposerPrimitive.Input` with `rows={1}` auto-grow, circular icon send button (lucide-react), stop-vs-send rendered via running state/`AuiIf`
+- [x] T009 [US1] Write failing component tests in tests/component/sidepanel.test.tsx: send disabled when empty, Enter sends / Shift+Enter newline, stop button visible while running and clicking it posts `chat.cancel`, composer returns to idle on `chat.done`
+- [x] T010 [US1] Wire `onCancel` to the existing `chat.cancel` bridge op in the `useExternalStoreRuntime` options in src/ui/hooks/useSanchoRuntime.ts
+- [x] T011 [US1] Restyle the composer in src/ui/components/chat.tsx and src/ui/components/chat.css: rounded card container, `ComposerPrimitive.Input` with `rows={1}` auto-grow, circular icon send button (lucide-react), stop-vs-send rendered via running state/`AuiIf`
 
 **Checkpoint**: US1 independently functional and testable
 
@@ -60,10 +60,10 @@
 
 **Independent Test**: Send a tool-triggering prompt; tool entries appear inside the assistant message with running→done states; quickstart.md S2
 
-- [ ] T012 [US2] Write failing component tests in tests/component/sidepanel.test.tsx: reasoning deltas render inside the collapsible group, tool entries show name + running/done status, no empty reasoning block when the model emits none, interrupted tool entries render terminal on `chat.done`/`chat.error`, group absent after conversation reload
-- [ ] T013 [US2] Rework streaming state in src/ui/hooks/useSanchoRuntime.ts: assistant content built as ordered parts (`reasoning` | `tool-call` | `text`) from `chat.delta` `part` and flattened `chat.tool` events; mark tool parts terminal on done/error/cancel
-- [ ] T014 [US2] Render `MessagePrimitive.GroupedParts` + `groupPartByType` with a hand-rolled "Thought process" accordion in `AssistantMessage` in src/ui/components/chat.tsx (final text always visible; group collapsible)
-- [ ] T015 [US2] Remove the tool-activity strip and `toolActivity` plumbing from src/ui/components/chat.tsx and src/ui/hooks/useSanchoRuntime.ts; keep the `agentState` status line; adjust src/ui/components/chat.css
+- [x] T012 [US2] Write failing component tests in tests/component/sidepanel.test.tsx: reasoning deltas render inside the collapsible group, tool entries show name + running/done status, no empty reasoning block when the model emits none, interrupted tool entries render terminal on `chat.done`/`chat.error`, group absent after conversation reload
+- [x] T013 [US2] Rework streaming state in src/ui/hooks/useSanchoRuntime.ts: assistant content built as ordered parts (`reasoning` | `tool-call` | `text`) from `chat.delta` `part` and flattened `chat.tool` events; mark tool parts terminal on done/error/cancel
+- [x] T014 [US2] Render `MessagePrimitive.GroupedParts` + `groupPartByType` with a hand-rolled "Thought process" accordion in `AssistantMessage` in src/ui/components/chat.tsx (final text always visible; group collapsible)
+- [x] T015 [US2] Remove the tool-activity strip and `toolActivity` plumbing from src/ui/components/chat.tsx and src/ui/hooks/useSanchoRuntime.ts; keep the `agentState` status line; adjust src/ui/components/chat.css
 
 **Checkpoint**: US1+US2 functional independently
 
