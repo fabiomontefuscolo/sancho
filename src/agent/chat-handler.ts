@@ -138,7 +138,6 @@ export async function handleChatSend(
 ): Promise<void> {
   const loaded = await getConversation(payload.conversationId);
   const conversation = loaded ?? (await getActiveConversation());
-  const conversationId = conversation.id;
   const userMessage: Message = {
     id: crypto.randomUUID(),
     role: "user",
@@ -152,13 +151,37 @@ export async function handleChatSend(
   await postConversationIfActive(port, conversation);
   void postConversationsState(port);
 
+  await runConversation(conversation, payload.tabId, port);
+}
+
+export async function handleChatRegenerate(port: chrome.runtime.Port): Promise<void> {
+  const conversation = await getActiveConversation();
+  const lastUserIndex = conversation.messages.map((m) => m.role).lastIndexOf("user");
+  if (lastUserIndex < 0) return;
+  abortRun(conversation.id);
+  conversation.messages = conversation.messages.slice(0, lastUserIndex + 1);
+  await saveConversationRecord(conversation);
+  await postConversationIfActive(port, conversation);
+  void postConversationsState(port);
+  await runConversation(conversation, conversation.messages[lastUserIndex]?.tabId ?? 0, port);
+}
+
+async function runConversation(
+  conversation: Conversation,
+  tabId: number,
+  port: chrome.runtime.Port,
+): Promise<void> {
+  const conversationId = conversation.id;
   const assistantId = crypto.randomUUID();
   let provider;
   try {
     provider = await createProvider();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    postToPort(port, makeEnvelope("event", "chat.error", { message, conversationId }, assistantId));
+    postToPort(
+      port,
+      makeEnvelope("event", "chat.error", { message, messageId: assistantId, conversationId }),
+    );
     return;
   }
 
@@ -178,7 +201,11 @@ export async function handleChatSend(
       logEvent("run watchdog fired", { conversationId });
       postToPort(
         port,
-        makeEnvelope("event", "chat.error", { message: WATCHDOG_MESSAGE, conversationId }),
+        makeEnvelope("event", "chat.error", {
+          message: WATCHDOG_MESSAGE,
+          messageId: assistantId,
+          conversationId,
+        }),
       );
       abortRun(conversationId);
     }, RUN_WATCHDOG_MS);
@@ -201,6 +228,7 @@ export async function handleChatSend(
         port,
         makeEnvelope("event", "chat.error", {
           message: "local agent stopped — it will restart on your next message",
+          messageId: assistantId,
           conversationId,
         }),
       );
@@ -209,8 +237,12 @@ export async function handleChatSend(
     provider.setToolInvokeHandler(async (request) => {
       armWatchdog();
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const tabId = tab?.id ?? payload.tabId;
-      const toolCall: ToolCall = { name: request.name, arguments: request.arguments, tabId };
+      const toolTabId = tab?.id ?? tabId;
+      const toolCall: ToolCall = {
+        name: request.name,
+        arguments: request.arguments,
+        tabId: toolTabId,
+      };
       const toolCallId = toolCall.id ?? crypto.randomUUID();
       postToPort(
         port,
@@ -223,7 +255,7 @@ export async function handleChatSend(
         }),
       );
       try {
-        const result = await executeTool(request.name, request.arguments, tabId);
+        const result = await executeTool(request.name, request.arguments, toolTabId);
         postToPort(
           port,
           makeEnvelope("event", "chat.tool", {
@@ -261,7 +293,7 @@ export async function handleChatSend(
     finalSession = await runAgentLoop(
       {
         provider,
-        getMessages: async () => buildProviderMessages(conversation, payload.tabId),
+        getMessages: async () => buildProviderMessages(conversation, tabId),
         signal: abort.signal,
         onDelta: (text) => {
           armWatchdog();
@@ -269,6 +301,18 @@ export async function handleChatSend(
           postToPort(
             port,
             makeEnvelope("event", "chat.delta", { messageId: assistantId, text, conversationId }),
+          );
+        },
+        onReasoningDelta: (text) => {
+          armWatchdog();
+          postToPort(
+            port,
+            makeEnvelope("event", "chat.delta", {
+              messageId: assistantId,
+              text,
+              part: "reasoning" as const,
+              conversationId,
+            }),
           );
         },
         onStateChange: (state) => {
@@ -279,7 +323,7 @@ export async function handleChatSend(
         saveSession: saveAgentSession,
         executeTool: async (call: ToolCall) => {
           armWatchdog();
-          const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
+          const toolCall: ToolCall = { ...call, tabId: call.tabId || tabId };
           const toolCallId = toolCall.id ?? crypto.randomUUID();
           const argsText = JSON.stringify(toolCall.arguments);
           postToPort(
@@ -339,16 +383,12 @@ export async function handleChatSend(
     logEvent("run end", { conversationId, provider: provider.id });
   }
 
-  const finalText =
-    finalSession.state === "error"
-      ? `${assistantText}${assistantText ? "\n\n" : ""}Error: ${finalSession.lastError ?? "the run failed"}`
-      : assistantText;
-  if (finalText) {
+  if (assistantText) {
     conversation.messages.push({
       id: assistantId,
       role: "assistant",
-      parts: [{ type: "text", text: finalText }],
-      tabId: payload.tabId,
+      parts: [{ type: "text", text: assistantText }],
+      tabId,
       createdAt: Date.now(),
     });
     await saveConversationRecord(conversation);
@@ -359,6 +399,7 @@ export async function handleChatSend(
       port,
       makeEnvelope("event", "chat.error", {
         message: finalSession.lastError ?? "the run failed",
+        messageId: assistantId,
         conversationId,
       }),
     );

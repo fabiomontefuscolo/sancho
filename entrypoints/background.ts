@@ -7,6 +7,7 @@ import {
 import {
   handleChatCancel,
   handleChatClear,
+  handleChatRegenerate,
   handleChatSend,
   handleConversationGet,
   handleConversationsDelete,
@@ -125,6 +126,7 @@ export default defineBackground(() => {
     await handleChatSend(envelope.payload, port);
   });
   registerHandler("chat.cancel", async (_envelope, port) => handleChatCancel(port));
+  registerHandler("chat.regenerate", async (_envelope, port) => handleChatRegenerate(port));
   registerHandler("chat.clear", async (_envelope, port) => handleChatClear(port));
   registerHandler("conversation.get", async (envelope, port) => {
     if (envelope.type !== "conversation.get") return;

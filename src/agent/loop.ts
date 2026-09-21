@@ -6,6 +6,7 @@ export interface LoopDeps {
   provider: BaseLLMProvider;
   executeTool: (call: ToolCall) => Promise<unknown>;
   onDelta: (text: string) => void;
+  onReasoningDelta?: (text: string) => void;
   onStateChange: (state: AgentSessionState) => void;
   saveSession: (session: AgentSession) => Promise<void>;
   getMessages: () => Promise<ProviderMessage[]>;
@@ -35,6 +36,7 @@ async function runRound(
         text += delta;
         deps.onDelta(delta);
       },
+      onReasoningDelta: (delta) => deps.onReasoningDelta?.(delta),
       onToolCall: (call) => toolCalls.push(call),
       onDone: () => {},
       onError: (err) => {

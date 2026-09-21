@@ -148,11 +148,12 @@ describe("chat.regenerate flow", () => {
     const conversation = await getActiveConversation();
     expect(conversation.messages.map((message) => message.role)).toEqual([
       "user",
+      "assistant",
       "user",
       "assistant",
     ]);
-    expect(conversation.messages[1]?.parts[0]).toEqual({ type: "text", text: "second" });
-    const last = conversation.messages[2];
+    expect(conversation.messages[2]?.parts[0]).toEqual({ type: "text", text: "second" });
+    const last = conversation.messages[3];
     expect(last?.parts[0]).toMatchObject({ type: "text" });
     expect((last?.parts[0] as { text: string }).text).toContain("second");
     expect(port.posted.some((envelope) => envelope.type === "chat.delta")).toBe(true);
