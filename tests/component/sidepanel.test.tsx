@@ -50,7 +50,9 @@ describe("ChatPanel", () => {
       type: "chat.tool",
       id: "e3",
       payload: {
-        toolCall: { name: "captureScreenshot", arguments: {}, tabId: 7 },
+        toolCallId: "tc-e3",
+        toolName: "captureScreenshot",
+        argsText: "{}",
         status: "started",
       },
     });
@@ -74,7 +76,7 @@ describe("ChatPanel", () => {
       kind: "event",
       type: "chat.tool",
       id: "e5",
-      payload: { toolCall: { name: "readPage", arguments: {}, tabId: 7 }, status: "started" },
+      payload: { toolCallId: "tc-e5", toolName: "readPage", argsText: "{}", status: "started" },
     });
     await waitFor(() => expect(screen.getByText(/readPage/)).toBeInTheDocument());
   });
@@ -167,7 +169,7 @@ describe("agent activity status", () => {
       kind: "event",
       type: "chat.tool",
       id: "s3",
-      payload: { toolCall: { name: "readPage", arguments: {}, tabId: 7 }, status: "started" },
+      payload: { toolCallId: "tc-s3", toolName: "readPage", argsText: "{}", status: "started" },
     });
     await screen.findByText(/Working: readPage/);
 

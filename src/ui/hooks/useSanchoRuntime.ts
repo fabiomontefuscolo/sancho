@@ -118,7 +118,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         setAgentState(state === "done" || state === "stopped" || state === "error" ? null : state);
       } else if (envelope.type === "chat.tool") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
-        const label = `${envelope.payload.toolCall.name} (${envelope.payload.status})`;
+        const label = `${envelope.payload.toolName} (${envelope.payload.status})`;
         setToolActivity((prev) => [...prev.slice(-9), label]);
       } else if (envelope.type === "permission.request") {
         setPendingPermission({

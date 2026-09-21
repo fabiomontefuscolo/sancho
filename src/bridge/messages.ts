@@ -1,4 +1,4 @@
-import type { Action, Conversation, ConversationSummary, ProviderConfig, ToolCall } from "../types";
+import type { Action, Conversation, ConversationSummary, ProviderConfig } from "../types";
 
 export interface Envelope<T extends string, P> {
   kind: "request" | "response" | "event";
@@ -15,10 +15,14 @@ export interface ChatSendPayload {
 export interface ChatDeltaPayload {
   messageId: string;
   text: string;
+  part?: "text" | "reasoning";
   conversationId: string;
 }
 export interface ChatToolPayload {
-  toolCall: ToolCall;
+  toolCallId: string;
+  toolName: string;
+  argsText: string;
+  result?: string;
   status: "started" | "finished";
   conversationId?: string;
 }
@@ -29,6 +33,7 @@ export interface ChatDonePayload {
 }
 export interface ChatErrorPayload {
   message: string;
+  messageId?: string;
   conversationId?: string;
 }
 export interface ConversationGetPayload {
@@ -95,6 +100,7 @@ export interface CopilotModelsPayload {
 export type UiToBackground =
   | Envelope<"chat.send", ChatSendPayload>
   | Envelope<"chat.cancel", Record<string, never>>
+  | Envelope<"chat.regenerate", Record<string, never>>
   | Envelope<"chat.clear", Record<string, never>>
   | Envelope<"conversation.get", ConversationGetPayload>
   | Envelope<"conversations.list", Record<string, never>>

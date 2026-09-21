@@ -211,10 +211,13 @@ export async function handleChatSend(
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const tabId = tab?.id ?? payload.tabId;
       const toolCall: ToolCall = { name: request.name, arguments: request.arguments, tabId };
+      const toolCallId = toolCall.id ?? crypto.randomUUID();
       postToPort(
         port,
         makeEnvelope("event", "chat.tool", {
-          toolCall,
+          toolCallId,
+          toolName: request.name,
+          argsText: JSON.stringify(request.arguments),
           status: "started" as const,
           conversationId,
         }),
@@ -224,7 +227,10 @@ export async function handleChatSend(
         postToPort(
           port,
           makeEnvelope("event", "chat.tool", {
-            toolCall,
+            toolCallId,
+            toolName: request.name,
+            argsText: JSON.stringify(request.arguments),
+            result: JSON.stringify(result),
             status: "finished" as const,
             conversationId,
           }),
@@ -274,10 +280,14 @@ export async function handleChatSend(
         executeTool: async (call: ToolCall) => {
           armWatchdog();
           const toolCall: ToolCall = { ...call, tabId: call.tabId || payload.tabId };
+          const toolCallId = toolCall.id ?? crypto.randomUUID();
+          const argsText = JSON.stringify(toolCall.arguments);
           postToPort(
             port,
             makeEnvelope("event", "chat.tool", {
-              toolCall,
+              toolCallId,
+              toolName: toolCall.name,
+              argsText,
               status: "started" as const,
               conversationId,
             }),
@@ -287,7 +297,10 @@ export async function handleChatSend(
             postToPort(
               port,
               makeEnvelope("event", "chat.tool", {
-                toolCall,
+                toolCallId,
+                toolName: toolCall.name,
+                argsText,
+                result: JSON.stringify(result),
                 status: "finished" as const,
                 conversationId,
               }),
