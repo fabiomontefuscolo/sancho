@@ -193,11 +193,25 @@ describe("listCopilotModels", () => {
       copilotToken: "ct_cached",
       copilotTokenExpiresAt: Math.floor(Date.now() / 1000) + 600,
     });
-    const fetchImpl = vi
-      .fn()
-      .mockResolvedValue(
-        jsonResponse({ data: [{ id: "gpt-4.1" }, { id: "claude-sonnet-4" }, {}] }),
-      );
+    const fetchImpl = vi.fn().mockResolvedValue(
+      jsonResponse({
+        data: [
+          {
+            id: "gpt-4.1",
+            capabilities: { type: "chat" },
+            supported_endpoints: ["/chat/completions"],
+          },
+          { id: "claude-sonnet-4", capabilities: { type: "chat" } },
+          {
+            id: "gpt-5.4-mini",
+            capabilities: { type: "chat" },
+            supported_endpoints: ["/responses"],
+          },
+          { id: "text-embedding-3", capabilities: { type: "embeddings" } },
+          {},
+        ],
+      }),
+    );
     await expect(listCopilotModels(fetchImpl)).resolves.toEqual(["gpt-4.1", "claude-sonnet-4"]);
     const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
     expect(url).toBe(`${COPILOT_BASE_URL}/models`);

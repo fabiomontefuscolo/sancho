@@ -186,8 +186,18 @@ export async function listCopilotModels(fetchImpl: FetchLike = fetch): Promise<s
     headers: { ...COPILOT_CHAT_HEADERS, authorization: `Bearer ${token}` },
   });
   if (!response.ok) throw new Error(`Copilot models request failed (${response.status})`);
-  const data = (await response.json()) as { data?: { id?: string }[] };
+  const data = (await response.json()) as {
+    data?: {
+      id?: string;
+      capabilities?: { type?: string };
+      supported_endpoints?: string[];
+    }[];
+  };
   return (data.data ?? [])
+    .filter((entry) => (entry.capabilities?.type ? entry.capabilities.type === "chat" : true))
+    .filter((entry) =>
+      entry.supported_endpoints ? entry.supported_endpoints.includes("/chat/completions") : true,
+    )
     .map((entry) => entry.id)
     .filter((id): id is string => typeof id === "string" && id.length > 0);
 }
