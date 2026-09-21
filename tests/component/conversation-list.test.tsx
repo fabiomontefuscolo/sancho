@@ -112,13 +112,21 @@ describe("ConversationList", () => {
   it("delete button sends conversations.delete with the entry id", async () => {
     render(<ChatPanel tabId={7} />);
     await openList(port);
-    await userEvent.click(screen.getByRole("button", { name: "Delete older chat" }));
+    await userEvent.click(screen.getAllByRole("button", { name: /delete conversation/i })[1]!);
     expect(port.sent).toContainEqual(
       expect.objectContaining({
         type: "conversations.delete",
         payload: { conversationId: "c-old" },
       }),
     );
+  });
+
+  it("marks the active conversation", async () => {
+    render(<ChatPanel tabId={7} />);
+    await openList(port);
+    const active = document.querySelector('[data-active="true"]');
+    expect(active).not.toBeNull();
+    expect(active).toHaveTextContent("newer chat");
   });
 
   it("permission banner is visible and actionable while the list view is open", async () => {
@@ -148,7 +156,7 @@ describe("ConversationList", () => {
   it("list refreshes from pushed conversations.state after delete", async () => {
     render(<ChatPanel tabId={7} />);
     await openList(port);
-    await userEvent.click(screen.getByRole("button", { name: "Delete older chat" }));
+    await userEvent.click(screen.getAllByRole("button", { name: /delete conversation/i })[1]!);
     port.emit({
       kind: "event",
       type: "conversations.state",
