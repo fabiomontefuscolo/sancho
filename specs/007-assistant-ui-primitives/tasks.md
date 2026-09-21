@@ -102,9 +102,9 @@
 
 **Independent Test**: Open list, create/switch/delete conversations; quickstart.md S5
 
-- [ ] T021 [US5] Write failing tests: adapter mapping unit tests in tests/unit/threadlist-adapter.test.ts (threads/activeThreadId/switch/delete/new mapped from `conversations.state`) and component tests in tests/component/conversation-list.test.tsx (list renders with active marked, create/switch/delete flows)
-- [ ] T022 [US5] Add the `threadList` adapter to `useExternalStoreRuntime` in src/ui/hooks/useSanchoRuntime.ts, mapping `conversations.state` → `{ threads, onSwitchToNewThread → conversations.new, onSwitchToThread → conversations.select, onDelete → conversations.delete }` (no archive/rename)
-- [ ] T023 [US5] Rewrite src/ui/components/conversation-list.tsx with `ThreadListPrimitive.Root/New/Items` + `ThreadListItemPrimitive.Trigger/Title/Delete`, keeping the hamburger view-swap UX in src/ui/components/chat.tsx
+- [x] T021 [US5] Write failing tests: adapter mapping unit tests in tests/unit/threadlist-adapter.test.ts (threads/activeThreadId/switch/delete/new mapped from `conversations.state`) and component tests in tests/component/conversation-list.test.tsx (list renders with active marked, create/switch/delete flows)
+- [x] T022 [US5] Add the `threadList` adapter to `useExternalStoreRuntime` in src/ui/hooks/useSanchoRuntime.ts, mapping `conversations.state` → `{ threads, onSwitchToNewThread → conversations.new, onSwitchToThread → conversations.select, onDelete → conversations.delete }` (no archive/rename)
+- [x] T023 [US5] Rewrite src/ui/components/conversation-list.tsx with `ThreadListPrimitive.Root/New/Items` + `ThreadListItemPrimitive.Trigger/Title/Delete`, keeping the hamburger view-swap UX in src/ui/components/chat.tsx
 
 **Checkpoint**: US5 functional; conversation management fully standardized
 
