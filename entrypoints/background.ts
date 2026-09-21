@@ -103,15 +103,36 @@ async function dispatch(envelope: UiToBackground, port: chrome.runtime.Port): Pr
   await handler(envelope, port);
 }
 
+const SEQUENTIAL_OPS = new Set([
+  "conversation.get",
+  "conversations.list",
+  "conversations.select",
+  "conversations.new",
+  "conversations.delete",
+  "chat.send",
+  "chat.regenerate",
+  "screenshot.consent",
+]);
+
 export function handlePortConnection(port: chrome.runtime.Port): void {
   if (port.name !== UI_PORT_NAME) return;
   logEvent("ui port connected");
   port.onDisconnect.addListener(() => logEvent("ui port disconnected"));
+  let queue: Promise<void> = Promise.resolve();
   onPortEnvelope(port, (envelope: AnyEnvelope) => {
     if (envelope.kind !== "request") return;
-    void dispatch(envelope as UiToBackground, port).catch((error: unknown) => {
-      console.error("handler failed", envelope.type, error);
-    });
+    const request = envelope as UiToBackground;
+    if (SEQUENTIAL_OPS.has(request.type)) {
+      queue = queue
+        .then(() => dispatch(request, port))
+        .catch((error: unknown) => {
+          console.error("handler failed", request.type, error);
+        });
+    } else {
+      void dispatch(request, port).catch((error: unknown) => {
+        console.error("handler failed", request.type, error);
+      });
+    }
   });
 }
 

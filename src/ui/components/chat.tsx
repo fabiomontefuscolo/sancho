@@ -143,13 +143,17 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     pendingPermission,
     resolvePermission,
     requestConversations,
+    activeConversationId,
   } = useSanchoRuntime(tabId);
   const { prefs, setFontSize } = useUiPrefs();
   const [view, setView] = useState<"chat" | "list" | "settings">("chat");
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className={`sancho-chat-root sancho-font-${prefs.fontSize}`}>
+      <div
+        className={`sancho-chat-root sancho-font-${prefs.fontSize}`}
+        data-conversation-id={activeConversationId}
+      >
         <div className="sancho-topbar">
           <button
             aria-label="Open conversations"

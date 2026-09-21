@@ -60,6 +60,7 @@ async function seedConversation(
   panel: import("@playwright/test").Page,
   messages: unknown[],
 ): Promise<void> {
+  await expect(panel.locator(".sancho-chat-root")).not.toHaveAttribute("data-conversation-id", "");
   await panel.evaluate(async (msgs) => {
     const now = Date.now();
     await chrome.storage.local.set({

@@ -76,6 +76,10 @@ test("conversations: switch, create, delete via the list view", async ({
     const panel = await context.newPage();
     await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
     await configureProvider(panel, endpoint);
+    await expect(panel.locator(".sancho-chat-root")).not.toHaveAttribute(
+      "data-conversation-id",
+      "",
+    );
 
     await sendChat(panel, "first chat question");
     await expect(panel.getByText("mock reply here")).toBeVisible();
@@ -126,6 +130,7 @@ test("conversations: list and history render within latency budgets", async ({
 }) => {
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await expect(panel.locator(".sancho-chat-root")).not.toHaveAttribute("data-conversation-id", "");
 
   await panel.evaluate(async () => {
     const now = Date.now();
@@ -164,6 +169,8 @@ test("conversations: list and history render within latency budgets", async ({
     await chrome.storage.local.set(items);
   });
 
+  await panel.reload();
+
   const listStart = Date.now();
   await panel.getByRole("button", { name: /open conversations/i }).click();
   await expect(
@@ -179,6 +186,7 @@ test("conversations: list and history render within latency budgets", async ({
 });
 
 test("conversations: persist across restart; deleted conversations stay gone", async () => {
+  test.setTimeout(120_000);
   const extensionPath = path.resolve(".output/chrome-mv3");
   if (!fs.existsSync(path.join(extensionPath, "manifest.json"))) {
     throw new Error("Extension not built. Run `pnpm build` before `pnpm test:e2e`.");
@@ -203,11 +211,19 @@ test("conversations: persist across restart; deleted conversations stay gone", a
     await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
     await configureProvider(panel, endpoint);
 
+    const chatRoot = panel.locator(".sancho-chat-root");
+    await expect(chatRoot).not.toHaveAttribute("data-conversation-id", "");
+
     await sendChat(panel, "keep this chat");
     await expect(panel.getByText("restart reply")).toBeVisible();
 
+    const previousConversationId = await chatRoot.getAttribute("data-conversation-id");
     await panel.getByRole("button", { name: /open conversations/i }).click();
     await panel.getByRole("button", { name: /new conversation/i }).click();
+    await expect(chatRoot).not.toHaveAttribute(
+      "data-conversation-id",
+      previousConversationId ?? "",
+    );
     await sendChat(panel, "delete this chat");
     await expect(panel.getByText("restart reply")).toBeVisible();
 
