@@ -1,4 +1,4 @@
-export type ConnectionMethod = "api" | "acp";
+export type ConnectionMethod = "api" | "acp" | "copilot";
 
 export interface AcpConfig {
   hostName: string;

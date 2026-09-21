@@ -58,6 +58,31 @@ describe("OpenAICompatibleProvider", () => {
     expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe("http://127.0.0.1:9/v1/chat/completions");
   });
 
+  it("sends custom headers on the wire request", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(sseBody("ok"), { status: 200 })),
+    );
+    const provider = new OpenAICompatibleProvider({
+      providerId: "copilot",
+      baseUrl: "https://api.githubcopilot.com",
+      model: "gpt-4.1",
+      apiKey: "session-token",
+      headers: {
+        "copilot-integration-id": "vscode-chat",
+        "openai-intent": "conversation-panel",
+      },
+    });
+    const { events, isDone } = collect();
+    await provider.streamChat([{ role: "user", content: "hi" }], [], events);
+    expect(isDone()).toBe(true);
+    const init = vi.mocked(fetch).mock.calls[0]?.[1];
+    const headers = new Headers(init?.headers);
+    expect(headers.get("copilot-integration-id")).toBe("vscode-chat");
+    expect(headers.get("openai-intent")).toBe("conversation-panel");
+    expect(headers.get("authorization")).toBe("Bearer session-token");
+  });
+
   it("maps all message roles and image parts onto the wire format", async () => {
     vi.stubGlobal(
       "fetch",

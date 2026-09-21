@@ -5,6 +5,9 @@ const ACTIONS_KEY = "actions";
 
 export const DEFAULT_PROVIDER_IDS = ["openai", "kimi", "deepseek", "openrouter", "custom"] as const;
 
+export const COPILOT_PROVIDER_ID = "copilot";
+export const COPILOT_BASE_URL = "https://api.githubcopilot.com";
+
 export const DEFAULT_BASE_URLS: Record<string, string> = {
   openai: "https://api.openai.com/v1",
   kimi: "https://api.moonshot.ai/v1",

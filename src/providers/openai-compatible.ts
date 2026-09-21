@@ -13,6 +13,7 @@ export interface OpenAICompatibleOptions {
   baseUrl: string;
   model: string;
   apiKey: string;
+  headers?: Record<string, string>;
 }
 
 export class OpenAICompatibleProvider extends BaseLLMProvider {
@@ -36,6 +37,7 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
         name: this.options.providerId,
         baseURL: this.options.baseUrl,
         apiKey: this.options.apiKey,
+        ...(this.options.headers ? { headers: this.options.headers } : {}),
       });
 
       const toolSet: ToolSet = {};
