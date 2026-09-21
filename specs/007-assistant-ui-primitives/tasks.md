@@ -75,9 +75,9 @@
 
 **Independent Test**: Hover messages, copy raw markdown, regenerate an assistant reply; quickstart.md S3
 
-- [ ] T016 [US3] Write failing component tests in tests/component/copy-controls.test.tsx: copy places raw markdown on clipboard with transient confirmation, reload visible only on assistant messages, bar hidden while running, auto-hide on non-last messages
-- [ ] T017 [US3] Add `ActionBarPrimitive.Root hideWhenRunning autohide="not-last" autohideFloat="always"` with Copy to both message components and Reload (wired to `chat.regenerate` via a new `onReload` in src/ui/hooks/useSanchoRuntime.ts) to assistant messages in src/ui/components/chat.tsx
-- [ ] T018 [US3] Remove `RawTextContext`, `MessageCopyButton`, `getMessageRawText` and `rawTextRef` from src/ui/components/chat.tsx and src/ui/hooks/useSanchoRuntime.ts; delete src/ui/components/copy-button.tsx if no remaining usage
+- [x] T016 [US3] Write failing component tests in tests/component/copy-controls.test.tsx: copy places raw markdown on clipboard with transient confirmation, reload visible only on assistant messages, bar hidden while running, auto-hide on non-last messages
+- [x] T017 [US3] Add `ActionBarPrimitive.Root hideWhenRunning autohide="not-last" autohideFloat="always"` with Copy to both message components and Reload (wired to `chat.regenerate` via a new `onReload` in src/ui/hooks/useSanchoRuntime.ts) to assistant messages in src/ui/components/chat.tsx
+- [x] T018 [US3] Remove `RawTextContext`, `MessageCopyButton`, `getMessageRawText` and `rawTextRef` from src/ui/components/chat.tsx and src/ui/hooks/useSanchoRuntime.ts; delete src/ui/components/copy-button.tsx if no remaining usage
 
 **Checkpoint**: US3 functional; regenerate works end-to-end against the Phase 2 backend
 
@@ -89,8 +89,8 @@
 
 **Independent Test**: Force a provider failure; error notice appears with alert role; consent banner unaffected; quickstart.md S4
 
-- [ ] T019 [US4] Write failing component tests in tests/component/sidepanel.test.tsx: `chat.error` sets message status (no `Error: ` text part), notice rendered with `role="alert"`, `consent_required` still shows the banner, pre-content errors attach to the placeholder assistant message
-- [ ] T020 [US4] Set in-flight assistant message `status = { type: "incomplete", reason: "error", error }` on `chat.error` (targeting payload `messageId`, fallback to in-flight message) in src/ui/hooks/useSanchoRuntime.ts, and render `ErrorPrimitive.Root role="alert"` + `ErrorPrimitive.Message` in `AssistantMessage` in src/ui/components/chat.tsx
+- [x] T019 [US4] Write failing component tests in tests/component/sidepanel.test.tsx: `chat.error` sets message status (no `Error: ` text part), notice rendered with `role="alert"`, `consent_required` still shows the banner, pre-content errors attach to the placeholder assistant message
+- [x] T020 [US4] Set in-flight assistant message `status = { type: "incomplete", reason: "error", error }` on `chat.error` (targeting payload `messageId`, fallback to in-flight message) in src/ui/hooks/useSanchoRuntime.ts, and render `ErrorPrimitive.Root role="alert"` + `ErrorPrimitive.Message` in `AssistantMessage` in src/ui/components/chat.tsx
 
 **Checkpoint**: US4 functional; no fake error text anywhere in the thread
 
