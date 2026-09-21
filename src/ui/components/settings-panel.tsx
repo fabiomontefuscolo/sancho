@@ -37,17 +37,21 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
   const [saved, setSaved] = useState(false);
   const [fontSize, setFontSize] = useState<FontSize>(DEFAULT_UI_PREFS.fontSize);
   const openedCodeRef = useRef<string | null>(null);
+  const bridgeRef = useRef(bridge);
+  bridgeRef.current = bridge;
 
   const copilotAuth = bridge.copilotAuth;
   const copilotModels = bridge.copilotModels;
 
   useEffect(() => {
-    if (method === "copilot") bridge.copilotAuthStatus();
-  }, [bridge, method]);
+    if (method === "copilot") bridgeRef.current.copilotAuthStatus();
+  }, [method]);
 
   useEffect(() => {
-    if (method === "copilot" && copilotAuth.status === "connected") bridge.copilotModelsList();
-  }, [bridge, method, copilotAuth.status]);
+    if (method === "copilot" && copilotAuth.status === "connected") {
+      bridgeRef.current.copilotModelsList();
+    }
+  }, [method, copilotAuth.status]);
 
   useEffect(() => {
     if (copilotAuth.status !== "pending" || openedCodeRef.current === copilotAuth.userCode) return;
@@ -56,8 +60,8 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
   }, [copilotAuth]);
 
   useEffect(() => {
-    bridge.requestSettings();
-    return bridge.onSettings(({ config }) => {
+    bridgeRef.current.requestSettings();
+    return bridgeRef.current.onSettings(({ config }) => {
       if (!config) return;
       setMethod(config.method);
       setProviderId(config.providerId);
@@ -68,7 +72,7 @@ export function SettingsPanel({ bridge }: { bridge: SettingsBridge }) {
         setToken(config.acp.token ?? "");
       }
     });
-  }, [bridge]);
+  }, []);
 
   useEffect(() => {
     let active = true;

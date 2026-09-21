@@ -1,0 +1,89 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - heading "Sancho" [level=1] [ref=e5]
+    - link "Connection" [ref=e6] [cursor=pointer]:
+      - /url: "#connection"
+    - link "Actions" [ref=e7] [cursor=pointer]:
+      - /url: "#actions"
+    - link "About" [ref=e8] [cursor=pointer]:
+      - /url: "#about"
+  - main [ref=e9]:
+    - region "Connection" [ref=e11]:
+      - heading "Connection" [level=2] [ref=e12]
+      - group [ref=e13]:
+        - generic [ref=e14]:
+          - radio "API key (cloud provider)" [checked] [ref=e15]
+          - text: API key (cloud provider)
+        - generic [ref=e16]:
+          - radio "Local agent (ACP)" [ref=e17]
+          - text: Local agent (ACP)
+        - generic [ref=e18]:
+          - radio "GitHub Copilot" [ref=e19]
+          - text: GitHub Copilot
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - text: Provider
+          - combobox "Provider" [ref=e22]:
+            - option "openai"
+            - option "kimi"
+            - option "deepseek" [selected]
+            - option "openrouter"
+            - option "custom"
+        - generic [ref=e23]:
+          - text: Endpoint
+          - textbox "Endpoint" [ref=e24]: https://api.deepseek.com/v1
+        - generic [ref=e25]:
+          - text: Model
+          - textbox "Model" [ref=e26]: deepseek-v4-pro
+        - generic [ref=e27]:
+          - text: API key
+          - textbox "API key" [ref=e28]:
+            - /placeholder: Stored locally, never synced
+      - button "Save" [ref=e29] [cursor=pointer]
+      - heading "Appearance" [level=2] [ref=e30]
+      - generic [ref=e32]:
+        - text: Message font size
+        - combobox "Message font size" [ref=e33]:
+          - option "Small"
+          - option "Medium"
+          - option "Large" [selected]
+    - region "Actions" [ref=e35]:
+      - heading "Actions" [level=2] [ref=e36]
+      - list [ref=e37]:
+        - listitem [ref=e38]:
+          - checkbox "Enable Improve writing" [checked] [ref=e39]
+          - generic [ref=e40]: Improve writing
+          - generic [ref=e41]: built-in
+          - button "Edit Improve writing" [ref=e42] [cursor=pointer]: Edit
+        - listitem [ref=e43]:
+          - checkbox "Enable Make it formal" [checked] [ref=e44]
+          - generic [ref=e45]: Make it formal
+          - generic [ref=e46]: built-in
+          - button "Edit Make it formal" [ref=e47] [cursor=pointer]: Edit
+        - listitem [ref=e48]:
+          - checkbox "Enable Fix grammar" [checked] [ref=e49]
+          - generic [ref=e50]: Fix grammar
+          - generic [ref=e51]: built-in
+          - button "Edit Fix grammar" [ref=e52] [cursor=pointer]: Edit
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - text: Action name
+          - textbox "Action name" [ref=e55]
+        - generic [ref=e56]:
+          - text: "Prompt (use {{selection}} for the selected text)"
+          - 'textbox "Prompt (use {{selection}} for the selected text)" [ref=e57]'
+        - button "Add action" [disabled] [ref=e58]
+    - region "About" [ref=e60]:
+      - heading "About" [level=2] [ref=e61]
+      - generic [ref=e62]:
+        - term [ref=e63]: Version
+        - definition [ref=e64]: 0.1.0
+        - term [ref=e65]: License
+        - definition [ref=e66]:
+          - link "GNU GPL v3 or later" [ref=e67] [cursor=pointer]:
+            - /url: https://github.com/fabiomontefuscolo/sancho/blob/main/LICENSE
+        - term [ref=e68]: Source code
+        - definition [ref=e69]:
+          - link "github.com/fabiomontefuscolo/sancho" [ref=e70] [cursor=pointer]:
+            - /url: https://github.com/fabiomontefuscolo/sancho
+      - paragraph [ref=e71]: "Sancho is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License. It comes with ABSOLUTELY NO WARRANTY. Copyright (C) 2026 Sancho contributors."
