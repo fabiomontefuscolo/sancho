@@ -13,9 +13,14 @@ vi.mock("../../src/providers/factory", async () => {
 });
 
 import { createProvider } from "../../src/providers/factory";
-import { handleChatSend } from "../../src/agent/chat-handler";
-import { getActiveConversation } from "../../src/storage/conversations";
+import { handleChatRegenerate, handleChatSend } from "../../src/agent/chat-handler";
+import {
+  createConversation,
+  getActiveConversation,
+  saveConversationRecord,
+} from "../../src/storage/conversations";
 import type { AnyEnvelope } from "../../src/bridge/messages";
+import type { Message } from "../../src/types";
 
 class EchoProvider extends BaseLLMProvider {
   readonly id = "echo";
@@ -98,5 +103,79 @@ describe("chat.send flow", () => {
           envelope.payload.message.includes("no provider configured"),
       ),
     ).toBe(true);
+  });
+});
+
+describe("chat.regenerate flow", () => {
+  beforeEach(() => {
+    installMockChrome();
+    vi.mocked(createProvider).mockResolvedValue(new EchoProvider());
+  });
+
+  function seedConversation(messages: Message[]): Promise<string> {
+    return createConversation().then(async (conversation) => {
+      conversation.messages.push(...messages);
+      await saveConversationRecord(conversation);
+      return conversation.id;
+    });
+  }
+
+  const userMessage = (text: string): Message => ({
+    id: crypto.randomUUID(),
+    role: "user",
+    parts: [{ type: "text", text }],
+    tabId: 1,
+    createdAt: Date.now(),
+  });
+  const assistantMessage = (text: string): Message => ({
+    id: crypto.randomUUID(),
+    role: "assistant",
+    parts: [{ type: "text", text }],
+    tabId: 1,
+    createdAt: Date.now(),
+  });
+
+  it("truncates assistant messages after the last user message and re-runs", async () => {
+    await seedConversation([
+      userMessage("first"),
+      assistantMessage("old answer"),
+      userMessage("second"),
+      assistantMessage("stale answer"),
+    ]);
+    const port = makePort();
+    await handleChatRegenerate(port);
+
+    const conversation = await getActiveConversation();
+    expect(conversation.messages.map((message) => message.role)).toEqual([
+      "user",
+      "user",
+      "assistant",
+    ]);
+    expect(conversation.messages[1]?.parts[0]).toEqual({ type: "text", text: "second" });
+    const last = conversation.messages[2];
+    expect(last?.parts[0]).toMatchObject({ type: "text" });
+    expect((last?.parts[0] as { text: string }).text).toContain("second");
+    expect(port.posted.some((envelope) => envelope.type === "chat.delta")).toBe(true);
+    expect(port.posted.some((envelope) => envelope.type === "chat.done")).toBe(true);
+  });
+
+  it("behaves as a resend when the last message is from the user", async () => {
+    await seedConversation([userMessage("only user")]);
+    const port = makePort();
+    await handleChatRegenerate(port);
+
+    const conversation = await getActiveConversation();
+    expect(conversation.messages.map((message) => message.role)).toEqual(["user", "assistant"]);
+  });
+
+  it("is a no-op when the conversation has no user message", async () => {
+    await seedConversation([]);
+    const port = makePort();
+    await handleChatRegenerate(port);
+
+    const conversation = await getActiveConversation();
+    expect(conversation.messages).toHaveLength(0);
+    expect(port.posted.some((envelope) => envelope.type === "chat.delta")).toBe(false);
+    expect(port.posted.some((envelope) => envelope.type === "chat.done")).toBe(false);
   });
 });

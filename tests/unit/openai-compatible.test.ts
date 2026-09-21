@@ -20,12 +20,39 @@ function sseBody(text: string): string {
   return `data: ${JSON.stringify(chunk)}\n\ndata: ${JSON.stringify(done)}\n\ndata: [DONE]\n\n`;
 }
 
+function sseReasoningBody(reasoning: string, text: string): string {
+  const reasoningChunk = {
+    id: "x",
+    object: "chat.completion.chunk",
+    created: 0,
+    model: "m",
+    choices: [{ index: 0, delta: { reasoning_content: reasoning }, finish_reason: null }],
+  };
+  const textChunk = {
+    id: "x",
+    object: "chat.completion.chunk",
+    created: 0,
+    model: "m",
+    choices: [{ index: 0, delta: { content: text }, finish_reason: null }],
+  };
+  const done = {
+    id: "x",
+    object: "chat.completion.chunk",
+    created: 0,
+    model: "m",
+    choices: [{ index: 0, delta: {}, finish_reason: "stop" }],
+  };
+  return `data: ${JSON.stringify(reasoningChunk)}\n\ndata: ${JSON.stringify(textChunk)}\n\ndata: ${JSON.stringify(done)}\n\ndata: [DONE]\n\n`;
+}
+
 function collect() {
   const deltas: string[] = [];
+  const reasoning: string[] = [];
   let done = false;
   let error: Error | null = null;
   const events: StreamEvents = {
     onDelta: (text) => deltas.push(text),
+    onReasoningDelta: (text) => reasoning.push(text),
     onToolCall: () => {},
     onDone: () => {
       done = true;
@@ -34,7 +61,7 @@ function collect() {
       error = err;
     },
   };
-  return { events, deltas, isDone: () => done, getError: () => error };
+  return { events, deltas, reasoning, isDone: () => done, getError: () => error };
 }
 
 describe("OpenAICompatibleProvider", () => {
@@ -119,6 +146,41 @@ describe("OpenAICompatibleProvider", () => {
       image_url?: { url: string };
     }>;
     expect(userContent[1]?.type).toBe("image_url");
+  });
+
+  it("extracts reasoning_content deltas into onReasoningDelta", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(sseReasoningBody("thinking hard", "answer"), { status: 200 })),
+    );
+    const provider = new OpenAICompatibleProvider({
+      providerId: "custom",
+      baseUrl: "http://127.0.0.1:9/v1",
+      model: "m",
+      apiKey: "sk-x",
+    });
+    const { events, deltas, reasoning, isDone } = collect();
+    await provider.streamChat([{ role: "user", content: "hi" }], [], events);
+    expect(reasoning).toEqual(["thinking hard"]);
+    expect(deltas).toEqual(["answer"]);
+    expect(isDone()).toBe(true);
+  });
+
+  it("never calls onReasoningDelta when the stream has no reasoning", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(sseBody("plain"), { status: 200 })),
+    );
+    const provider = new OpenAICompatibleProvider({
+      providerId: "custom",
+      baseUrl: "http://127.0.0.1:9/v1",
+      model: "m",
+      apiKey: "sk-x",
+    });
+    const { events, deltas, reasoning } = collect();
+    await provider.streamChat([{ role: "user", content: "hi" }], [], events);
+    expect(deltas).toEqual(["plain"]);
+    expect(reasoning).toEqual([]);
   });
 
   it("surfaces HTTP failures via onError", async () => {
