@@ -162,9 +162,16 @@ export function ChatPanel({ tabId }: { tabId: number }) {
             ☰
           </button>
           <button
-            aria-label="Open settings"
+            aria-label="Appearance"
             className="sancho-icon-button"
             onClick={() => setView("settings")}
+          >
+            Aa
+          </button>
+          <button
+            aria-label="Open settings"
+            className="sancho-icon-button"
+            onClick={() => chrome.runtime.openOptionsPage()}
           >
             ⚙
           </button>

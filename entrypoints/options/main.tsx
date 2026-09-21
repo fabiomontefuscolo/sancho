@@ -2,6 +2,7 @@ import { StrictMode, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import { AboutSection } from "../../src/ui/components/about-section";
 import { ActionManager, type OptionsBridge } from "../../src/ui/components/action-manager";
+import { AppearanceSection } from "../../src/ui/components/appearance-section";
 import { SettingsPanel, type SettingsBridge } from "../../src/ui/components/settings-panel";
 import { useOptionsBridge } from "../../src/ui/hooks/useOptionsBridge";
 import type { Action } from "../../src/types";
@@ -42,6 +43,7 @@ function OptionsPage() {
       <nav className="options-nav">
         <h1>Sancho</h1>
         <a href="#connection">Connection</a>
+        <a href="#appearance">Appearance</a>
         <a href="#actions">Actions</a>
         <a href="#about">About</a>
       </nav>
@@ -54,6 +56,9 @@ function OptionsPage() {
         )}
         <div id="connection">
           <SettingsPanel bridge={settingsBridge} />
+        </div>
+        <div id="appearance">
+          <AppearanceSection />
         </div>
         <div id="actions">
           <ActionManager bridge={actionBridge} />
