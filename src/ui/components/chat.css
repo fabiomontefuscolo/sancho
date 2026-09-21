@@ -150,13 +150,70 @@ body,
   color: var(--chat-text);
 }
 
-.sancho-activity {
-  border-top: 1px solid var(--chat-border);
-  padding: 6px 12px;
+.sancho-thought {
+  margin-bottom: 8px;
+  border: 1px solid var(--chat-border);
+  border-radius: 8px;
   font-size: 12px;
+}
+
+.sancho-thought-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  background: transparent;
   color: var(--chat-text-secondary);
-  max-height: 80px;
-  overflow-y: auto;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+}
+
+.sancho-thought-toggle:hover {
+  color: var(--chat-text);
+}
+
+.sancho-thought-running {
+  margin-left: auto;
+  font-style: italic;
+}
+
+.sancho-thought-body {
+  padding: 4px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sancho-reasoning {
+  color: var(--chat-text-secondary);
+  font-style: italic;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sancho-tool-call {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+}
+
+.sancho-tool-name {
+  color: var(--chat-text);
+}
+
+.sancho-tool-status {
+  color: var(--chat-text-secondary);
+}
+
+.sancho-message-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .sancho-composer {

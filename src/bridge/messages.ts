@@ -19,6 +19,7 @@ export interface ChatDeltaPayload {
   conversationId: string;
 }
 export interface ChatToolPayload {
+  messageId?: string;
   toolCallId: string;
   toolName: string;
   argsText: string;

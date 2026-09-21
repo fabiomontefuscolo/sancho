@@ -1,13 +1,14 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import {
   AssistantRuntimeProvider,
   AuiIf,
   ComposerPrimitive,
+  groupPartByType,
   MessagePrimitive,
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, ChevronDown, ChevronRight, Square } from "lucide-react";
 import { useSanchoRuntime } from "../hooks/useSanchoRuntime";
 import { formatMessageTime } from "../utils/format-time";
 import { MarkdownText } from "./markdown-text";
@@ -47,11 +48,63 @@ function UserMessage() {
   );
 }
 
+const groupByThought = groupPartByType({
+  reasoning: ["group-thought"],
+  "tool-call": ["group-thought"],
+});
+
+function ThoughtProcessGroup({ running, children }: { running: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="sancho-thought">
+      <button
+        type="button"
+        className="sancho-thought-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        Thought process
+        {running ? <span className="sancho-thought-running">thinking…</span> : null}
+      </button>
+      {open ? <div className="sancho-thought-body">{children}</div> : null}
+    </div>
+  );
+}
+
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="sancho-message sancho-message-assistant">
       <MessageCopyButton />
-      <MessagePrimitive.Parts components={{ Text: MarkdownText }} />
+      <MessagePrimitive.GroupedParts groupBy={groupByThought} indicator="never">
+        {({ part, children }) => {
+          switch (part.type) {
+            case "group-thought":
+              return (
+                <ThoughtProcessGroup running={part.counts.running > 0}>
+                  {children}
+                </ThoughtProcessGroup>
+              );
+            case "text":
+              return <MarkdownText />;
+            case "reasoning":
+              return <div className="sancho-reasoning">{part.text}</div>;
+            case "tool-call":
+              return (
+                <div className="sancho-tool-call">
+                  <span className="sancho-tool-name">{part.toolName}</span>
+                  <span className="sancho-tool-status">
+                    {part.status.type === "running" ? "running" : "done"}
+                  </span>
+                </div>
+              );
+            case "image":
+              return <img className="sancho-message-image" src={part.image} alt="" />;
+            default:
+              return null;
+          }
+        }}
+      </MessagePrimitive.GroupedParts>
       <MessageTimestamp />
     </MessagePrimitive.Root>
   );
@@ -62,7 +115,6 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     runtime,
     consentRequired,
     grantConsent,
-    toolActivity,
     agentState,
     isRunning,
     pendingPermission,
@@ -152,19 +204,10 @@ export function ChatPanel({ tabId }: { tabId: number }) {
                 <div className="sancho-status" role="status" aria-live="polite">
                   <span className="sancho-status-dot" />
                   {agentState === "acting"
-                    ? `Working: ${toolActivity[toolActivity.length - 1] ?? "tool"}`
+                    ? "Working…"
                     : agentState === "verifying"
                       ? "Checking results…"
                       : "Thinking…"}
-                </div>
-              )}
-              {toolActivity.length > 0 && (
-                <div className="sancho-activity">
-                  {toolActivity.map((entry, index) => (
-                    <div key={index} className="sancho-activity-entry">
-                      {entry}
-                    </div>
-                  ))}
                 </div>
               )}
               <ComposerPrimitive.Root className="sancho-composer">

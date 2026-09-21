@@ -142,6 +142,7 @@ describe("ChatPanel", () => {
 
   it("shows tool entries with running then done state inside the message", async () => {
     render(<ChatPanel tabId={7} />);
+    await userEvent.type(screen.getByRole("textbox", { name: /message/i }), "go{Enter}");
     port.emit({
       kind: "event",
       type: "chat.tool",
@@ -193,6 +194,7 @@ describe("ChatPanel", () => {
 
   it("marks interrupted tool entries terminal on chat.done", async () => {
     render(<ChatPanel tabId={7} />);
+    await userEvent.type(screen.getByRole("textbox", { name: /message/i }), "go{Enter}");
     port.emit({
       kind: "event",
       type: "chat.tool",
@@ -346,7 +348,7 @@ describe("agent activity status", () => {
       id: "s3",
       payload: { toolCallId: "tc-s3", toolName: "readPage", argsText: "{}", status: "started" },
     });
-    await screen.findByText(/Working: readPage/);
+    await screen.findByText(/Working…/);
 
     port.emit({
       kind: "event",

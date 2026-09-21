@@ -5,6 +5,36 @@ import type { Conversation, ConversationSummary, Message } from "../../types";
 
 type ThreadContentPart = Exclude<ThreadMessageLike["content"], string>[number];
 
+interface LiveToolEntry {
+  toolName: string;
+  argsText: string;
+  result?: string;
+  status: "started" | "finished";
+}
+
+interface LiveAssistant {
+  text: string;
+  reasoning: string;
+  tools: Map<string, LiveToolEntry>;
+}
+
+function buildLiveContent(live: LiveAssistant): ThreadContentPart[] {
+  const parts: ThreadContentPart[] = [];
+  if (live.reasoning) parts.push({ type: "reasoning", text: live.reasoning });
+  for (const [toolCallId, tool] of live.tools) {
+    parts.push({
+      type: "tool-call",
+      toolCallId,
+      toolName: tool.toolName,
+      argsText: tool.argsText,
+      args: {},
+      ...(tool.result !== undefined ? { result: tool.result } : {}),
+    });
+  }
+  parts.push({ type: "text", text: live.text });
+  return parts;
+}
+
 function toThreadMessage(message: Message): ThreadMessageLike {
   const content: ThreadContentPart[] = [];
   for (const part of message.parts) {
@@ -31,7 +61,6 @@ export interface SanchoRuntime {
   runtime: ReturnType<typeof useExternalStoreRuntime>;
   consentRequired: boolean;
   grantConsent: () => void;
-  toolActivity: string[];
   agentState: string | null;
   isRunning: boolean;
   pendingPermission: PendingPermission | null;
@@ -49,13 +78,13 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [messages, setMessages] = useState<ThreadMessageLike[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [consentRequired, setConsentRequired] = useState(false);
-  const [toolActivity, setToolActivity] = useState<string[]>([]);
   const [agentState, setAgentState] = useState<string | null>(null);
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [activeConversationId, setActiveConversationId] = useState("");
   const portRef = useRef<chrome.runtime.Port | null>(null);
-  const streamingRef = useRef<Map<string, string>>(new Map());
+  const liveRef = useRef<Map<string, LiveAssistant>>(new Map());
+  const lastAssistantIdRef = useRef<string | null>(null);
   const rawTextRef = useRef<Map<string, string>>(new Map());
   const tabIdRef = useRef(tabId);
   tabIdRef.current = tabId;
@@ -66,17 +95,26 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     const port = chrome.runtime.connect({ name: UI_PORT_NAME });
     portRef.current = port;
 
-    const appendDelta = (messageId: string, text: string) => {
-      const current = streamingRef.current.get(messageId) ?? "";
-      const next = current + text;
-      streamingRef.current.set(messageId, next);
-      rawTextRef.current.set(messageId, next);
+    const getLive = (messageId: string): LiveAssistant => {
+      let live = liveRef.current.get(messageId);
+      if (!live) {
+        live = { text: "", reasoning: "", tools: new Map() };
+        liveRef.current.set(messageId, live);
+      }
+      return live;
+    };
+
+    const renderLive = (messageId: string) => {
+      const live = liveRef.current.get(messageId);
+      if (!live) return;
+      rawTextRef.current.set(messageId, live.text);
+      const content = buildLiveContent(live);
       setMessages((prev) => {
         const existing = prev.findIndex((message) => message.id === messageId);
         const threadMessage: ThreadMessageLike = {
           id: messageId,
           role: "assistant",
-          content: [{ type: "text", text: next }],
+          content,
           createdAt: new Date(),
         };
         if (existing >= 0) {
@@ -86,6 +124,50 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         }
         return [...prev, threadMessage];
       });
+    };
+
+    const appendDelta = (messageId: string, text: string, part: "text" | "reasoning" = "text") => {
+      const live = getLive(messageId);
+      if (part === "reasoning") {
+        live.reasoning += text;
+      } else {
+        live.text += text;
+      }
+      renderLive(messageId);
+    };
+
+    const upsertTool = (
+      messageId: string,
+      payload: {
+        toolCallId: string;
+        toolName: string;
+        argsText: string;
+        result?: string;
+        status: "started" | "finished";
+      },
+    ) => {
+      const live = getLive(messageId);
+      live.tools.set(payload.toolCallId, {
+        toolName: payload.toolName,
+        argsText: payload.argsText,
+        ...(payload.result !== undefined ? { result: payload.result } : {}),
+        status: payload.status,
+      });
+      renderLive(messageId);
+    };
+
+    const settleTools = (messageId: string) => {
+      const live = liveRef.current.get(messageId);
+      if (!live) return;
+      let changed = false;
+      for (const tool of live.tools.values()) {
+        if (tool.status === "started") {
+          tool.status = "finished";
+          if (tool.result === undefined) tool.result = "[interrupted]";
+          changed = true;
+        }
+      }
+      if (changed) renderLive(messageId);
     };
 
     const isForActiveConversation = (conversationId: string | undefined) =>
@@ -98,9 +180,17 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       const envelope = raw as AnyEnvelope;
       if (envelope.type === "chat.delta") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
-        appendDelta(envelope.payload.messageId, envelope.payload.text);
+        lastAssistantIdRef.current = envelope.payload.messageId;
+        appendDelta(envelope.payload.messageId, envelope.payload.text, envelope.payload.part);
       } else if (envelope.type === "chat.done") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
+        settleTools(envelope.payload.messageId);
+        if (
+          lastAssistantIdRef.current &&
+          lastAssistantIdRef.current !== envelope.payload.messageId
+        ) {
+          settleTools(lastAssistantIdRef.current);
+        }
         setIsRunning(false);
         setAgentState(null);
       } else if (envelope.type === "chat.error") {
@@ -118,8 +208,9 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         setAgentState(state === "done" || state === "stopped" || state === "error" ? null : state);
       } else if (envelope.type === "chat.tool") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;
-        const label = `${envelope.payload.toolName} (${envelope.payload.status})`;
-        setToolActivity((prev) => [...prev.slice(-9), label]);
+        const messageId = envelope.payload.messageId ?? lastAssistantIdRef.current ?? envelope.id;
+        lastAssistantIdRef.current = messageId;
+        upsertTool(messageId, envelope.payload);
       } else if (envelope.type === "permission.request") {
         setPendingPermission({
           requestId: envelope.payload.requestId,
@@ -129,7 +220,8 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       } else if (envelope.type === "conversation.state") {
         const conversation = envelope.payload as Conversation;
         setActiveConversationId(conversation.id);
-        streamingRef.current.clear();
+        liveRef.current.clear();
+        lastAssistantIdRef.current = null;
         rawTextRef.current.clear();
         for (const message of conversation.messages) {
           rawTextRef.current.set(
@@ -200,7 +292,6 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
           makeEnvelope("request", "screenshot.consent", { granted: true }),
         );
       },
-      toolActivity,
       agentState,
       isRunning,
       pendingPermission,
@@ -237,7 +328,6 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     [
       runtime,
       consentRequired,
-      toolActivity,
       agentState,
       isRunning,
       pendingPermission,

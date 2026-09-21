@@ -247,6 +247,7 @@ async function runConversation(
       postToPort(
         port,
         makeEnvelope("event", "chat.tool", {
+          messageId: assistantId,
           toolCallId,
           toolName: request.name,
           argsText: JSON.stringify(request.arguments),
@@ -329,6 +330,7 @@ async function runConversation(
           postToPort(
             port,
             makeEnvelope("event", "chat.tool", {
+              messageId: assistantId,
               toolCallId,
               toolName: toolCall.name,
               argsText,
