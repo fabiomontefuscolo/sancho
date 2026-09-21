@@ -194,3 +194,11 @@ describe("SettingsPanel", () => {
     expect(bridge.copilotAuthDisconnect).toHaveBeenCalled();
   });
 });
+
+describe("Appearance placement", () => {
+  it("does not render appearance settings inside the connection section", async () => {
+    render(<SettingsPanel bridge={makeBridge()} />);
+    expect(screen.queryByRole("heading", { name: /appearance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /font size/i })).not.toBeInTheDocument();
+  });
+});

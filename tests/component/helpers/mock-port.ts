@@ -33,6 +33,7 @@ export function installMockPort(): MockPort {
   vi.stubGlobal("chrome", {
     runtime: {
       connect: vi.fn(() => port),
+      openOptionsPage: vi.fn(),
     },
   });
   return port;

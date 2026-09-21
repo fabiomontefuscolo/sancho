@@ -75,9 +75,9 @@ describe("font-size preference", () => {
     });
   });
 
-  it("persists the choice from the sidebar settings view", async () => {
+  it("persists the choice from the sidebar appearance quick view", async () => {
     render(<ChatPanel tabId={7} />);
-    await userEvent.click(screen.getByRole("button", { name: /settings/i }));
+    await userEvent.click(screen.getByRole("button", { name: /appearance/i }));
 
     const select = await screen.findByRole("combobox", { name: /font size/i });
     await userEvent.selectOptions(select, "large");
@@ -88,5 +88,12 @@ describe("font-size preference", () => {
       });
     });
     expect(document.querySelector(".sancho-chat-root")?.className).toContain("sancho-font-large");
+  });
+
+  it("gear button opens the extension options page", async () => {
+    render(<ChatPanel tabId={7} />);
+    await userEvent.click(screen.getByRole("button", { name: /open settings/i }));
+    expect(chrome.runtime.openOptionsPage).toHaveBeenCalled();
+    expect(screen.queryByRole("combobox", { name: /font size/i })).not.toBeInTheDocument();
   });
 });
