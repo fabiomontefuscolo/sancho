@@ -25,6 +25,46 @@ describe("ChatPanel", () => {
     );
   });
 
+  it("disables send while the composer is empty", async () => {
+    render(<ChatPanel tabId={7} />);
+    expect(screen.getByRole("button", { name: /send/i })).toBeDisabled();
+    await userEvent.type(screen.getByRole("textbox", { name: /message/i }), "hi");
+    expect(screen.getByRole("button", { name: /send/i })).toBeEnabled();
+  });
+
+  it("sends on Enter and inserts a newline on Shift+Enter", async () => {
+    render(<ChatPanel tabId={7} />);
+    const input = screen.getByRole("textbox", { name: /message/i });
+    await userEvent.type(input, "line one{Shift>}{Enter}{/Shift}line two");
+    expect(input).toHaveValue("line one\nline two");
+    await userEvent.type(input, "{Enter}");
+    expect(port.sent).toContainEqual(
+      expect.objectContaining({
+        type: "chat.send",
+        payload: expect.objectContaining({ text: "line one\nline two" }),
+      }),
+    );
+  });
+
+  it("shows a stop button while running and posts chat.cancel when clicked", async () => {
+    render(<ChatPanel tabId={7} />);
+    const input = screen.getByRole("textbox", { name: /message/i });
+    await userEvent.type(input, "hello agent{Enter}");
+
+    const stop = await screen.findByRole("button", { name: /stop/i });
+    await userEvent.click(stop);
+    expect(port.sent).toContainEqual(expect.objectContaining({ type: "chat.cancel" }));
+
+    port.emit({
+      kind: "event",
+      type: "chat.done",
+      id: "d1",
+      payload: { messageId: "m-stop" },
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: /send/i })).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /stop/i })).toBeNull();
+  });
+
   it("renders streamed deltas as they arrive", async () => {
     render(<ChatPanel tabId={7} />);
     port.emit({
