@@ -82,7 +82,7 @@ test("conversations: switch, create, delete via the list view", async ({
 
     await panel.getByRole("button", { name: /open conversations/i }).click();
     await panel.getByRole("button", { name: /new conversation/i }).click();
-    await expect(panel.getByText("Ask the agent anything")).toBeVisible();
+    await expect(panel.getByText("How can I help with this page?")).toBeVisible();
 
     await sendChat(panel, "second chat question");
     await expect(panel.getByText("mock reply here")).toBeVisible();
@@ -97,10 +97,14 @@ test("conversations: switch, create, delete via the list view", async ({
     await expect(panel.getByText("first chat question")).toBeVisible();
 
     await panel.getByRole("button", { name: /open conversations/i }).click();
-    await panel.getByRole("button", { name: "Delete first chat question" }).click();
-    await expect(panel.getByText("Ask the agent anything")).toBeVisible();
+    await panel
+      .locator(".sancho-conversation-entry", { hasText: "first chat question" })
+      .getByRole("button", { name: "Delete conversation" })
+      .click();
+    await expect(
+      panel.getByRole("button", { name: "first chat question", exact: true }),
+    ).toHaveCount(0);
 
-    await panel.getByRole("button", { name: /open conversations/i }).click();
     await expect(panel.locator(".sancho-conversation-select")).toHaveCount(2);
     await expect(
       panel.getByRole("button", { name: "second chat question", exact: true }),
@@ -108,6 +112,9 @@ test("conversations: switch, create, delete via the list view", async ({
     await expect(
       panel.getByRole("button", { name: "New conversation", exact: true }),
     ).toBeVisible();
+
+    await panel.getByRole("button", { name: /back to chat/i }).click();
+    await expect(panel.getByText("How can I help with this page?")).toBeVisible();
   } finally {
     server.close();
   }
@@ -218,8 +225,15 @@ test("conversations: persist across restart; deleted conversations stay gone", a
     expect(deletedId).toBeTruthy();
 
     await panel.getByRole("button", { name: /open conversations/i }).click();
-    await panel.getByRole("button", { name: "Delete delete this chat" }).click();
-    await expect(panel.getByText("Ask the agent anything")).toBeVisible();
+    await panel
+      .locator(".sancho-conversation-entry", { hasText: "delete this chat" })
+      .getByRole("button", { name: "Delete conversation" })
+      .click();
+    await expect(panel.getByRole("button", { name: "delete this chat", exact: true })).toHaveCount(
+      0,
+    );
+    await panel.getByRole("button", { name: /back to chat/i }).click();
+    await expect(panel.getByText("How can I help with this page?")).toBeVisible();
     await first.close();
 
     const second = await chromium.launchPersistentContext(userDataDir, {

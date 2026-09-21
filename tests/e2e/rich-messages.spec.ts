@@ -66,7 +66,8 @@ test("message copy yields the raw markdown source", async ({ context, extensionI
   const markdown = "## Title\n\n- one\n- two";
   await seedConversation(panel, [assistantMessage("m1", markdown)]);
 
-  await panel.getByRole("button", { name: /copy message/i }).click();
+  await panel.locator(".sancho-message-assistant").hover();
+  await panel.getByRole("button", { name: /^copy$/i }).click();
 
   const clipboard = await panel.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toBe(markdown);
@@ -108,7 +109,7 @@ test("font size applies immediately, syncs, and persists across reload", async (
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await seedConversation(panel, [assistantMessage("m1", "some **markdown** text")]);
 
-  await panel.getByRole("button", { name: /settings/i }).click();
+  await panel.getByRole("button", { name: /appearance/i }).click();
   await panel.getByRole("combobox", { name: /font size/i }).selectOption("large");
   await panel.getByRole("button", { name: /back to chat/i }).click();
 

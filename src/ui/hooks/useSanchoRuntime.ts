@@ -85,6 +85,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const liveRef = useRef<Map<string, LiveAssistant>>(new Map());
   const lastAssistantIdRef = useRef<string | null>(null);
+  const currentConversationIdRef = useRef<string | null>(null);
   const tabIdRef = useRef(tabId);
   tabIdRef.current = tabId;
   const activeConversationRef = useRef("");
@@ -236,10 +237,33 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         });
       } else if (envelope.type === "conversation.state") {
         const conversation = envelope.payload as Conversation;
+        const sameConversation = currentConversationIdRef.current === conversation.id;
+        currentConversationIdRef.current = conversation.id;
         setActiveConversationId(conversation.id);
-        liveRef.current.clear();
-        lastAssistantIdRef.current = null;
-        setMessages(conversation.messages.map(toThreadMessage));
+        if (!sameConversation) {
+          liveRef.current.clear();
+          lastAssistantIdRef.current = null;
+          setMessages(conversation.messages.map(toThreadMessage));
+          return;
+        }
+        const persistedIds = new Set(conversation.messages.map((message) => message.id));
+        for (const id of liveRef.current.keys()) {
+          if (!persistedIds.has(id)) liveRef.current.delete(id);
+        }
+        setMessages(
+          conversation.messages.map((message) => {
+            const threadMessage = toThreadMessage(message);
+            const live = liveRef.current.get(message.id);
+            if (live && (live.reasoning || live.tools.size > 0) && message.role === "assistant") {
+              const liveExtras = buildLiveContent(live).filter((part) => part.type !== "text");
+              const baseContent = Array.isArray(threadMessage.content)
+                ? threadMessage.content
+                : [{ type: "text" as const, text: threadMessage.content }];
+              return { ...threadMessage, content: [...liveExtras, ...baseContent] };
+            }
+            return threadMessage;
+          }),
+        );
       } else if (envelope.type === "conversations.state") {
         setConversations(envelope.payload.conversations);
         setActiveConversationId(envelope.payload.activeConversationId);
@@ -303,7 +327,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         makeEnvelope("request", "chat.send", {
           text,
           tabId: tabIdRef.current,
-          conversationId: activeConversationRef.current,
+          conversationId: "",
         }),
       );
     },
