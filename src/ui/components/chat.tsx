@@ -4,7 +4,7 @@ import {
   ComposerPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
-  useMessage,
+  useAuiState,
 } from "@assistant-ui/react";
 import { useSanchoRuntime } from "../hooks/useSanchoRuntime";
 import { formatMessageTime } from "../utils/format-time";
@@ -15,7 +15,7 @@ const RawTextContext = createContext<(messageId: string) => string>(() => "");
 
 function MessageCopyButton() {
   const getRawText = useContext(RawTextContext);
-  const id = useMessage((state) => state.id);
+  const id = useAuiState((state) => state.message.id);
   return (
     <CopyButton
       className="sancho-message-copy"
@@ -30,7 +30,7 @@ import { useUiPrefs } from "../hooks/use-ui-prefs";
 import "./chat.css";
 
 function MessageTimestamp() {
-  const createdAt = useMessage((state) => state.createdAt);
+  const createdAt = useAuiState((state) => state.message.createdAt);
   const epochMs = createdAt instanceof Date ? createdAt.getTime() : Number.NaN;
   if (Number.isNaN(epochMs)) return null;
   return <div className="sancho-message-time">{formatMessageTime(epochMs)}</div>;
