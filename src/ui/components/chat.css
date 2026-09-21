@@ -534,6 +534,55 @@ body,
   position: relative;
 }
 
+.sancho-action-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.sancho-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--chat-border);
+  background: var(--chat-bg);
+  color: var(--chat-text-secondary);
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.sancho-action-button:hover {
+  color: var(--chat-text);
+}
+
+.sancho-action-button .sancho-icon-copied {
+  display: none;
+}
+
+.sancho-action-button[data-copied="true"] .sancho-icon-copy {
+  display: none;
+}
+
+.sancho-action-button[data-copied="true"] .sancho-icon-copied {
+  display: inline;
+  color: var(--chat-accent);
+}
+
+.sancho-message-user .sancho-action-bar {
+  justify-content: flex-end;
+}
+
+.sancho-message-user .sancho-action-button {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--chat-accent-text) 40%, transparent);
+  color: color-mix(in srgb, var(--chat-accent-text) 80%, transparent);
+}
+
+.sancho-message-user .sancho-action-button:hover {
+  color: var(--chat-accent-text);
+}
+
 .sancho-message-copy {
   position: absolute;
   top: 6px;

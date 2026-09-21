@@ -71,7 +71,6 @@ export interface SanchoRuntime {
   selectConversation: (conversationId: string) => void;
   newConversation: () => void;
   deleteConversation: (conversationId: string) => void;
-  getMessageRawText: (messageId: string) => string;
 }
 
 export function useSanchoRuntime(tabId: number): SanchoRuntime {
@@ -85,7 +84,6 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const liveRef = useRef<Map<string, LiveAssistant>>(new Map());
   const lastAssistantIdRef = useRef<string | null>(null);
-  const rawTextRef = useRef<Map<string, string>>(new Map());
   const tabIdRef = useRef(tabId);
   tabIdRef.current = tabId;
   const activeConversationRef = useRef("");
@@ -107,7 +105,6 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     const renderLive = (messageId: string) => {
       const live = liveRef.current.get(messageId);
       if (!live) return;
-      rawTextRef.current.set(messageId, live.text);
       const content = buildLiveContent(live);
       setMessages((prev) => {
         const existing = prev.findIndex((message) => message.id === messageId);
@@ -222,16 +219,6 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         setActiveConversationId(conversation.id);
         liveRef.current.clear();
         lastAssistantIdRef.current = null;
-        rawTextRef.current.clear();
-        for (const message of conversation.messages) {
-          rawTextRef.current.set(
-            message.id,
-            message.parts
-              .filter((part) => part.type === "text")
-              .map((part) => part.text)
-              .join("\n\n"),
-          );
-        }
         setMessages(conversation.messages.map(toThreadMessage));
       } else if (envelope.type === "conversations.state") {
         setConversations(envelope.payload.conversations);
@@ -255,6 +242,9 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     convertMessage: (message) => message,
     onCancel: async () => {
       portRef.current?.postMessage(makeEnvelope("request", "chat.cancel", {}));
+    },
+    onReload: async () => {
+      portRef.current?.postMessage(makeEnvelope("request", "chat.regenerate", {}));
     },
     onNew: async (message) => {
       const text = message.content
@@ -318,7 +308,6 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
       newConversation: () => {
         portRef.current?.postMessage(makeEnvelope("request", "conversations.new", {}));
       },
-      getMessageRawText: (messageId: string) => rawTextRef.current.get(messageId) ?? "",
       deleteConversation: (conversationId: string) => {
         portRef.current?.postMessage(
           makeEnvelope("request", "conversations.delete", { conversationId }),
