@@ -142,12 +142,7 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     isRunning,
     pendingPermission,
     resolvePermission,
-    conversations,
-    activeConversationId,
     requestConversations,
-    selectConversation,
-    newConversation,
-    deleteConversation,
   } = useSanchoRuntime(tabId);
   const { prefs, setFontSize } = useUiPrefs();
   const [view, setView] = useState<"chat" | "list" | "settings">("chat");
@@ -194,23 +189,7 @@ export function ChatPanel({ tabId }: { tabId: number }) {
         {view === "settings" ? (
           <SettingsView prefs={prefs} onFontSize={setFontSize} onBack={() => setView("chat")} />
         ) : view === "list" ? (
-          <ConversationList
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            onSelect={(conversationId) => {
-              selectConversation(conversationId);
-              setView("chat");
-            }}
-            onNew={() => {
-              newConversation();
-              setView("chat");
-            }}
-            onDelete={(conversationId) => {
-              deleteConversation(conversationId);
-              if (conversationId === activeConversationId) setView("chat");
-            }}
-            onBack={() => setView("chat")}
-          />
+          <ConversationList onBack={() => setView("chat")} onNavigate={() => setView("chat")} />
         ) : (
           <>
             <ThreadPrimitive.Root className="sancho-thread">

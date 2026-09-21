@@ -1,23 +1,31 @@
-import { useEffect } from "react";
-import type { ConversationSummary } from "../../types";
+import { createContext, useContext, useEffect } from "react";
+import { ThreadListItemPrimitive, ThreadListPrimitive } from "@assistant-ui/react";
 
 export interface ConversationListProps {
-  conversations: ConversationSummary[];
-  activeConversationId: string;
-  onSelect: (conversationId: string) => void;
-  onNew: () => void;
-  onDelete: (conversationId: string) => void;
   onBack: () => void;
+  onNavigate: () => void;
 }
 
-export function ConversationList({
-  conversations,
-  activeConversationId,
-  onSelect,
-  onNew,
-  onDelete,
-  onBack,
-}: ConversationListProps) {
+const NavigateContext = createContext<() => void>(() => {});
+
+function ConversationListItem() {
+  const onNavigate = useContext(NavigateContext);
+  return (
+    <ThreadListItemPrimitive.Root className="sancho-conversation-entry">
+      <ThreadListItemPrimitive.Trigger className="sancho-conversation-select" onClick={onNavigate}>
+        <ThreadListItemPrimitive.Title fallback="Untitled conversation" />
+      </ThreadListItemPrimitive.Trigger>
+      <ThreadListItemPrimitive.Delete
+        aria-label="Delete conversation"
+        className="sancho-conversation-delete"
+      >
+        ✕
+      </ThreadListItemPrimitive.Delete>
+    </ThreadListItemPrimitive.Root>
+  );
+}
+
+export function ConversationList({ onBack, onNavigate }: ConversationListProps) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onBack();
@@ -34,32 +42,14 @@ export function ConversationList({
         </button>
         <span className="sancho-list-title">Conversations</span>
       </div>
-      <button className="sancho-new-conversation" onClick={onNew}>
-        + New conversation
-      </button>
-      <ul className="sancho-conversation-entries">
-        {conversations.map((conversation) => (
-          <li key={conversation.id} className="sancho-conversation-entry">
-            <button
-              className={
-                conversation.id === activeConversationId
-                  ? "sancho-conversation-select sancho-conversation-active"
-                  : "sancho-conversation-select"
-              }
-              onClick={() => onSelect(conversation.id)}
-            >
-              {conversation.title}
-            </button>
-            <button
-              aria-label={`Delete ${conversation.title}`}
-              className="sancho-conversation-delete"
-              onClick={() => onDelete(conversation.id)}
-            >
-              ✕
-            </button>
-          </li>
-        ))}
-      </ul>
+      <NavigateContext.Provider value={onNavigate}>
+        <ThreadListPrimitive.Root className="sancho-conversation-entries">
+          <ThreadListPrimitive.New className="sancho-new-conversation" onClick={onNavigate}>
+            + New conversation
+          </ThreadListPrimitive.New>
+          <ThreadListPrimitive.Items components={{ ThreadListItem: ConversationListItem }} />
+        </ThreadListPrimitive.Root>
+      </NavigateContext.Provider>
     </div>
   );
 }

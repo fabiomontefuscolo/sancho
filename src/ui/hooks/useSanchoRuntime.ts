@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useExternalStoreRuntime, type ThreadMessageLike } from "@assistant-ui/react";
 import { UI_PORT_NAME, isEnvelope, makeEnvelope, type AnyEnvelope } from "../../bridge/messages";
+import { toThreadListAdapter } from "../threadlist-adapter";
 import type { Conversation, ConversationSummary, Message } from "../../types";
 
 type ThreadContentPart = Exclude<ThreadMessageLike["content"], string>[number];
@@ -259,6 +260,23 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     messages,
     isRunning,
     convertMessage: (message) => message,
+    adapters: {
+      threadList: toThreadListAdapter(conversations, activeConversationId, {
+        onNew: () => {
+          portRef.current?.postMessage(makeEnvelope("request", "conversations.new", {}));
+        },
+        onSelect: (conversationId) => {
+          portRef.current?.postMessage(
+            makeEnvelope("request", "conversations.select", { conversationId }),
+          );
+        },
+        onDelete: (conversationId) => {
+          portRef.current?.postMessage(
+            makeEnvelope("request", "conversations.delete", { conversationId }),
+          );
+        },
+      }),
+    },
     onCancel: async () => {
       portRef.current?.postMessage(makeEnvelope("request", "chat.cancel", {}));
     },

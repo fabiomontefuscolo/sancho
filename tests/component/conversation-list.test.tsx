@@ -47,6 +47,7 @@ async function openList(port: MockPort) {
   await userEvent.click(screen.getByRole("button", { name: /open conversations/i }));
   expect(port.sent).toContainEqual(expect.objectContaining({ type: "conversations.list" }));
   emitConversationsState(port);
+  await screen.findByRole("button", { name: "newer chat" });
 }
 
 describe("ConversationList", () => {
