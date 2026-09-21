@@ -16,8 +16,8 @@
 
 **Purpose**: Dependency upgrade and compile-fix baseline; everything else builds on the installed 0.15.x types
 
-- [ ] T001 Bump `@assistant-ui/react` to `^0.15.21`, `@assistant-ui/react-markdown` to `^0.14.16`, `@assistant-ui/react-syntax-highlighter` to `^0.14.6` and add `lucide-react` in package.json, then `pnpm install`
-- [ ] T002 Fix 0.15 API/type drift so `pnpm typecheck` passes in src/ui/hooks/useSanchoRuntime.ts, src/ui/components/chat.tsx, src/ui/components/markdown-text.tsx, src/ui/components/code-block.tsx; while doing so verify the installed signatures of `MessagePrimitive.GroupedParts`, `groupPartByType`, `AuiIf`, `ActionBarPrimitive`, `ErrorPrimitive`, `ThreadListPrimitive`, and the runtime `threadList` adapter (research.md Decisions 2/7)
+- [x] T001 Bump `@assistant-ui/react` to `^0.15.21`, `@assistant-ui/react-markdown` to `^0.14.16`, `@assistant-ui/react-syntax-highlighter` to `^0.14.6` and add `lucide-react` in package.json, then `pnpm install`
+- [x] T002 Fix 0.15 API/type drift so `pnpm typecheck` passes in src/ui/hooks/useSanchoRuntime.ts, src/ui/components/chat.tsx, src/ui/components/markdown-text.tsx, src/ui/components/code-block.tsx; while doing so verify the installed signatures of `MessagePrimitive.GroupedParts`, `groupPartByType`, `AuiIf`, `ActionBarPrimitive`, `ErrorPrimitive`, `ThreadListPrimitive`, and the runtime `threadList` adapter (research.md Decisions 2/7)
 
 **Checkpoint**: Upgrade compiles; existing tests still pass (`pnpm exec vitest run`)
 
@@ -29,12 +29,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Extend the bridge protocol in src/bridge/messages.ts: `ChatDeltaPayload` gains `part?: "text" | "reasoning"` (absent = "text"); `ChatToolPayload` flattened to `{ toolCallId, toolName, argsText, result?, status, conversationId? }`; `ChatErrorPayload` gains `messageId?`; add `chat.regenerate` (payload `Record<string, never>`) to `UiToBackground`
-- [ ] T004 [P] Write failing unit tests for the `chat.regenerate` handler in tests/unit/chat-flow.test.ts: aborts active run, truncates assistant messages after the last user message, re-runs without appending a new user message, no-op when the conversation has no user message
-- [ ] T005 [P] Write failing unit tests for reasoning extraction in tests/unit/openai-compatible.test.ts: `reasoning-delta` stream parts invoke `onReasoningDelta`; text deltas still invoke `onDelta`; providers without reasoning never call it
-- [ ] T006 Add optional `onReasoningDelta` to `StreamEvents` in src/providers/base.ts and extract `reasoning-delta` parts from the AI SDK `fullStream` in src/providers/openai-compatible.ts (makes T005 pass)
-- [ ] T007 Refactor src/agent/chat-handler.ts: extract the run path into a shared `runConversation(conversation, tabId, port)` helper; emit `chat.delta` with `part` (reasoning via `onReasoningDelta`), emit flattened `chat.tool` with `toolCallId` (provider `toolCallId`, generated UUID in the ACP path), `argsText` (serialized args), `result` on finished, and include `messageId` (assistant id) on every `chat.error` (consent_required path unchanged)
-- [ ] T008 Implement `handleChatRegenerate` in src/agent/chat-handler.ts (abort run → truncate after last user message → save → `runConversation`) and register it in entrypoints/background.ts (makes T004 pass)
+- [x] T003 Extend the bridge protocol in src/bridge/messages.ts: `ChatDeltaPayload` gains `part?: "text" | "reasoning"` (absent = "text"); `ChatToolPayload` flattened to `{ toolCallId, toolName, argsText, result?, status, conversationId? }`; `ChatErrorPayload` gains `messageId?`; add `chat.regenerate` (payload `Record<string, never>`) to `UiToBackground`
+- [x] T004 [P] Write failing unit tests for the `chat.regenerate` handler in tests/unit/chat-flow.test.ts: aborts active run, truncates assistant messages after the last user message, re-runs without appending a new user message, no-op when the conversation has no user message
+- [x] T005 [P] Write failing unit tests for reasoning extraction in tests/unit/openai-compatible.test.ts: `reasoning-delta` stream parts invoke `onReasoningDelta`; text deltas still invoke `onDelta`; providers without reasoning never call it
+- [x] T006 Add optional `onReasoningDelta` to `StreamEvents` in src/providers/base.ts and extract `reasoning-delta` parts from the AI SDK `fullStream` in src/providers/openai-compatible.ts (makes T005 pass)
+- [x] T007 Refactor src/agent/chat-handler.ts: extract the run path into a shared `runConversation(conversation, tabId, port)` helper; emit `chat.delta` with `part` (reasoning via `onReasoningDelta`), emit flattened `chat.tool` with `toolCallId` (provider `toolCallId`, generated UUID in the ACP path), `argsText` (serialized args), `result` on finished, and include `messageId` (assistant id) on every `chat.error` (consent_required path unchanged)
+- [x] T008 Implement `handleChatRegenerate` in src/agent/chat-handler.ts (abort run → truncate after last user message → save → `runConversation`) and register it in entrypoints/background.ts (makes T004 pass)
 
 **Checkpoint**: Protocol contract complete; `pnpm exec vitest run` green including T004/T005
 
