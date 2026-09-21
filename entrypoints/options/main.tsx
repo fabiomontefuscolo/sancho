@@ -1,5 +1,6 @@
 import { StrictMode, useMemo } from "react";
 import { createRoot } from "react-dom/client";
+import { AboutSection } from "../../src/ui/components/about-section";
 import { ActionManager, type OptionsBridge } from "../../src/ui/components/action-manager";
 import { SettingsPanel, type SettingsBridge } from "../../src/ui/components/settings-panel";
 import { useOptionsBridge } from "../../src/ui/hooks/useOptionsBridge";
@@ -36,6 +37,7 @@ function OptionsPage() {
         <h1>Sancho</h1>
         <a href="#connection">Connection</a>
         <a href="#actions">Actions</a>
+        <a href="#about">About</a>
       </nav>
       <main className="options-main">
         {bridge.error && (
@@ -49,6 +51,9 @@ function OptionsPage() {
         </div>
         <div id="actions">
           <ActionManager bridge={actionBridge} />
+        </div>
+        <div id="about">
+          <AboutSection />
         </div>
       </main>
     </div>

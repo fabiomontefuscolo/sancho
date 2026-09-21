@@ -5,6 +5,7 @@ export default defineConfig({
   manifest: {
     name: "Sancho",
     description: "AI agent sidebar for your browser",
+    homepage_url: "https://github.com/fabiomontefuscolo/sancho",
     permissions: [
       "storage",
       "activeTab",

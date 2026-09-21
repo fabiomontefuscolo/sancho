@@ -204,3 +204,29 @@ button:disabled {
   justify-content: space-between;
   align-items: center;
 }
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px 16px;
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.about-grid dt {
+  color: var(--text-secondary);
+}
+
+.about-grid dd {
+  margin: 0;
+}
+
+.about-grid a {
+  color: var(--accent);
+}
+
+.about-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}

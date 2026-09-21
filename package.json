@@ -2,6 +2,12 @@
   "name": "sancho",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/fabiomontefuscolo/sancho",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fabiomontefuscolo/sancho.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "wxt",
