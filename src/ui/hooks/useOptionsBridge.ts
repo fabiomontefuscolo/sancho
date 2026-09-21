@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { UI_PORT_NAME, isEnvelope, makeEnvelope, type AnyEnvelope } from "../../bridge/messages";
+import {
+  UI_PORT_NAME,
+  isEnvelope,
+  makeEnvelope,
+  type AnyEnvelope,
+  type CopilotAuthStatePayload,
+  type CopilotModelsPayload,
+} from "../../bridge/messages";
 import type { Action, ProviderConfig } from "../../types";
 
 export interface OptionsState {
@@ -7,6 +14,8 @@ export interface OptionsState {
   config: ProviderConfig | null;
   hasApiKey: boolean;
   error: string | null;
+  copilotAuth: CopilotAuthStatePayload;
+  copilotModels: CopilotModelsPayload;
 }
 
 export function useOptionsBridge() {
@@ -15,6 +24,8 @@ export function useOptionsBridge() {
     config: null,
     hasApiKey: false,
     error: null,
+    copilotAuth: { status: "disconnected" },
+    copilotModels: { models: [] },
   });
   const portRef = useRef<chrome.runtime.Port | null>(null);
   const actionListeners = useRef(new Set<(actions: Action[]) => void>());
@@ -40,6 +51,10 @@ export function useOptionsBridge() {
         settingsListeners.current.forEach((fn) => fn(envelope.payload));
       } else if (envelope.type === "chat.error") {
         setState((prev) => ({ ...prev, error: envelope.payload.message }));
+      } else if (envelope.type === "copilot.auth.state") {
+        setState((prev) => ({ ...prev, copilotAuth: envelope.payload }));
+      } else if (envelope.type === "copilot.models.state") {
+        setState((prev) => ({ ...prev, copilotModels: envelope.payload }));
       }
     };
     port.onMessage.addListener(listener);
@@ -63,6 +78,14 @@ export function useOptionsBridge() {
           }),
         ),
       clearError: () => setState((prev) => ({ ...prev, error: null })),
+      copilotAuthStart: () =>
+        portRef.current?.postMessage(makeEnvelope("request", "copilot.auth.start", {})),
+      copilotAuthStatus: () =>
+        portRef.current?.postMessage(makeEnvelope("request", "copilot.auth.status", {})),
+      copilotAuthDisconnect: () =>
+        portRef.current?.postMessage(makeEnvelope("request", "copilot.auth.disconnect", {})),
+      copilotModelsList: () =>
+        portRef.current?.postMessage(makeEnvelope("request", "copilot.models.list", {})),
       subscribeActions: (listener: (actions: Action[]) => void) => {
         actionListeners.current.add(listener);
         listener(state.actions);

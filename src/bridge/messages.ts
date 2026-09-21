@@ -82,6 +82,15 @@ export interface PermissionResponsePayload {
   requestId: string;
   optionId: string | null;
 }
+export type CopilotAuthStatePayload =
+  | { status: "disconnected" }
+  | { status: "pending"; userCode: string; verificationUri: string }
+  | { status: "connected" }
+  | { status: "error"; message: string };
+export interface CopilotModelsPayload {
+  models: string[];
+  error?: string;
+}
 
 export type UiToBackground =
   | Envelope<"chat.send", ChatSendPayload>
@@ -99,7 +108,11 @@ export type UiToBackground =
   | Envelope<"permission.response", PermissionResponsePayload>
   | Envelope<"actions.list", Record<string, never>>
   | Envelope<"actions.upsert", ActionUpsertPayload>
-  | Envelope<"actions.delete", ActionDeletePayload>;
+  | Envelope<"actions.delete", ActionDeletePayload>
+  | Envelope<"copilot.auth.start", Record<string, never>>
+  | Envelope<"copilot.auth.status", Record<string, never>>
+  | Envelope<"copilot.auth.disconnect", Record<string, never>>
+  | Envelope<"copilot.models.list", Record<string, never>>;
 
 export interface ChatStatePayload {
   conversationId: string;
@@ -117,7 +130,9 @@ export type BackgroundToUi =
   | Envelope<"action.result", ActionResultPayload>
   | Envelope<"settings.state", { config: ProviderConfig | null; hasApiKey: boolean }>
   | Envelope<"actions.state", Action[]>
-  | Envelope<"permission.request", PermissionRequestPayload>;
+  | Envelope<"permission.request", PermissionRequestPayload>
+  | Envelope<"copilot.auth.state", CopilotAuthStatePayload>
+  | Envelope<"copilot.models.state", CopilotModelsPayload>;
 
 export type AnyEnvelope = UiToBackground | BackgroundToUi;
 

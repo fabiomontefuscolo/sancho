@@ -27,6 +27,12 @@ function OptionsPage() {
       saveSettings: (config: ProviderConfig, apiKey?: string) =>
         bridge.saveSettings(config, apiKey),
       onSettings: (listener) => bridge.subscribeSettings(listener),
+      copilotAuth: bridge.copilotAuth,
+      copilotModels: bridge.copilotModels,
+      copilotAuthStart: () => bridge.copilotAuthStart(),
+      copilotAuthStatus: () => bridge.copilotAuthStatus(),
+      copilotAuthDisconnect: () => bridge.copilotAuthDisconnect(),
+      copilotModelsList: () => bridge.copilotModelsList(),
     }),
     [bridge],
   );

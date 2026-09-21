@@ -29,6 +29,7 @@ import {
   handleSettingsGet,
   handleSettingsSet,
 } from "../src/agent/settings-handler";
+import { makeCopilotAuthHandlers } from "../src/agent/copilot-auth-handler";
 import { logEvent } from "../src/agent/log";
 import {
   startPersistentKeepAlive,
@@ -165,6 +166,13 @@ export default defineBackground(() => {
     if (envelope.type !== "permission.response") return;
     handlePermissionResponse(envelope.payload);
   });
+  const copilotAuth = makeCopilotAuthHandlers();
+  registerHandler("copilot.auth.start", async (_envelope, port) => copilotAuth.handleStart(port));
+  registerHandler("copilot.auth.status", async (_envelope, port) => copilotAuth.handleStatus(port));
+  registerHandler("copilot.auth.disconnect", async (_envelope, port) =>
+    copilotAuth.handleDisconnect(port),
+  );
+  registerHandler("copilot.models.list", async (_envelope, port) => copilotAuth.handleModels(port));
   chrome.runtime.onConnect.addListener((port) => {
     handlePortConnection(port);
     setActiveUiPort(port);

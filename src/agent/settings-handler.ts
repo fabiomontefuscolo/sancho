@@ -51,6 +51,8 @@ export async function handleSettingsSet(
     if (payload.config.method === "api") {
       validateBaseUrl(payload.config.baseUrl);
       if (!payload.config.model.trim()) throw new Error("model is required");
+    } else if (payload.config.method === "copilot") {
+      if (!payload.config.model.trim()) throw new Error("model is required");
     } else if (!payload.config.acp?.hostName.trim()) {
       throw new Error("native host name is required for the local agent");
     }

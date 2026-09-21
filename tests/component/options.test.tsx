@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettingsPanel, type SettingsBridge } from "../../src/ui/components/settings-panel";
+import type { CopilotAuthStatePayload, CopilotModelsPayload } from "../../src/bridge/messages";
 import type { ProviderConfig } from "../../src/types";
 
 const savedConfig: ProviderConfig = {
@@ -12,7 +13,12 @@ const savedConfig: ProviderConfig = {
   apiKeyRef: "kimi",
 };
 
-function makeBridge(config: ProviderConfig | null = null, hasApiKey = false) {
+function makeBridge(
+  config: ProviderConfig | null = null,
+  hasApiKey = false,
+  copilotAuth: CopilotAuthStatePayload = { status: "disconnected" },
+  copilotModels: CopilotModelsPayload = { models: [] },
+) {
   const listeners: Array<(state: { config: ProviderConfig | null; hasApiKey: boolean }) => void> =
     [];
   const bridge: SettingsBridge = {
@@ -23,6 +29,12 @@ function makeBridge(config: ProviderConfig | null = null, hasApiKey = false) {
       listener({ config, hasApiKey });
       return () => {};
     },
+    copilotAuth,
+    copilotModels,
+    copilotAuthStart: vi.fn(),
+    copilotAuthStatus: vi.fn(),
+    copilotAuthDisconnect: vi.fn(),
+    copilotModelsList: vi.fn(),
   };
   return bridge;
 }
@@ -77,5 +89,108 @@ describe("SettingsPanel", () => {
     await userEvent.click(screen.getByRole("radio", { name: /api key/i }));
     await userEvent.selectOptions(screen.getByLabelText(/^provider$/i), "openrouter");
     expect(screen.getByLabelText(/endpoint/i)).toHaveValue("https://openrouter.ai/api/v1");
+  });
+
+  it("shows the connect button and disclaimer for the copilot method", async () => {
+    render(<SettingsPanel bridge={makeBridge()} />);
+    await userEvent.click(screen.getByRole("radio", { name: /github copilot/i }));
+    expect(screen.getByRole("button", { name: /connect with github/i })).toBeInTheDocument();
+    expect(screen.getByText(/undocumented/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^provider$/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/native host/i)).not.toBeInTheDocument();
+  });
+
+  it("starts the device flow when connect is clicked", async () => {
+    const bridge = makeBridge();
+    render(<SettingsPanel bridge={bridge} />);
+    await userEvent.click(screen.getByRole("radio", { name: /github copilot/i }));
+    await userEvent.click(screen.getByRole("button", { name: /connect with github/i }));
+    expect(bridge.copilotAuthStart).toHaveBeenCalled();
+  });
+
+  it("shows the verification code while the flow is pending", async () => {
+    window.open = vi.fn();
+    render(
+      <SettingsPanel
+        bridge={makeBridge(null, false, {
+          status: "pending",
+          userCode: "ABCD-EFGH",
+          verificationUri: "https://github.com/login/device",
+        })}
+      />,
+    );
+    await userEvent.click(screen.getByRole("radio", { name: /github copilot/i }));
+    expect(screen.getByText("ABCD-EFGH")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /github\.com\/login\/device/i })).toBeInTheDocument();
+  });
+
+  it("shows the model dropdown and disconnect when connected", async () => {
+    render(
+      <SettingsPanel
+        bridge={makeBridge(
+          null,
+          false,
+          { status: "connected" },
+          { models: ["gpt-4.1", "claude-sonnet-4"] },
+        )}
+      />,
+    );
+    await userEvent.click(screen.getByRole("radio", { name: /github copilot/i }));
+    expect(screen.getByText(/connected to github/i)).toBeInTheDocument();
+    expect(screen.getByText(/undocumented/i)).toBeInTheDocument();
+    const select = screen.getByLabelText(/model/i);
+    await userEvent.selectOptions(select, "gpt-4.1");
+    expect(select).toHaveValue("gpt-4.1");
+  });
+
+  it("falls back to a free-text model input when the model list is unavailable", async () => {
+    render(
+      <SettingsPanel
+        bridge={makeBridge(null, false, { status: "connected" }, { models: [], error: "boom" })}
+      />,
+    );
+    await userEvent.click(screen.getByRole("radio", { name: /github copilot/i }));
+    const input = screen.getByLabelText(/model/i);
+    expect(input.tagName).toBe("INPUT");
+    await userEvent.type(input, "gpt-4.1");
+    expect(input).toHaveValue("gpt-4.1");
+  });
+
+  it("preselects the saved copilot model and saves the copilot config", async () => {
+    const copilotConfig: ProviderConfig = {
+      method: "copilot",
+      providerId: "copilot",
+      baseUrl: "https://api.githubcopilot.com",
+      model: "claude-sonnet-4",
+      apiKeyRef: "copilot",
+    };
+    const bridge = makeBridge(
+      copilotConfig,
+      false,
+      { status: "connected" },
+      { models: ["gpt-4.1", "claude-sonnet-4"] },
+    );
+    render(<SettingsPanel bridge={bridge} />);
+    expect(screen.getByLabelText(/model/i)).toHaveValue("claude-sonnet-4");
+    await userEvent.click(screen.getByRole("button", { name: /save/i }));
+    await waitFor(() =>
+      expect(bridge.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: "copilot",
+          providerId: "copilot",
+          baseUrl: "https://api.githubcopilot.com",
+          model: "claude-sonnet-4",
+        }),
+        undefined,
+      ),
+    );
+  });
+
+  it("disconnects via the bridge", async () => {
+    const bridge = makeBridge(null, false, { status: "connected" }, { models: ["gpt-4.1"] });
+    render(<SettingsPanel bridge={bridge} />);
+    await userEvent.click(screen.getByRole("radio", { name: /github copilot/i }));
+    await userEvent.click(screen.getByRole("button", { name: /disconnect/i }));
+    expect(bridge.copilotAuthDisconnect).toHaveBeenCalled();
   });
 });
