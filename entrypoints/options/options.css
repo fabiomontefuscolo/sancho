@@ -230,3 +230,37 @@ button:disabled {
   color: var(--text-secondary);
   margin: 0;
 }
+
+.copilot-note {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.copilot-status {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  margin: 0;
+}
+
+.copilot-status code {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.copilot-status a {
+  color: var(--accent);
+}
+
+.copilot-error {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--error-text);
+  margin: 0;
+}
+
+.settings-grid > button {
+  justify-self: start;
+}

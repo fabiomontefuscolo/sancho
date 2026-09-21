@@ -16,7 +16,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Verify baseline gates pass before starting (`pnpm typecheck && pnpm exec vitest run`)
+- [x] T001 Verify baseline gates pass before starting (`pnpm typecheck && pnpm exec vitest run`)
 
 ---
 
@@ -24,10 +24,10 @@
 
 **Purpose**: auth module + types that all stories depend on
 
-- [ ] T002 [P] Create tests/unit/copilot-auth.test.ts covering `startDeviceFlow` (posts client_id/scope, returns user code/uri), `pollForDeviceToken` (authorized → token; authorization_pending keeps polling; slow_down grows interval; access_denied/expired_token → terminal error), `getCopilotToken` (cache hit, refresh when expiring, deduped concurrent refresh), `disconnectCopilot` (wipes storage) — all with stubbed fetch + mock-chrome
-- [ ] T003 Create src/auth/copilot.ts per data-model.md and contracts/auth-contract.md: constants (client id, scope, headers, endpoints), `CopilotAuth` storage in chrome.storage.local key `copilotAuth` (load/save/clear), `startDeviceFlow(fetch?)`, `pollForDeviceToken(session, fetch?, sleep?)`, `getCopilotToken(fetch?)` with 60s expiry margin and single in-flight refresh, `disconnectCopilot()`
-- [ ] T004 [P] Extend src/types.ts `ConnectionMethod` with `"copilot"` and add copilot defaults to src/storage/settings.ts (provider id + fixed baseUrl `https://api.githubcopilot.com`)
-- [ ] T005 [P] Add optional `headers?: Record<string, string>` to `OpenAICompatibleProviderOptions` in src/providers/openai-compatible.ts, passed to `createOpenAICompatible`; extend tests/unit/openai-compatible.test.ts asserting custom headers reach the wire request
+- [x] T002 [P] Create tests/unit/copilot-auth.test.ts covering `startDeviceFlow` (posts client_id/scope, returns user code/uri), `pollForDeviceToken` (authorized → token; authorization_pending keeps polling; slow_down grows interval; access_denied/expired_token → terminal error), `getCopilotToken` (cache hit, refresh when expiring, deduped concurrent refresh), `disconnectCopilot` (wipes storage) — all with stubbed fetch + mock-chrome
+- [x] T003 Create src/auth/copilot.ts per data-model.md and contracts/auth-contract.md: constants (client id, scope, headers, endpoints), `CopilotAuth` storage in chrome.storage.local key `copilotAuth` (load/save/clear), `startDeviceFlow(fetch?)`, `pollForDeviceToken(session, fetch?, sleep?)`, `getCopilotToken(fetch?)` with 60s expiry margin and single in-flight refresh, `disconnectCopilot()`
+- [x] T004 [P] Extend src/types.ts `ConnectionMethod` with `"copilot"` and add copilot defaults to src/storage/settings.ts (provider id + fixed baseUrl `https://api.githubcopilot.com`)
+- [x] T005 [P] Add optional `headers?: Record<string, string>` to `OpenAICompatibleProviderOptions` in src/providers/openai-compatible.ts, passed to `createOpenAICompatible`; extend tests/unit/openai-compatible.test.ts asserting custom headers reach the wire request
 
 **Checkpoint**: copilot-auth unit tests green; provider accepts custom headers
 
@@ -39,12 +39,12 @@
 
 **Independent Test**: start flow from Settings, authorize on GitHub, panel shows connected — no credential typed
 
-- [ ] T006 [P] [US1] Add `copilot.auth.start` / `copilot.auth.status` / `copilot.auth.disconnect` envelopes to src/bridge/messages.ts per contracts/auth-contract.md
-- [ ] T007 [US1] Add background handlers in entrypoints/background.ts: start creates/replaces the in-memory DeviceFlowSession and polls while the port is open; status derives `connected` from persisted auth, `pending` from the live session, `error` from terminal poll states; disconnect clears storage and aborts the session
-- [ ] T008 [P] [US1] Extend src/ui/hooks/useOptionsBridge.ts (SettingsBridge) with `copilotAuthStart()`, `copilotAuthStatus()`, `copilotAuthDisconnect()`
-- [ ] T009 [US1] Extend src/ui/components/settings-panel.tsx: third radio "GitHub Copilot"; disconnected state shows Connect button + disclaimer note; clicking Connect shows the user code + opens verificationUri in a new tab; poll status while pending; connected state shows "Connected to GitHub" + Disconnect button; save() builds the copilot ProviderConfig per data-model.md
-- [ ] T010 [US1] Add copilot validation branch to src/agent/settings-handler.ts (model non-empty; skip baseUrl/apiKey checks)
-- [ ] T011 [US1] Extend tests/component/options.test.tsx: copilot radio renders Connect button + disclaimer; pending state shows the code; connected state (status stubbed) shows Disconnect; disconnect returns to the connect state
+- [x] T006 [P] [US1] Add `copilot.auth.start` / `copilot.auth.status` / `copilot.auth.disconnect` envelopes to src/bridge/messages.ts per contracts/auth-contract.md
+- [x] T007 [US1] Add background handlers in entrypoints/background.ts: start creates/replaces the in-memory DeviceFlowSession and polls while the port is open; status derives `connected` from persisted auth, `pending` from the live session, `error` from terminal poll states; disconnect clears storage and aborts the session
+- [x] T008 [P] [US1] Extend src/ui/hooks/useOptionsBridge.ts (SettingsBridge) with `copilotAuthStart()`, `copilotAuthStatus()`, `copilotAuthDisconnect()`
+- [x] T009 [US1] Extend src/ui/components/settings-panel.tsx: third radio "GitHub Copilot"; disconnected state shows Connect button + disclaimer note; clicking Connect shows the user code + opens verificationUri in a new tab; poll status while pending; connected state shows "Connected to GitHub" + Disconnect button; save() builds the copilot ProviderConfig per data-model.md
+- [x] T010 [US1] Add copilot validation branch to src/agent/settings-handler.ts (model non-empty; skip baseUrl/apiKey checks)
+- [x] T011 [US1] Extend tests/component/options.test.tsx: copilot radio renders Connect button + disclaimer; pending state shows the code; connected state (status stubbed) shows Disconnect; disconnect returns to the connect state
 
 **Checkpoint**: component tests green; manual device-flow smoke test possible
 
@@ -56,8 +56,8 @@
 
 **Independent Test**: send a chat message on the copilot method; with an expired cached token the send still succeeds after a silent refresh
 
-- [ ] T012 [US2] Extend tests/unit/factory.test.ts: copilot config + stored auth → `OpenAICompatibleProvider` with id `copilot` and Copilot headers; no stored auth → `ProviderNotConfiguredError`; expiring cached token triggers one exchange before constructing
-- [ ] T013 [US2] Add copilot branch to src/providers/factory.ts: `getCopilotToken()` then `new OpenAICompatibleProvider({ providerId: "copilot", baseUrl, model, apiKey: sessionToken, headers: COPILOT_HEADERS })`; exchange 401/403 maps to a "reconnect in Settings" error
+- [x] T012 [US2] Extend tests/unit/factory.test.ts: copilot config + stored auth → `OpenAICompatibleProvider` with id `copilot` and Copilot headers; no stored auth → `ProviderNotConfiguredError`; expiring cached token triggers one exchange before constructing
+- [x] T013 [US2] Add copilot branch to src/providers/factory.ts: `getCopilotToken()` then `new OpenAICompatibleProvider({ providerId: "copilot", baseUrl, model, apiKey: sessionToken, headers: COPILOT_HEADERS })`; exchange 401/403 maps to a "reconnect in Settings" error
 - [ ] T014 [US2] Manual validation: real device flow + chat send + context-menu action via Copilot in Brave (quickstart.md steps 1–7)
 
 **Checkpoint**: factory tests green; manual chat through Copilot works
@@ -70,9 +70,9 @@
 
 **Independent Test**: dropdown lists models from the endpoint; with the fetch failing, a text input still allows saving
 
-- [ ] T015 [P] [US3] Add `listCopilotModels(fetch?)` to src/auth/copilot.ts (`GET /models` with Copilot headers, session token via `getCopilotToken`), unit-tested in tests/unit/copilot-auth.test.ts
-- [ ] T016 [US3] Settings panel: on connected state, fetch models via the background (reuse an envelope or extend status response) and render a `<select>`; on fetch failure render the existing free-text input; preselect the saved model
-- [ ] T017 [US3] Component test: dropdown populated from stubbed list; fallback input on fetch failure; saved model preselected
+- [x] T015 [P] [US3] Add `listCopilotModels(fetch?)` to src/auth/copilot.ts (`GET /models` with Copilot headers, session token via `getCopilotToken`), unit-tested in tests/unit/copilot-auth.test.ts
+- [x] T016 [US3] Settings panel: on connected state, fetch models via the background (reuse an envelope or extend status response) and render a `<select>`; on fetch failure render the existing free-text input; preselect the saved model
+- [x] T017 [US3] Component test: dropdown populated from stubbed list; fallback input on fetch failure; saved model preselected
 
 **Checkpoint**: model picker covered by component tests
 
@@ -80,13 +80,13 @@
 
 ## Phase 6: User Story 4 - Disclaimer & disconnect polish (Priority: P3)
 
-- [ ] T018 [US4] Verify disclaimer visible in both connected and disconnected states and Disconnect wipes `copilotAuth` (component test assertions; adjust copy if needed)
+- [x] T018 [US4] Verify disclaimer visible in both connected and disconnected states and Disconnect wipes `copilotAuth` (component test assertions; adjust copy if needed)
 
 ---
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T019 Run full gates: `pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm build && pnpm test:e2e`; verify no regression in api/acp tests
+- [x] T019 Run full gates: `pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm build && pnpm test:e2e`; verify no regression in api/acp tests
 - [ ] T020 Manual full quickstart pass in Brave (steps 1–9), including 30-min-refresh simulation and disconnect
 - [ ] T021 Update spec status to Implemented; verify all acceptance scenarios covered
 

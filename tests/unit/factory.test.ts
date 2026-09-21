@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installMockChrome } from "./helpers/mock-chrome";
+import { saveCopilotAuth } from "../../src/auth/copilot";
 import {
   ApiKeyMissingError,
   createProvider,
@@ -85,6 +86,64 @@ describe("createProvider", () => {
       model: "",
       apiKeyRef: "acp",
     });
+    await expect(createProvider()).rejects.toBeInstanceOf(ProviderNotConfiguredError);
+  });
+});
+
+describe("createProvider copilot method", () => {
+  beforeEach(() => installMockChrome());
+  afterEach(() => vi.unstubAllGlobals());
+
+  const copilotConfig = {
+    method: "copilot" as const,
+    providerId: "copilot",
+    baseUrl: "https://api.githubcopilot.com",
+    model: "gpt-4.1",
+    apiKeyRef: "copilot",
+  };
+
+  it("builds an OpenAI-compatible provider from the cached session token", async () => {
+    await saveProviderConfig(copilotConfig);
+    await saveCopilotAuth({
+      githubToken: "gho_abc",
+      copilotToken: "ct_cached",
+      copilotTokenExpiresAt: Math.floor(Date.now() / 1000) + 600,
+    });
+    const provider = await createProvider();
+    expect(provider).toBeInstanceOf(OpenAICompatibleProvider);
+    expect(provider.id).toBe("copilot");
+  });
+
+  it("throws ProviderNotConfiguredError when GitHub is not connected", async () => {
+    await saveProviderConfig(copilotConfig);
+    await expect(createProvider()).rejects.toBeInstanceOf(ProviderNotConfiguredError);
+    await expect(createProvider()).rejects.toThrow(/connect with GitHub/);
+  });
+
+  it("refreshes an expiring session token before constructing the provider", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ token: "ct_new", expires_at: Math.floor(Date.now() / 1000) + 1800 }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchImpl);
+    await saveProviderConfig(copilotConfig);
+    await saveCopilotAuth({
+      githubToken: "gho_abc",
+      copilotToken: "ct_old",
+      copilotTokenExpiresAt: Math.floor(Date.now() / 1000) + 5,
+    });
+    const provider = await createProvider();
+    expect(provider).toBeInstanceOf(OpenAICompatibleProvider);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://api.github.com/copilot_internal/v2/token");
+  });
+
+  it("requires a model", async () => {
+    await saveProviderConfig({ ...copilotConfig, model: "" });
     await expect(createProvider()).rejects.toBeInstanceOf(ProviderNotConfiguredError);
   });
 });

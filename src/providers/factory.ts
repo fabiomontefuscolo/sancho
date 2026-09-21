@@ -1,12 +1,20 @@
 import { getApiKey } from "../storage/local";
 import { getProviderConfig } from "../storage/settings";
+import {
+  COPILOT_BASE_URL,
+  COPILOT_CHAT_HEADERS,
+  CopilotNotConnectedError,
+  getCopilotToken,
+} from "../auth/copilot";
 import { AcpProvider } from "./acp";
 import type { BaseLLMProvider } from "./base";
 import { OpenAICompatibleProvider } from "./openai-compatible";
 
 export class ProviderNotConfiguredError extends Error {
-  constructor() {
-    super("no provider configured — open the settings page to connect an API key or a local agent");
+  constructor(
+    message = "no provider configured — open the settings page to connect an API key or a local agent",
+  ) {
+    super(message);
     this.name = "ProviderNotConfiguredError";
   }
 }
@@ -65,6 +73,28 @@ export async function createProvider(): Promise<BaseLLMProvider> {
   }
 
   resetCachedAcpProvider();
+
+  if (config.method === "copilot") {
+    if (!config.model) throw new ProviderNotConfiguredError();
+    let sessionToken: string;
+    try {
+      sessionToken = await getCopilotToken();
+    } catch (error) {
+      if (error instanceof CopilotNotConnectedError) {
+        throw new ProviderNotConfiguredError(
+          "GitHub not connected — open Settings and connect with GitHub first",
+        );
+      }
+      throw error;
+    }
+    return new OpenAICompatibleProvider({
+      providerId: config.providerId,
+      baseUrl: config.baseUrl || COPILOT_BASE_URL,
+      model: config.model,
+      apiKey: sessionToken,
+      headers: COPILOT_CHAT_HEADERS,
+    });
+  }
 
   if (!config.model) throw new ProviderNotConfiguredError();
   validateBaseUrl(config.baseUrl);

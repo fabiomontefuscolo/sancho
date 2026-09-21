@@ -2,7 +2,7 @@
 
 **Feature Branch**: `006-github-copilot-connection`
 **Created**: 2026-09-21
-**Status**: Draft
+**Status**: Implemented (manual Brave validation pending: T014, T020)
 **Input**: User description: "Add GitHub Copilot as a third connection method: OAuth device flow auth (no credentials typed), Copilot token exchange with auto-refresh, OpenAI-compatible chat endpoint with Copilot headers, model list fetched from /models, settings UI with Connect/Disconnect and disclaimer."
 
 ## User Scenarios & Testing _(mandatory)_
