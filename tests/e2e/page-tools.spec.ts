@@ -11,6 +11,8 @@ ${Array.from({ length: 500 }, (_, i) => `<div>documentation paragraph ${i}</div>
 <div id="mirror"></div>
 <input id="name">
 <div id="events"></div>
+<div class="cm-editor"><div class="cm-content" id="cm" contenteditable="true"></div></div>
+<div id="cm-log"></div>
 <script>
 const editor = document.getElementById("editor");
 const mirror = document.getElementById("mirror");
@@ -24,6 +26,19 @@ const log = [];
 const nameInput = document.getElementById("name");
 nameInput.addEventListener("input", () => { log.push("input"); document.getElementById("events").textContent = log.join(","); });
 nameInput.addEventListener("change", () => { log.push("change"); document.getElementById("events").textContent = log.join(","); });
+const cmEl = document.getElementById("cm");
+const cmView = {
+  _text: "",
+  state: { doc: { length: 0 }, selection: { main: { head: 0 } } },
+  dispatch(tr) {
+    const { from, to, insert } = tr.changes;
+    this._text = this._text.slice(0, from) + insert + this._text.slice(to);
+    this.state.doc.length = this._text.length;
+    cmEl.textContent = this._text;
+    document.getElementById("cm-log").textContent = tr.userEvent;
+  },
+};
+cmEl.cmView = { view: cmView };
 </script>
 </body></html>`;
 
@@ -327,6 +342,33 @@ test("setEditorText drives editor state, insert mode, and plain inputs", async (
     await expect(page.locator("#mirror")).toHaveText('s("bd hh") .cpm(120)');
     await expect(page.locator("#name")).toHaveValue("Ada");
     await expect(page.locator("#events")).toHaveText("input,change");
+  } finally {
+    server.close();
+  }
+});
+
+test("setEditorText edits a CodeMirror editor via a main-world transaction", async ({
+  context,
+  extensionId,
+}) => {
+  const { server, baseUrl } = await startScriptedLlm((toolResults, lastRole) => {
+    if (lastRole === "user") {
+      return {
+        tool: {
+          name: "setEditorText",
+          args: JSON.stringify({ selector: "#cm", text: 'note("c3 eb3 g3")', mode: "replace" }),
+        },
+      };
+    }
+    return { text: `result: ${toolResults[0]}` };
+  });
+  try {
+    const panel = await setupPanel(context, extensionId, baseUrl);
+    const page = await openTargetPage(context);
+    const reply = await runChat(panel, "write a chord into the code editor");
+    expect(reply).toContain('"ok":true');
+    await expect(page.locator("#cm")).toHaveText('note("c3 eb3 g3")');
+    await expect(page.locator("#cm-log")).toHaveText("input.type");
   } finally {
     server.close();
   }

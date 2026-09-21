@@ -3,6 +3,10 @@ export interface SetTextResult {
   error?: string;
 }
 
+export function isCodeMirrorContent(element: Element): boolean {
+  return element.classList.contains("cm-content") || element.closest(".cm-editor") !== null;
+}
+
 function isEditableElement(
   element: Element,
 ): element is HTMLInputElement | HTMLTextAreaElement | HTMLElement {

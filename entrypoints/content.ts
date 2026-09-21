@@ -2,7 +2,7 @@ const GUARD_KEY = "__sanchoContentLoaded";
 
 import { getSharedRefRegistry } from "../src/content/refs";
 import { buildSnapshot, computeRole, accessibleName } from "../src/content/snapshot";
-import { setEditorText } from "../src/content/edit-text";
+import { setEditorText, isCodeMirrorContent } from "../src/content/edit-text";
 
 const refRegistry = getSharedRefRegistry(globalThis as unknown as Record<string, unknown>);
 
@@ -217,6 +217,11 @@ function handleMessage(message: { type: string; [key: string]: unknown }): unkno
       const target = resolveTarget(message);
       if ("failure" in target) return target.failure;
       const mode = message.mode === "insert" ? "insert" : "replace";
+      if (isCodeMirrorContent(target.element)) {
+        return setCodeMirrorTextViaMainWorld(target.element, String(message.text), mode).then(
+          (result) => narrated(target.element, result),
+        );
+      }
       return narrated(target.element, setEditorText(target.element, String(message.text), mode));
     }
     case "selection.get": {
@@ -237,6 +242,31 @@ function handleMessage(message: { type: string; [key: string]: unknown }): unkno
   }
 }
 
+async function setCodeMirrorTextViaMainWorld(
+  element: Element,
+  text: string,
+  mode: "replace" | "insert",
+): Promise<OkResult> {
+  const marker = crypto.randomUUID();
+  element.setAttribute("data-sancho-cm", marker);
+  try {
+    const response = (await chrome.runtime.sendMessage({
+      type: "sancho:cmSetText",
+      marker,
+      text,
+      mode,
+    })) as OkResult | undefined;
+    if (!response || typeof response !== "object") {
+      return { ok: false, error: "no response from background for CodeMirror edit" };
+    }
+    return response;
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  } finally {
+    element.removeAttribute("data-sancho-cm");
+  }
+}
+
 export default defineContentScript({
   matches: ["<all_urls>"],
   registration: "runtime",
@@ -248,7 +278,19 @@ export default defineContentScript({
     chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
       if (typeof message !== "object" || message === null || !("type" in message)) return false;
       try {
-        sendResponse(handleMessage(message as { type: string }));
+        const result = handleMessage(message as { type: string }) as unknown;
+        if (result instanceof Promise) {
+          result.then(
+            (resolved) => sendResponse(resolved),
+            (error: unknown) =>
+              sendResponse({
+                ok: false,
+                error: error instanceof Error ? error.message : String(error),
+              }),
+          );
+        } else {
+          sendResponse(result);
+        }
       } catch (error) {
         sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) });
       }

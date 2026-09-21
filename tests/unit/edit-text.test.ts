@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { setEditorText } from "../../src/content/edit-text";
+import { setEditorText, isCodeMirrorContent } from "../../src/content/edit-text";
 
 function makeEditable(): HTMLElement {
   const el = document.createElement("div");
@@ -136,5 +136,35 @@ describe("setEditorText errors", () => {
     expect(result.ok).toBe(false);
     expect(result.error).toBeTruthy();
     expect(div.textContent).toBe("");
+  });
+});
+
+describe("isCodeMirrorContent", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("detects a cm-content element", () => {
+    const el = document.createElement("div");
+    el.classList.add("cm-content");
+    document.body.appendChild(el);
+    expect(isCodeMirrorContent(el)).toBe(true);
+  });
+
+  it("detects a descendant of a cm-editor", () => {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("cm-editor");
+    const inner = document.createElement("div");
+    wrapper.appendChild(inner);
+    document.body.appendChild(wrapper);
+    expect(isCodeMirrorContent(inner)).toBe(true);
+  });
+
+  it("returns false for plain contenteditable and inputs", () => {
+    const el = document.createElement("div");
+    el.setAttribute("contenteditable", "true");
+    document.body.appendChild(el);
+    expect(isCodeMirrorContent(el)).toBe(false);
+    expect(isCodeMirrorContent(document.createElement("input"))).toBe(false);
   });
 });

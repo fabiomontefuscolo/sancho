@@ -39,6 +39,43 @@ import { getProviderConfig } from "../src/storage/settings";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
+interface CmEditResult {
+  ok: boolean;
+  error?: string;
+}
+
+function applyCodeMirrorText(
+  marker: string,
+  text: string,
+  mode: "replace" | "insert",
+): CmEditResult {
+  const element = document.querySelector(`[data-sancho-cm="${marker}"]`);
+  if (!element) return { ok: false, error: "CodeMirror target not found in page" };
+  const holder = (element as { cmView?: { view?: unknown } }).cmView;
+  const view = (holder?.view ?? holder) as
+    | {
+        state?: { doc: { length: number }; selection: { main: { head: number } } };
+        dispatch?: (transaction: {
+          changes: { from: number; to: number; insert: string };
+          userEvent: string;
+          scrollIntoView: boolean;
+        }) => void;
+      }
+    | undefined;
+  if (!view || typeof view.dispatch !== "function" || !view.state) {
+    return { ok: false, error: "CodeMirror view unavailable on target element" };
+  }
+  const head = mode === "insert" ? view.state.selection.main.head : 0;
+  const from = mode === "insert" ? head : 0;
+  const to = mode === "insert" ? head : view.state.doc.length;
+  view.dispatch({
+    changes: { from, to, insert: text },
+    userEvent: "input.type",
+    scrollIntoView: true,
+  });
+  return { ok: true };
+}
+
 const handlers = new Map<UiToBackground["type"], UiHandler>();
 
 export function registerHandler(type: UiToBackground["type"], handler: UiHandler): void {
@@ -132,6 +169,44 @@ export default defineBackground(() => {
     handlePortConnection(port);
     setActiveUiPort(port);
     port.onDisconnect.addListener(() => setActiveUiPort(null));
+  });
+  chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+    if (
+      typeof message !== "object" ||
+      message === null ||
+      (message as { type?: unknown }).type !== "sancho:cmSetText"
+    ) {
+      return false;
+    }
+    const tabId = sender.tab?.id;
+    if (tabId === undefined) {
+      sendResponse({ ok: false, error: "no tab for CodeMirror edit" });
+      return false;
+    }
+    const { marker, text, mode } = message as { marker: string; text: string; mode: string };
+    void chrome.scripting
+      .executeScript({
+        target: { tabId },
+        world: "MAIN",
+        func: applyCodeMirrorText,
+        args: [marker, text, mode === "insert" ? "insert" : "replace"],
+      })
+      .then(
+        (results) => {
+          const first = results[0];
+          sendResponse(
+            first && "result" in first && first.result
+              ? first.result
+              : { ok: false, error: "CodeMirror edit produced no result" },
+          );
+        },
+        (error: unknown) =>
+          sendResponse({
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          }),
+      );
+    return true;
   });
   chrome.runtime.onInstalled.addListener(() => {
     void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
