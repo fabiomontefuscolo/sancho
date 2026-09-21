@@ -24,6 +24,7 @@ export interface WireTool {
 
 export interface StreamEvents {
   onDelta: (text: string) => void;
+  onReasoningDelta?: (text: string) => void;
   onToolCall: (toolCall: ToolCall) => void;
   onDone: () => void;
   onError: (error: Error) => void;

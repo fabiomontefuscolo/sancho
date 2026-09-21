@@ -58,6 +58,8 @@ export class OpenAICompatibleProvider extends BaseLLMProvider {
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
           events.onDelta(part.text);
+        } else if (part.type === "reasoning-delta") {
+          events.onReasoningDelta?.(part.text);
         } else if (part.type === "tool-call") {
           events.onToolCall({
             id: part.toolCallId,
