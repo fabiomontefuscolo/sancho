@@ -116,9 +116,9 @@
 
 **Independent Test**: Click gear → options page opens with Appearance in nav; quickstart.md S6
 
-- [ ] T024 [US6] Write failing component tests in tests/component/options.test.tsx: nav order `Connection | Appearance | Actions | About`, `#appearance` anchor, font-size select lives in Appearance only
-- [ ] T025 [US6] Promote Appearance to a top-level section with the font-size select and `#appearance` nav anchor in src/ui/components/settings-panel.tsx and entrypoints/options/main.tsx
-- [ ] T026 [US6] In src/ui/components/chat.tsx: gear button calls `chrome.runtime.openOptionsPage()`; add a separate "Aa" button that opens the existing in-panel font-size quick view (src/ui/components/settings-view.tsx unchanged in behavior)
+- [x] T02[4-9] [US6] Write failing component tests in tests/component/options.test.tsx: nav order `Connection | Appearance | Actions | About`, `#appearance` anchor, font-size select lives in Appearance only
+- [x] T02[4-9] [US6] Promote Appearance to a top-level section with the font-size select and `#appearance` nav anchor in src/ui/components/settings-panel.tsx and entrypoints/options/main.tsx
+- [x] T02[4-9] [US6] In src/ui/components/chat.tsx: gear button calls `chrome.runtime.openOptionsPage()`; add a separate "Aa" button that opens the existing in-panel font-size quick view (src/ui/components/settings-view.tsx unchanged in behavior)
 
 **Checkpoint**: US6 functional; both font-size surfaces stay in sync (FR-013)
 
@@ -130,7 +130,7 @@
 
 **Independent Test**: Scroll up in a long conversation and use the button; new conversation shows welcome state; quickstart.md S7
 
-- [ ] T027 [US7] Add `ThreadPrimitive.ScrollToBottom` floating button and restyle `ThreadPrimitive.Empty` welcome state in src/ui/components/chat.tsx and src/ui/components/chat.css
+- [x] T02[4-9] [US7] Add `ThreadPrimitive.ScrollToBottom` floating button and restyle `ThreadPrimitive.Empty` welcome state in src/ui/components/chat.tsx and src/ui/components/chat.css
 
 **Checkpoint**: All seven stories independently functional
 
@@ -140,8 +140,8 @@
 
 **Purpose**: E2E alignment, full gates, manual validation
 
-- [ ] T028 Update e2e suites in tests/e2e/: conversations.spec.ts (ThreadList), rich-messages.spec.ts (action bar/error notice), agent-loop.spec.ts (thought-process group + regenerate scenario), layout.spec.ts (composer/scroll-to-bottom)
-- [ ] T029 Run full gates: `pnpm exec vitest run` (coverage ≥80% on src/agent|src/providers|src/storage), `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e`
+- [x] T02[4-9] Update e2e suites in tests/e2e/: conversations.spec.ts (ThreadList), rich-messages.spec.ts (action bar/error notice), agent-loop.spec.ts (thought-process group + regenerate scenario), layout.spec.ts (composer/scroll-to-bottom)
+- [x] T02[4-9] Run full gates: `pnpm exec vitest run` (coverage ≥80% on src/agent|src/providers|src/storage), `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e`
 - [ ] T030 Manual Brave validation of quickstart.md scenarios S1–S7 (extension id `jmpiiajepljjaimgdjmfdjiahhaajfma`) — user performs; leave unchecked
 
 ---
