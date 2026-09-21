@@ -202,10 +202,21 @@ export function ChatPanel({ tabId }: { tabId: number }) {
             <ThreadPrimitive.Root className="sancho-thread">
               <ThreadPrimitive.Viewport className="sancho-viewport">
                 <ThreadPrimitive.Empty>
-                  <div className="sancho-empty">Ask the agent anything about this page.</div>
+                  <div className="sancho-empty">
+                    <p className="sancho-empty-title">How can I help with this page?</p>
+                    <p className="sancho-empty-hint">
+                      Ask me to read, summarize, or interact with the page you are viewing.
+                    </p>
+                  </div>
                 </ThreadPrimitive.Empty>
                 <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
               </ThreadPrimitive.Viewport>
+              <ThreadPrimitive.ScrollToBottom
+                aria-label="Scroll to bottom"
+                className="sancho-scroll-bottom"
+              >
+                <ChevronDown size={16} />
+              </ThreadPrimitive.ScrollToBottom>
             </ThreadPrimitive.Root>
             {(agentState || isRunning) && (
               <div className="sancho-status" role="status" aria-live="polite">
