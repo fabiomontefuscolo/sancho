@@ -161,6 +161,9 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     messages,
     isRunning,
     convertMessage: (message) => message,
+    onCancel: async () => {
+      portRef.current?.postMessage(makeEnvelope("request", "chat.cancel", {}));
+    },
     onNew: async (message) => {
       const text = message.content
         .filter((part): part is { type: "text"; text: string } => part.type === "text")
