@@ -101,3 +101,7 @@
 - MVP = Phases 1–4 (connect + chat works end-to-end)
 - TDD per task: failing test first, then implementation, then commit
 - Commit after each task or logically grouped pair; mark tasks `[X]` as completed; manual Brave validation tasks (T014, T020) left unchecked for the user
+
+## Phase 8: Convergence
+
+- [x] T022 Abort the pending device-flow polling when the initiating options port disconnects (port.onDisconnect → abort the session's AbortController in src/agent/copilot-auth-handler.ts, wire the disconnect listener where handlers are registered in entrypoints/background.ts) so a closed options page stops polling instead of running until code expiry and posting to a dead port per spec edge case "Options page closed mid-flow" and research.md polling-lifetime decision (partial)

@@ -53,6 +53,8 @@ export function makeCopilotAuthHandlers(deps: CopilotAuthHandlerDeps = {}): Copi
         return;
       }
       const abort = new AbortController();
+      const onPortDisconnect = () => abort.abort();
+      port.onDisconnect.addListener(onPortDisconnect);
       pending = { abort, userCode: flow.userCode, verificationUri: flow.verificationUri };
       postAuthState(port, {
         status: "pending",
@@ -69,6 +71,8 @@ export function makeCopilotAuthHandlers(deps: CopilotAuthHandlerDeps = {}): Copi
         if (abort.signal.aborted) return;
         lastError = error instanceof Error ? error.message : String(error);
         postAuthState(port, { status: "error", message: lastError });
+      } finally {
+        port.onDisconnect.removeListener(onPortDisconnect);
       }
     },
 

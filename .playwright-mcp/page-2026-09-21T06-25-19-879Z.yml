@@ -1,0 +1,117 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - heading "Sancho" [level=1] [ref=e5]
+    - link "Connection" [ref=e6] [cursor=pointer]:
+      - /url: "#connection"
+    - link "Actions" [ref=e7] [cursor=pointer]:
+      - /url: "#actions"
+    - link "About" [ref=e8] [cursor=pointer]:
+      - /url: "#about"
+  - main [ref=e9]:
+    - region "Connection" [ref=e11]:
+      - heading "Connection" [level=2] [ref=e12]
+      - group [ref=e13]:
+        - generic [ref=e14]:
+          - radio "API key (cloud provider)" [ref=e15]
+          - text: API key (cloud provider)
+        - generic [ref=e16]:
+          - radio "Local agent (ACP)" [ref=e17]
+          - text: Local agent (ACP)
+        - generic [ref=e18]:
+          - radio "GitHub Copilot" [checked] [ref=e19]
+          - text: GitHub Copilot
+      - generic [ref=e20]:
+        - paragraph [ref=e21]: Requires an active GitHub Copilot subscription. This integration uses an undocumented GitHub API — use at your own risk.
+        - paragraph [ref=e22]: Connected to GitHub
+        - generic [ref=e23]:
+          - text: Model
+          - combobox "Model" [ref=e24]:
+            - option "gpt-5.4-mini" [selected]
+            - option "claude-fable-5.1"
+            - option "claude-fable-5"
+            - option "claude-opus-4.7"
+            - option "claude-opus-4.8-fast"
+            - option "claude-opus-4.8"
+            - option "claude-opus-5"
+            - option "claude-sonnet-5"
+            - option "copilot-search-a"
+            - option "copilot-search-b"
+            - option "copilot-search-c"
+            - option "exec-agent-a"
+            - option "exec-agent-b"
+            - option "exec-agent-c"
+            - option "gemini-3.5-flash"
+            - option "gemini-3.6-flash"
+            - option "gemini-3.7-flash"
+            - option "gemini-3.8-flash"
+            - option "gpt-5.4"
+            - option "kimi-k2.7-code"
+            - option "kimi-k3-base"
+            - option "kimi-k3-copilot"
+            - option "kimi-k3"
+            - option "trajectory-compaction"
+            - option "gpt-5-mini"
+            - option "gpt-4o-mini-2024-07-18"
+            - option "gpt-4o-2024-11-20"
+            - option "gpt-4o-2024-08-06"
+            - option "claude-haiku-4.5"
+            - option "gpt-4.1-2025-04-14"
+            - option "gpt-3.5-turbo-0613"
+            - option "gpt-4"
+            - option "gpt-4-0613"
+            - option "gpt-4-0125-preview"
+            - option "gpt-4o-2024-05-13"
+            - option "gpt-4-o-preview"
+            - option "gpt-4.1"
+            - option "gpt-3.5-turbo"
+            - option "gpt-4o-mini"
+            - option "gpt-4o"
+        - button "Disconnect" [ref=e25] [cursor=pointer]
+      - button "Save" [ref=e26] [cursor=pointer]
+      - heading "Appearance" [level=2] [ref=e27]
+      - generic [ref=e29]:
+        - text: Message font size
+        - combobox "Message font size" [ref=e30]:
+          - option "Small"
+          - option "Medium"
+          - option "Large" [selected]
+    - region "Actions" [ref=e32]:
+      - heading "Actions" [level=2] [ref=e33]
+      - list [ref=e34]:
+        - listitem [ref=e35]:
+          - checkbox "Enable Improve writing" [checked] [ref=e36]
+          - generic [ref=e37]: Improve writing
+          - generic [ref=e38]: built-in
+          - button "Edit Improve writing" [ref=e39] [cursor=pointer]: Edit
+        - listitem [ref=e40]:
+          - checkbox "Enable Make it formal" [checked] [ref=e41]
+          - generic [ref=e42]: Make it formal
+          - generic [ref=e43]: built-in
+          - button "Edit Make it formal" [ref=e44] [cursor=pointer]: Edit
+        - listitem [ref=e45]:
+          - checkbox "Enable Fix grammar" [checked] [ref=e46]
+          - generic [ref=e47]: Fix grammar
+          - generic [ref=e48]: built-in
+          - button "Edit Fix grammar" [ref=e49] [cursor=pointer]: Edit
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - text: Action name
+          - textbox "Action name" [ref=e52]
+        - generic [ref=e53]:
+          - text: "Prompt (use {{selection}} for the selected text)"
+          - 'textbox "Prompt (use {{selection}} for the selected text)" [ref=e54]'
+        - button "Add action" [disabled] [ref=e55]
+    - region "About" [ref=e57]:
+      - heading "About" [level=2] [ref=e58]
+      - generic [ref=e59]:
+        - term [ref=e60]: Version
+        - definition [ref=e61]: 0.1.0
+        - term [ref=e62]: License
+        - definition [ref=e63]:
+          - link "GNU GPL v3 or later" [ref=e64] [cursor=pointer]:
+            - /url: https://github.com/fabiomontefuscolo/sancho/blob/main/LICENSE
+        - term [ref=e65]: Source code
+        - definition [ref=e66]:
+          - link "github.com/fabiomontefuscolo/sancho" [ref=e67] [cursor=pointer]:
+            - /url: https://github.com/fabiomontefuscolo/sancho
+      - paragraph [ref=e68]: "Sancho is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License. It comes with ABSOLUTELY NO WARRANTY. Copyright (C) 2026 Sancho contributors."

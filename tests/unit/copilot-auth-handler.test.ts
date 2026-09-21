@@ -14,7 +14,17 @@ const FLOW: DeviceFlowStart = {
 
 function fakePort() {
   const postMessage = vi.fn();
-  const port = { postMessage } as unknown as chrome.runtime.Port;
+  let disconnectListener: (() => void) | null = null;
+  const port = {
+    postMessage,
+    onDisconnect: {
+      addListener: vi.fn((listener: () => void) => {
+        disconnectListener = listener;
+      }),
+      removeListener: vi.fn(),
+    },
+  } as unknown as chrome.runtime.Port;
+  const disconnect = () => disconnectListener?.();
   const states = () =>
     postMessage.mock.calls
       .map((call) => call[0] as { type: string; payload: unknown })
@@ -25,7 +35,7 @@ function fakePort() {
       .map((call) => call[0] as { type: string; payload: unknown })
       .filter((msg) => msg.type === "copilot.models.state")
       .map((msg) => msg.payload as CopilotModelsPayload);
-  return { port, postMessage, states, models };
+  return { port, postMessage, states, models, disconnect };
 }
 
 describe("copilot auth handlers", () => {
@@ -53,6 +63,33 @@ describe("copilot auth handlers", () => {
     });
     await handlers.handleStart(port);
     expect(states().at(-1)).toEqual({ status: "error", message: "authorization denied on GitHub" });
+    expect(await loadCopilotAuth()).toBeNull();
+  });
+
+  it("aborts the pending flow silently when the port disconnects", async () => {
+    const { port, states, disconnect } = fakePort();
+    const handlers = makeCopilotAuthHandlers({
+      startFlow: vi.fn().mockResolvedValue(FLOW),
+      pollFlow: vi.fn().mockImplementation(
+        (_flow: DeviceFlowStart, { signal }: { signal: AbortSignal }) =>
+          new Promise<string>((_resolve, reject) => {
+            signal.addEventListener("abort", () => reject(new Error("authorization aborted")));
+          }),
+      ),
+    });
+    const started = handlers.handleStart(port);
+    await vi.waitFor(() =>
+      expect(states()).toContainEqual({
+        status: "pending",
+        userCode: "ABCD-EFGH",
+        verificationUri: FLOW.verificationUri,
+      }),
+    );
+    disconnect();
+    await started;
+    expect(states().some((s) => s.status === "error")).toBe(false);
+    await handlers.handleStatus(port);
+    expect(states().at(-1)).toEqual({ status: "disconnected" });
     expect(await loadCopilotAuth()).toBeNull();
   });
 
