@@ -1,11 +1,13 @@
 import { createContext, useContext, useState } from "react";
 import {
   AssistantRuntimeProvider,
+  AuiIf,
   ComposerPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
+import { ArrowUp, Square } from "lucide-react";
 import { useSanchoRuntime } from "../hooks/useSanchoRuntime";
 import { formatMessageTime } from "../utils/format-time";
 import { MarkdownText } from "./markdown-text";
@@ -170,10 +172,20 @@ export function ChatPanel({ tabId }: { tabId: number }) {
                   aria-label="Message"
                   placeholder="Message the agent…"
                   className="sancho-input"
+                  rows={1}
                 />
-                <ComposerPrimitive.Send aria-label="Send" className="sancho-send">
-                  Send
-                </ComposerPrimitive.Send>
+                <div className="sancho-composer-actions">
+                  <AuiIf condition={(state) => state.thread.isRunning}>
+                    <ComposerPrimitive.Cancel aria-label="Stop generating" className="sancho-send">
+                      <Square size={14} fill="currentColor" />
+                    </ComposerPrimitive.Cancel>
+                  </AuiIf>
+                  <AuiIf condition={(state) => !state.thread.isRunning}>
+                    <ComposerPrimitive.Send aria-label="Send" className="sancho-send">
+                      <ArrowUp size={16} />
+                    </ComposerPrimitive.Send>
+                  </AuiIf>
+                </div>
               </ComposerPrimitive.Root>
             </>
           )}
