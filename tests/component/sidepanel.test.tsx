@@ -258,15 +258,38 @@ describe("ChatPanel", () => {
     expect(screen.queryByText(/thought process/i)).toBeNull();
   });
 
-  it("surfaces errors in the thread", async () => {
+  it("surfaces errors as an alert notice on the failed message, not as chat text", async () => {
     render(<ChatPanel tabId={7} />);
+    await userEvent.type(screen.getByRole("textbox", { name: /message/i }), "go{Enter}");
+    port.emit({
+      kind: "event",
+      type: "chat.delta",
+      id: "e5a",
+      payload: { messageId: "m-err", text: "partial" },
+    });
+    await waitFor(() => expect(screen.getByText("partial")).toBeInTheDocument());
     port.emit({
       kind: "event",
       type: "chat.error",
       id: "e6",
-      payload: { message: "connection failed" },
+      payload: { message: "connection failed", messageId: "m-err" },
     });
-    await waitFor(() => expect(screen.getByText(/connection failed/)).toBeInTheDocument());
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("connection failed");
+    expect(screen.queryByText(/^Error: /)).toBeNull();
+  });
+
+  it("attaches pre-content errors to a placeholder assistant message", async () => {
+    render(<ChatPanel tabId={7} />);
+    await userEvent.type(screen.getByRole("textbox", { name: /message/i }), "go{Enter}");
+    port.emit({
+      kind: "event",
+      type: "chat.error",
+      id: "e7",
+      payload: { message: "provider exploded", messageId: "m-err2" },
+    });
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("provider exploded");
   });
 
   it("shows ACP permission requests and resolves them with the chosen option", async () => {

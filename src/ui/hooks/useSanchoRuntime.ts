@@ -197,7 +197,26 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         if (envelope.payload.message === "consent_required") {
           setConsentRequired(true);
         } else {
-          appendDelta(envelope.id, `Error: ${envelope.payload.message}`);
+          const messageId = envelope.payload.messageId ?? lastAssistantIdRef.current ?? envelope.id;
+          settleTools(messageId);
+          const live = getLive(messageId);
+          const content = buildLiveContent(live);
+          const threadMessage: ThreadMessageLike = {
+            id: messageId,
+            role: "assistant",
+            content,
+            createdAt: new Date(),
+            status: { type: "incomplete", reason: "error", error: envelope.payload.message },
+          };
+          setMessages((prev) => {
+            const existing = prev.findIndex((message) => message.id === messageId);
+            if (existing >= 0) {
+              const copy = [...prev];
+              copy[existing] = threadMessage;
+              return copy;
+            }
+            return [...prev, threadMessage];
+          });
         }
       } else if (envelope.type === "chat.state") {
         if (!isForActiveConversation(envelope.payload.conversationId)) return;

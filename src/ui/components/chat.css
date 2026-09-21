@@ -534,6 +534,15 @@ body,
   position: relative;
 }
 
+.sancho-error {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--chat-danger);
+  border-radius: 8px;
+  color: var(--chat-danger);
+  font-size: 12px;
+}
+
 .sancho-action-bar {
   display: flex;
   gap: 4px;

@@ -4,6 +4,7 @@ import {
   AssistantRuntimeProvider,
   AuiIf,
   ComposerPrimitive,
+  ErrorPrimitive,
   groupPartByType,
   MessagePrimitive,
   ThreadPrimitive,
@@ -109,6 +110,11 @@ function AssistantMessage() {
           }
         }}
       </MessagePrimitive.GroupedParts>
+      <AuiIf condition={(state) => state.message.status?.type === "incomplete"}>
+        <ErrorPrimitive.Root className="sancho-error">
+          <ErrorPrimitive.Message />
+        </ErrorPrimitive.Root>
+      </AuiIf>
       <MessageTimestamp />
       <ActionBarPrimitive.Root
         hideWhenRunning
