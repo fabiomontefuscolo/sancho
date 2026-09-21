@@ -121,6 +121,141 @@ describe("ChatPanel", () => {
     await waitFor(() => expect(screen.getByText(/readPage/)).toBeInTheDocument());
   });
 
+  it("renders reasoning inside the collapsible thought process group", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.delta",
+      id: "r1",
+      payload: { messageId: "m-r", text: "Let me think…", part: "reasoning" },
+    });
+    port.emit({
+      kind: "event",
+      type: "chat.delta",
+      id: "r2",
+      payload: { messageId: "m-r", text: "The answer." },
+    });
+    await waitFor(() => expect(screen.getByText("The answer.")).toBeInTheDocument());
+    expect(screen.getByText(/thought process/i)).toBeInTheDocument();
+    expect(screen.getByText("Let me think…")).toBeInTheDocument();
+  });
+
+  it("shows tool entries with running then done state inside the message", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "t1",
+      payload: {
+        messageId: "m-t",
+        toolCallId: "tc-1",
+        toolName: "readPage",
+        argsText: "{}",
+        status: "started",
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/readPage/)).toBeInTheDocument());
+    expect(screen.getByText(/running/i)).toBeInTheDocument();
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "t2",
+      payload: {
+        messageId: "m-t",
+        toolCallId: "tc-1",
+        toolName: "readPage",
+        argsText: "{}",
+        result: '{"ok":true}',
+        status: "finished",
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/done/i)).toBeInTheDocument());
+  });
+
+  it("shows no empty reasoning block when the model emits no reasoning", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "t3",
+      payload: {
+        messageId: "m-nr",
+        toolCallId: "tc-2",
+        toolName: "readPage",
+        argsText: "{}",
+        status: "started",
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/readPage/)).toBeInTheDocument());
+    expect(screen.queryByText(/thought process/i)).toBeInTheDocument();
+    expect(document.querySelector(".sancho-reasoning")).toBeNull();
+  });
+
+  it("marks interrupted tool entries terminal on chat.done", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "t4",
+      payload: {
+        messageId: "m-i",
+        toolCallId: "tc-3",
+        toolName: "readPage",
+        argsText: "{}",
+        status: "started",
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/running/i)).toBeInTheDocument());
+    port.emit({
+      kind: "event",
+      type: "chat.done",
+      id: "t5",
+      payload: { messageId: "m-i", cancelled: true },
+    });
+    await waitFor(() => expect(screen.queryByText(/running/i)).toBeNull());
+  });
+
+  it("drops the thought process when the conversation reloads", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "t6",
+      payload: {
+        messageId: "m-h",
+        toolCallId: "tc-4",
+        toolName: "readPage",
+        argsText: "{}",
+        status: "started",
+      },
+    });
+    await waitFor(() => expect(screen.getByText(/readPage/)).toBeInTheDocument());
+    port.emit({
+      kind: "event",
+      type: "conversation.state",
+      id: "t7",
+      payload: {
+        id: "c1",
+        title: "Reloaded",
+        messages: [
+          {
+            id: "m-h",
+            role: "assistant",
+            parts: [{ type: "text", text: "final text" }],
+            tabId: 7,
+            createdAt: 1,
+          },
+        ],
+        screenshotConsent: false,
+        acpSessionId: null,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    });
+    await waitFor(() => expect(screen.getByText("final text")).toBeInTheDocument());
+    expect(screen.queryByText(/thought process/i)).toBeNull();
+  });
+
   it("surfaces errors in the thread", async () => {
     render(<ChatPanel tabId={7} />);
     port.emit({
