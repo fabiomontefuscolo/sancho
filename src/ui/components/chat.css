@@ -27,12 +27,12 @@ body,
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --chat-bg: #202124;
+    --chat-bg: #101114;
     --chat-text: #e8eaed;
     --chat-text-secondary: #9aa0a6;
     --chat-border: #3c4043;
     --chat-input-border: #5f6368;
-    --chat-bubble-assistant: #3c4043;
+    --chat-bubble-assistant: #1c2023;
     --chat-code-bg: #ffffff11;
     --chat-code-border: #ffffff33;
     --chat-accent: #8ab4f8;
@@ -147,8 +147,8 @@ body,
   min-width: 0;
   max-width: 85%;
   padding: 10px 14px;
-  border-radius: 14px;
-  font-size: 14px;
+  border-radius: 5x;
+  font-size: 16px;
   line-height: 1.5;
   word-break: break-word;
 }
@@ -167,6 +167,10 @@ body,
 .sancho-message p,
 .sancho-message {
   overflow-wrap: anywhere;
+}
+
+.sancho-message > div > *:not(:last-child) {
+  margin-bottom: 0.5rem;
 }
 
 .sancho-message-time {
