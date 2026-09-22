@@ -31,12 +31,7 @@ function UserMessage() {
     <MessagePrimitive.Root className="sancho-message sancho-message-user">
       <MessagePrimitive.Parts />
       <MessageTimestamp />
-      <ActionBarPrimitive.Root
-        hideWhenRunning
-        autohide="not-last"
-        autohideFloat="always"
-        className="sancho-action-bar"
-      >
+      <ActionBarPrimitive.Root hideWhenRunning className="sancho-action-bar">
         <ActionBarPrimitive.Copy aria-label="Copy" className="sancho-action-button">
           <CopyIcon />
         </ActionBarPrimitive.Copy>
@@ -116,12 +111,7 @@ function AssistantMessage() {
         </ErrorPrimitive.Root>
       </AuiIf>
       <MessageTimestamp />
-      <ActionBarPrimitive.Root
-        hideWhenRunning
-        autohide="not-last"
-        autohideFloat="always"
-        className="sancho-action-bar"
-      >
+      <ActionBarPrimitive.Root hideWhenRunning className="sancho-action-bar">
         <ActionBarPrimitive.Copy aria-label="Copy" className="sancho-action-button">
           <CopyIcon />
         </ActionBarPrimitive.Copy>
