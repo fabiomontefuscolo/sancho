@@ -74,8 +74,16 @@ function ThoughtProcessGroup({ running, children }: { running: boolean; children
 }
 
 function AssistantMessage() {
+  const pendingEmpty = useAuiState(
+    (state) =>
+      state.thread.isRunning &&
+      state.message.isLast &&
+      state.message.content.every((part) => part.type === "text" && part.text === ""),
+  );
   return (
-    <MessagePrimitive.Root className="sancho-message sancho-message-assistant">
+    <MessagePrimitive.Root
+      className={`sancho-message sancho-message-assistant${pendingEmpty ? " sancho-message-pending" : ""}`}
+    >
       <MessagePrimitive.GroupedParts groupBy={groupByThought} indicator="never">
         {({ part, children }) => {
           switch (part.type) {

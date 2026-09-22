@@ -188,6 +188,10 @@ body,
   color: var(--chat-text);
 }
 
+.sancho-message-pending {
+  display: none;
+}
+
 .sancho-thought {
   margin-bottom: 8px;
   border: 1px solid var(--chat-border);

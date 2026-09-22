@@ -65,6 +65,31 @@ describe("ChatPanel", () => {
     expect(screen.queryByRole("button", { name: /stop/i })).toBeNull();
   });
 
+  it("hides the empty pending assistant bubble until content arrives", async () => {
+    render(<ChatPanel tabId={7} />);
+    const input = screen.getByRole("textbox", { name: /message/i });
+    await userEvent.type(input, "hello agent{Enter}");
+
+    await waitFor(() =>
+      expect(document.querySelector(".sancho-message-assistant")).toHaveClass(
+        "sancho-message-pending",
+      ),
+    );
+
+    port.emit({
+      kind: "event",
+      type: "chat.delta",
+      id: "e1",
+      payload: { messageId: "m1", text: "Hi" },
+    });
+    await screen.findByText("Hi");
+    await waitFor(() =>
+      expect(document.querySelector(".sancho-message-assistant")).not.toHaveClass(
+        "sancho-message-pending",
+      ),
+    );
+  });
+
   it("renders streamed deltas as they arrive", async () => {
     render(<ChatPanel tabId={7} />);
     port.emit({
