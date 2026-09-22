@@ -1,6 +1,7 @@
 import { ClientSideConnection, ndJsonStream, PROTOCOL_VERSION } from "@agentclientprotocol/sdk";
 import { systemClockMessage } from "../agent/time";
 import { logEvent } from "../agent/log";
+import { getCustomInstructions } from "../storage/settings";
 import {
   BaseLLMProvider,
   type ProviderMessage,
@@ -262,11 +263,13 @@ export class AcpProvider extends BaseLLMProvider {
       let sessionId = await this.ensureSession(connection, conversationKey);
       this.onSessionText = (text) => events.onDelta(text);
       const clock = systemClockMessage().content;
+      const instructions = (await getCustomInstructions()).trim();
       const preamble =
         `[${clock}] You are running inside a browser extension. ` +
         (this.mcpServer
           ? `Use the "${this.mcpServer.name}" MCP tools (read_page, fill_field, click_element, select_option, capture_screenshot) to read and interact with the user's active browser tab.`
-          : "Browser tools are unavailable in this session.");
+          : "Browser tools are unavailable in this session.") +
+        (instructions ? `\nUser's custom instructions: ${instructions}` : "");
 
       const last = messages[messages.length - 1];
       if (!last) {

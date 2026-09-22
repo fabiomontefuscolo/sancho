@@ -65,6 +65,7 @@ vi.mock("../../src/providers/acp-transport", async () => {
 
 import { ClientSideConnection } from "@agentclientprotocol/sdk";
 import { AcpProvider } from "../../src/providers/acp";
+import { saveCustomInstructions } from "../../src/storage/settings";
 
 const Fake = ClientSideConnection as unknown as {
   instances: Array<{
@@ -149,6 +150,41 @@ describe("ACP stale session retry", () => {
     const events = makeEvents();
     Fake.failNextPrompts = 0;
     await provider.streamChat(MESSAGES, [], events);
+    expect(events.onDone).toHaveBeenCalled();
+  });
+});
+
+describe("ACP prompt preamble custom instructions", () => {
+  beforeEach(() => {
+    installMockChrome();
+    Fake.instances = [];
+    Fake.failNextPrompts = 0;
+  });
+
+  it("includes custom instructions in the prompt preamble when set", async () => {
+    await saveCustomInstructions("always reply in Portuguese");
+    const provider = new AcpProvider({ hostName: "mock.host" });
+    provider.useConversation("conv-1", null);
+    const events = makeEvents();
+    await provider.streamChat(MESSAGES, [], events);
+
+    const connection = Fake.instances[0];
+    if (!connection) throw new Error("no connection");
+    expect(connection.promptCalls[0]?.text).toContain(
+      "User's custom instructions: always reply in Portuguese",
+    );
+    expect(events.onDone).toHaveBeenCalled();
+  });
+
+  it("omits custom instructions from the prompt preamble when unset", async () => {
+    const provider = new AcpProvider({ hostName: "mock.host" });
+    provider.useConversation("conv-1", null);
+    const events = makeEvents();
+    await provider.streamChat(MESSAGES, [], events);
+
+    const connection = Fake.instances[0];
+    if (!connection) throw new Error("no connection");
+    expect(connection.promptCalls[0]?.text).not.toContain("User's custom instructions");
     expect(events.onDone).toHaveBeenCalled();
   });
 });

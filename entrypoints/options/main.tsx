@@ -3,13 +3,14 @@ import { createRoot } from "react-dom/client";
 import { AboutSection } from "../../src/ui/components/about-section";
 import { ActionManager, type OptionsBridge } from "../../src/ui/components/action-manager";
 import { AppearanceSection } from "../../src/ui/components/appearance-section";
+import { CustomInstructionsSection } from "../../src/ui/components/custom-instructions-section";
 import { SettingsPanel, type SettingsBridge } from "../../src/ui/components/settings-panel";
 import { useOptionsBridge } from "../../src/ui/hooks/useOptionsBridge";
 import type { Action } from "../../src/types";
 import type { ProviderConfig } from "../../src/types";
 import "./options.css";
 
-function OptionsPage() {
+export function OptionsPage() {
   const bridge = useOptionsBridge();
 
   const actionBridge = useMemo<OptionsBridge>(
@@ -44,6 +45,7 @@ function OptionsPage() {
         <h1>Sancho</h1>
         <a href="#connection">Connection</a>
         <a href="#appearance">Appearance</a>
+        <a href="#instructions">Custom instructions</a>
         <a href="#actions">Actions</a>
         <a href="#about">About</a>
       </nav>
@@ -60,6 +62,9 @@ function OptionsPage() {
         <div id="appearance">
           <AppearanceSection />
         </div>
+        <div id="instructions">
+          <CustomInstructionsSection />
+        </div>
         <div id="actions">
           <ActionManager bridge={actionBridge} />
         </div>
@@ -72,9 +77,10 @@ function OptionsPage() {
 }
 
 const rootElement = document.getElementById("root");
-if (!rootElement) throw new Error("missing #root");
-createRoot(rootElement).render(
-  <StrictMode>
-    <OptionsPage />
-  </StrictMode>,
-);
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <OptionsPage />
+    </StrictMode>,
+  );
+}

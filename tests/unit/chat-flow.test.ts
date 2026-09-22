@@ -19,6 +19,7 @@ import {
   getActiveConversation,
   saveConversationRecord,
 } from "../../src/storage/conversations";
+import { saveCustomInstructions } from "../../src/storage/settings";
 import type { AnyEnvelope } from "../../src/bridge/messages";
 import type { Message } from "../../src/types";
 
@@ -90,6 +91,66 @@ describe("chat.send flow", () => {
     expect(received[0]?.content).toContain("Current local time:");
     expect(received[0]?.content).toContain("UTC");
     expect(received[1]?.content).toMatch(/^\[\d{2}:\d{2}\] hi$/);
+  });
+
+  function makeInspectProvider(received: { role: string; content: string }[]) {
+    return new (class extends BaseLLMProvider {
+      readonly id = "inspect";
+      async streamChat(
+        messages: { role: string; content: string }[],
+        _tools: never[],
+        events: StreamEvents,
+      ) {
+        received.push(...messages);
+        events.onDelta("ok");
+        events.onDone();
+      }
+    })();
+  }
+
+  it("prepends custom instructions before the clock message when set", async () => {
+    await saveCustomInstructions("always reply in Portuguese");
+    const received: { role: string; content: string }[] = [];
+    vi.mocked(createProvider).mockResolvedValue(makeInspectProvider(received));
+    const port = makePort();
+    await handleChatSend({ text: "hi", tabId: 1, conversationId: "c1" }, port);
+
+    expect(received[0]?.role).toBe("system");
+    expect(received[0]?.content).toBe(
+      "Custom instructions from the user (follow these in every reply):\nalways reply in Portuguese",
+    );
+    expect(received[1]?.role).toBe("system");
+    expect(received[1]?.content).toContain("Current local time:");
+    expect(
+      received.filter(
+        (message) => message.role === "system" && message.content.startsWith("Custom instructions"),
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("sends no instructions message when custom instructions are unset or whitespace", async () => {
+    const received: { role: string; content: string }[] = [];
+    vi.mocked(createProvider).mockResolvedValue(makeInspectProvider(received));
+    const port = makePort();
+    await handleChatSend({ text: "hi", tabId: 1, conversationId: "c1" }, port);
+
+    expect(received[0]?.role).toBe("system");
+    expect(received[0]?.content).toContain("Current local time:");
+    expect(received.some((message) => message.content.startsWith("Custom instructions"))).toBe(
+      false,
+    );
+  });
+
+  it("does not persist custom instructions into the conversation history", async () => {
+    await saveCustomInstructions("be terse");
+    const port = makePort();
+    await handleChatSend({ text: "hi", tabId: 1, conversationId: "c1" }, port);
+
+    const conversation = await getActiveConversation();
+    const texts = conversation.messages.flatMap((message) =>
+      message.parts.map((part) => (part.type === "text" ? part.text : "")),
+    );
+    expect(texts.some((text) => text.includes("be terse"))).toBe(false);
   });
 
   it("emits chat.error when no provider is configured", async () => {

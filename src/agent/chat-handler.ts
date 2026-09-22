@@ -24,6 +24,7 @@ import {
   saveConversationRecord,
   setActiveConversation,
 } from "../storage/conversations";
+import { getCustomInstructions } from "../storage/settings";
 import type { Conversation, Message, ToolCall } from "../types";
 import { runAgentLoop } from "./loop";
 import { startKeepAlive } from "./keepalive";
@@ -129,7 +130,16 @@ async function buildProviderMessages(
   } catch {
     // restricted or missing tab: clock still works without tab context
   }
-  return [systemClockMessage(title, url), ...toProviderMessages(conversation)];
+  const instructions = (await getCustomInstructions()).trim();
+  const prelude: ProviderMessage[] = instructions
+    ? [
+        {
+          role: "system",
+          content: `Custom instructions from the user (follow these in every reply):\n${instructions}`,
+        },
+      ]
+    : [];
+  return [...prelude, systemClockMessage(title, url), ...toProviderMessages(conversation)];
 }
 
 export async function handleChatSend(

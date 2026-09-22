@@ -202,3 +202,56 @@ describe("Appearance placement", () => {
     expect(screen.queryByRole("combobox", { name: /font size/i })).not.toBeInTheDocument();
   });
 });
+
+vi.mock("../../src/ui/hooks/useOptionsBridge", () => ({
+  useOptionsBridge: () => ({
+    actions: [],
+    config: null,
+    hasApiKey: false,
+    error: null,
+    copilotAuth: { status: "disconnected" },
+    copilotModels: { models: [] },
+    upsertAction: vi.fn(),
+    deleteAction: vi.fn(),
+    saveSettings: vi.fn(),
+    clearError: vi.fn(),
+    copilotAuthStart: vi.fn(),
+    copilotAuthStatus: vi.fn(),
+    copilotAuthDisconnect: vi.fn(),
+    copilotModelsList: vi.fn(),
+    subscribeActions: (listener: (actions: never[]) => void) => {
+      listener([]);
+      return () => {};
+    },
+    subscribeSettings: (listener: (state: { config: null; hasApiKey: boolean }) => void) => {
+      listener({ config: null, hasApiKey: false });
+      return () => {};
+    },
+  }),
+}));
+
+import { OptionsPage } from "../../entrypoints/options/main";
+
+function installOptionsStorageMock() {
+  const storage = {
+    sync: { get: vi.fn(async () => ({})), set: vi.fn(async () => {}) },
+    local: { get: vi.fn(async () => ({})), set: vi.fn(async () => {}) },
+    onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
+  };
+  vi.stubGlobal("chrome", { storage });
+}
+
+describe("OptionsPage navigation", () => {
+  it("links to a Custom instructions section between Appearance and Actions", async () => {
+    installOptionsStorageMock();
+    render(<OptionsPage />);
+    const nav = document.querySelector(".options-nav");
+    if (!nav) throw new Error("missing nav");
+    const hrefs = Array.from(nav.querySelectorAll("a")).map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(["#connection", "#appearance", "#instructions", "#actions", "#about"]);
+    expect(document.getElementById("instructions")).not.toBeNull();
+    expect(
+      await screen.findByRole("heading", { name: /custom instructions/i }),
+    ).toBeInTheDocument();
+  });
+});
