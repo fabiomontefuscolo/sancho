@@ -72,3 +72,32 @@ export function onUiPrefsChanged(listener: (prefs: UiPrefs) => void): () => void
   chrome.storage.onChanged.addListener(handler);
   return () => chrome.storage.onChanged.removeListener(handler);
 }
+
+const CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
+export const MAX_CUSTOM_INSTRUCTIONS = 4000;
+
+function normalizeCustomInstructions(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw.slice(0, MAX_CUSTOM_INSTRUCTIONS);
+}
+
+export async function getCustomInstructions(): Promise<string> {
+  const result = await chrome.storage.sync.get(CUSTOM_INSTRUCTIONS_KEY);
+  return normalizeCustomInstructions(result[CUSTOM_INSTRUCTIONS_KEY]);
+}
+
+export async function saveCustomInstructions(text: string): Promise<void> {
+  await chrome.storage.sync.set({
+    [CUSTOM_INSTRUCTIONS_KEY]: text.trim().slice(0, MAX_CUSTOM_INSTRUCTIONS),
+  });
+}
+
+export function onCustomInstructionsChanged(listener: (text: string) => void): () => void {
+  const handler = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+    if (areaName === "sync" && changes[CUSTOM_INSTRUCTIONS_KEY]) {
+      listener(normalizeCustomInstructions(changes[CUSTOM_INSTRUCTIONS_KEY].newValue));
+    }
+  };
+  chrome.storage.onChanged.addListener(handler);
+  return () => chrome.storage.onChanged.removeListener(handler);
+}

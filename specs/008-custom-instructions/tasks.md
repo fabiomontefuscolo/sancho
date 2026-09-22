@@ -26,7 +26,7 @@ description: "Task list for Custom Instructions (008)"
 
 **Purpose**: Baseline verification — no new dependencies or scaffolding needed
 
-- [ ] T001 Run `pnpm exec vitest run && pnpm lint && pnpm typecheck` to confirm a green baseline before changes
+- [x] T001 Run `pnpm exec vitest run && pnpm lint && pnpm typecheck` to confirm a green baseline before changes
 
 ---
 
@@ -36,8 +36,8 @@ description: "Task list for Custom Instructions (008)"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 [P] Add failing storage unit tests in tests/unit/storage.test.ts: default is `""` when unset, round-trip save/get, non-string value normalizes to `""`, strings longer than 4,000 chars truncate to 4,000 on read, `saveCustomInstructions` trims and clamps to 4,000 chars, `onCustomInstructionsChanged` fires with normalized value
-- [ ] T003 Implement the `customInstructions` key in src/storage/settings.ts following the `uiPrefs` pattern: `export const MAX_CUSTOM_INSTRUCTIONS = 4000`, `normalizeCustomInstructions(raw: unknown): string` (non-string → `""`, overlong → `slice(0, 4000)`), `getCustomInstructions()`, `saveCustomInstructions(text)` (trim + clamp before write), `onCustomInstructionsChanged(listener)` mirroring `onUiPrefsChanged`
+- [x] T002 [P] Add failing storage unit tests in tests/unit/storage.test.ts: default is `""` when unset, round-trip save/get, non-string value normalizes to `""`, strings longer than 4,000 chars truncate to 4,000 on read, `saveCustomInstructions` trims and clamps to 4,000 chars, `onCustomInstructionsChanged` fires with normalized value
+- [x] T003 Implement the `customInstructions` key in src/storage/settings.ts following the `uiPrefs` pattern: `export const MAX_CUSTOM_INSTRUCTIONS = 4000`, `normalizeCustomInstructions(raw: unknown): string` (non-string → `""`, overlong → `slice(0, 4000)`), `getCustomInstructions()`, `saveCustomInstructions(text)` (trim + clamp before write), `onCustomInstructionsChanged(listener)` mirroring `onUiPrefsChanged`
 
 **Checkpoint**: Storage tests pass; `getCustomInstructions()` usable from agent and UI code
 
