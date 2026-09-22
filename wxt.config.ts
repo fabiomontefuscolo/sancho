@@ -18,4 +18,7 @@ export default defineConfig({
     host_permissions: ["<all_urls>"],
     action: { default_title: "Open Sancho" },
   },
+  runner: {
+    disabled: true,
+  },
 });
