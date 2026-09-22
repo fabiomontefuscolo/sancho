@@ -153,6 +153,23 @@ describe("chat.send flow", () => {
     expect(texts.some((text) => text.includes("be terse"))).toBe(false);
   });
 
+  it("picks up edited custom instructions on the next turn", async () => {
+    await saveCustomInstructions("instructions A");
+    const runs: { role: string; content: string }[][] = [];
+    vi.mocked(createProvider).mockImplementation(async () => {
+      const received: { role: string; content: string }[] = [];
+      runs.push(received);
+      return makeInspectProvider(received);
+    });
+    const port = makePort();
+    await handleChatSend({ text: "one", tabId: 1, conversationId: "c1" }, port);
+    await saveCustomInstructions("instructions B");
+    await handleChatSend({ text: "two", tabId: 1, conversationId: "c1" }, port);
+
+    expect(runs[0]?.[0]?.content).toContain("instructions A");
+    expect(runs[1]?.[0]?.content).toContain("instructions B");
+  });
+
   it("emits chat.error when no provider is configured", async () => {
     vi.mocked(createProvider).mockRejectedValue(new Error("no provider configured"));
     const port = makePort();

@@ -65,4 +65,37 @@ describe("CustomInstructionsSection", () => {
     await waitFor(() => expect(textarea).toHaveValue("reply in Portuguese"));
     expect(screen.getByText(`19 / ${MAX_CUSTOM_INSTRUCTIONS}`)).toBeInTheDocument();
   });
+
+  it("debounces rapid typing into a single storage write", async () => {
+    const { storage } = installMockSyncStorage();
+    render(<CustomInstructionsSection />);
+    const textarea = await screen.findByRole("textbox", { name: /custom instructions/i });
+    await userEvent.type(textarea, "hello");
+    await waitFor(() => expect(storage.sync.set).toHaveBeenCalled(), { timeout: 2000 });
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    expect(storage.sync.set).toHaveBeenCalledTimes(1);
+    expect(storage.sync.set).toHaveBeenCalledWith({ customInstructions: "hello" });
+  });
+
+  it("saves immediately on blur and shows a Saved indicator", async () => {
+    const { storage } = installMockSyncStorage();
+    render(<CustomInstructionsSection />);
+    const textarea = await screen.findByRole("textbox", { name: /custom instructions/i });
+    await userEvent.type(textarea, "ab");
+    textarea.blur();
+    await waitFor(() =>
+      expect(storage.sync.set).toHaveBeenCalledWith({ customInstructions: "ab" }),
+    );
+    expect(await screen.findByText("Saved")).toBeInTheDocument();
+  });
+
+  it("persists an empty string when cleared", async () => {
+    const { data } = installMockSyncStorage({ customInstructions: "old instructions" });
+    render(<CustomInstructionsSection />);
+    const textarea = await screen.findByRole("textbox", { name: /custom instructions/i });
+    await waitFor(() => expect(textarea).toHaveValue("old instructions"));
+    await userEvent.clear(textarea);
+    await waitFor(() => expect(data.customInstructions).toBe(""), { timeout: 2000 });
+    expect(screen.getByText(`0 / ${MAX_CUSTOM_INSTRUCTIONS}`)).toBeInTheDocument();
+  });
 });

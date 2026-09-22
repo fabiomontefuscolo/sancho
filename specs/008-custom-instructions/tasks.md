@@ -77,12 +77,12 @@ description: "Task list for Custom Instructions (008)"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T012 [P] [US2] Add failing chat-flow test in tests/unit/chat-flow.test.ts: with instructions "A" used on turn 1, save instructions "B", then verify turn 2's request carries "B" (proves per-run re-read, no caching)
-- [ ] T013 [P] [US2] Extend tests/component/custom-instructions-section.test.tsx: edits within the debounce window produce exactly one `chrome.storage.sync` write; blur triggers an immediate save; a "Saved" indicator appears after a successful write; clearing the textarea persists `""`
+- [x] T012 [P] [US2] Add failing chat-flow test in tests/unit/chat-flow.test.ts: with instructions "A" used on turn 1, save instructions "B", then verify turn 2's request carries "B" (proves per-run re-read, no caching)
+- [x] T013 [P] [US2] Extend tests/component/custom-instructions-section.test.tsx: edits within the debounce window produce exactly one `chrome.storage.sync` write; blur triggers an immediate save; a "Saved" indicator appears after a successful write; clearing the textarea persists `""`
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Add debounced save to src/ui/components/custom-instructions-section.tsx: write ~600 ms after the last keystroke, save immediately on blur (cancelling the pending debounce), show a transient "Saved" indicator after each successful write; clean up timers on unmount
+- [x] T014 [US2] Add debounced save to src/ui/components/custom-instructions-section.tsx: write ~600 ms after the last keystroke, save immediately on blur (cancelling the pending debounce), show a transient "Saved" indicator after each successful write; clean up timers on unmount
 
 **Checkpoint**: US1 + US2 both functional — live editing mid-chat works and saves are quota-safe
 
