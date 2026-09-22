@@ -94,7 +94,7 @@ description: "Task list for Custom Instructions (008)"
 
 **Independent Test**: Save instructions on one synced profile and verify presence + effect on a second profile (manual; quickstart S7 covers persistence, sync relies on the `chrome.storage.sync` choice made in Phase 2)
 
-- [ ] T015 [US3] Verify no local-area leakage: confirm via tests/unit/storage.test.ts assertions that all `customInstructions` access goes through `chrome.storage.sync` (guarded by the T002 tests) and manually smoke-test persistence across a browser restart per quickstart S7
+- [x] T015 [US3] Verify no local-area leakage: confirm via tests/unit/storage.test.ts assertions that all `customInstructions` access goes through `chrome.storage.sync` (guarded by the T002 tests) and manually smoke-test persistence across a browser restart per quickstart S7
 
 **Checkpoint**: All three user stories functional
 
@@ -104,9 +104,9 @@ description: "Task list for Custom Instructions (008)"
 
 **Purpose**: Gates and final validation
 
-- [ ] T016 Run `pnpm exec vitest run` and confirm coverage stays ≥80% on src/agent, src/providers, src/storage
-- [ ] T017 [P] Run `pnpm lint` and `pnpm typecheck` and fix any findings
-- [ ] T018 Run `pnpm build && pnpm test:e2e` to confirm no e2e regressions
+- [x] T016 Run `pnpm exec vitest run` and confirm coverage stays ≥80% on src/agent, src/providers, src/storage
+- [x] T017 [P] Run `pnpm lint` and `pnpm typecheck` and fix any findings
+- [x] T018 Run `pnpm build && pnpm test:e2e` to confirm no e2e regressions
 - [ ] T019 Manual quickstart validation: execute specs/008-custom-instructions/quickstart.md S1–S8 in Brave/Chrome (S8 only if an ACP provider is configured)
 
 ---
