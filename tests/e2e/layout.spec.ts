@@ -185,3 +185,30 @@ test("layout: composer keeps a bottom gap", async ({ context, extensionId }) => 
   });
   expect(gap).toBeGreaterThanOrEqual(8);
 });
+
+test("layout: scroll-to-bottom shows only when scrolled up", async ({ context, extensionId }) => {
+  const panel = await context.newPage();
+  await panel.setViewportSize({ width: 360, height: 600 });
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  const scrollButton = panel.getByRole("button", { name: /scroll to bottom/i });
+  await expect(scrollButton).toBeHidden();
+
+  const messages = Array.from({ length: 30 }, (_, index) => ({
+    id: `m-${index}`,
+    role: "assistant",
+    parts: [{ type: "text", text: `scrollable message ${index} `.repeat(20) }],
+    tabId: 1,
+    createdAt: index,
+  }));
+  await seedConversation(panel, messages);
+  await expect(panel.locator(".sancho-message")).toHaveCount(30);
+  await expect(scrollButton).toBeHidden();
+
+  await panel.evaluate(() => {
+    document.querySelector(".sancho-viewport")?.scrollTo(0, 0);
+  });
+  await expect(scrollButton).toBeVisible();
+
+  await scrollButton.click();
+  await expect(scrollButton).toBeHidden();
+});

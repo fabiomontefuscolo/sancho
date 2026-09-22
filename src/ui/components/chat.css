@@ -139,6 +139,10 @@ body,
   color: var(--chat-text);
 }
 
+.sancho-scroll-bottom:disabled {
+  display: none;
+}
+
 .sancho-message {
   min-width: 0;
   max-width: 85%;
