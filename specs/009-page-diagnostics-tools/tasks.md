@@ -26,8 +26,8 @@ description: "Task list for Page Diagnostics Tools (009)"
 
 **Purpose**: Baseline + manifest permission
 
-- [ ] T001 Run `pnpm exec vitest run && pnpm lint && pnpm typecheck` to confirm a green baseline
-- [ ] T002 Add `"webRequest"` to `manifest.permissions` in wxt.config.ts (metadata-only observation; no `webRequestBlocking`)
+- [x] T001 Run `pnpm exec vitest run && pnpm lint && pnpm typecheck` to confirm a green baseline
+- [x] T002 Add `"webRequest"` to `manifest.permissions` in wxt.config.ts (metadata-only observation; no `webRequestBlocking`)
 
 ---
 
