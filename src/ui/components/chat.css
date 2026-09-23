@@ -48,7 +48,6 @@ body,
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: var(--chat-font-size);
   background: var(--chat-bg);
   color: var(--chat-text);
@@ -148,8 +147,8 @@ body,
   max-width: 85%;
   padding: 10px 14px;
   border-radius: 5x;
+  line-height: 1.5em;
   font-size: 16px;
-  line-height: 1.5;
   word-break: break-word;
 }
 
@@ -169,8 +168,8 @@ body,
   overflow-wrap: anywhere;
 }
 
-.sancho-message > div > *:not(:last-child) {
-  margin-bottom: 0.5rem;
+.sancho-message > div > *:not(:last-child):not([class]) {
+  margin-bottom: 0.7rem;
 }
 
 .sancho-message-footer {
@@ -279,7 +278,7 @@ body,
   margin: 12px 12px 16px;
   padding: 10px 12px 8px;
   border: 1px solid var(--chat-input-border);
-  border-radius: 24px;
+  border-radius: 5px;
   background: var(--chat-bg);
 }
 
@@ -329,7 +328,7 @@ body,
 .sancho-topbar {
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 1em;
   border-bottom: 1px solid var(--chat-border);
 }
 
@@ -424,8 +423,8 @@ body,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--chat-border);
-  background: var(--chat-bg);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--chat-text-secondary);
   border-radius: 6px;
   padding: 4px;
@@ -433,6 +432,7 @@ body,
 }
 
 .sancho-copy-button:hover {
+  background: var(--chat-bg);
   color: var(--chat-text);
 }
 
@@ -531,8 +531,7 @@ body,
   padding: 4px 10px;
   border: 1px solid var(--chat-code-border);
   border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  background: var(--chat-code-bg);
+  background-color: color-mix(in srgb, var(--chat-accent-text) 10%, transparent);
   font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
   font-size: 11px;
   color: var(--chat-text-secondary);
@@ -540,7 +539,6 @@ body,
 
 .sancho-code-header + pre {
   margin-top: 0;
-  border-radius: 0 0 8px 8px;
 }
 
 .sancho-message-assistant pre {
@@ -614,8 +612,8 @@ body,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--chat-border);
-  background: var(--chat-bg);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--chat-text-secondary);
   border-radius: 6px;
   padding: 4px;
@@ -623,6 +621,7 @@ body,
 }
 
 .sancho-action-button:hover {
+  background-color: color-mix(in srgb, var(--chat-text) 10%, transparent);
   color: var(--chat-text);
 }
 
@@ -641,11 +640,13 @@ body,
 
 .sancho-message-user .sancho-action-button {
   background: transparent;
-  border-color: color-mix(in srgb, var(--chat-accent-text) 40%, transparent);
+  border-color: transparent;
+  border-radius: 5px;
   color: color-mix(in srgb, var(--chat-accent-text) 80%, transparent);
 }
 
 .sancho-message-user .sancho-action-button:hover {
+  background-color: color-mix(in srgb, var(--chat-accent-text) 10%, transparent);
   color: var(--chat-accent-text);
 }
 
@@ -664,15 +665,15 @@ body,
 }
 
 .sancho-chat-root.sancho-font-small {
-  --chat-font-size: 12px;
-}
-
-.sancho-chat-root.sancho-font-medium {
   --chat-font-size: 14px;
 }
 
-.sancho-chat-root.sancho-font-large {
+.sancho-chat-root.sancho-font-medium {
   --chat-font-size: 16px;
+}
+
+.sancho-chat-root.sancho-font-large {
+  --chat-font-size: 18px;
 }
 
 .sancho-message {
