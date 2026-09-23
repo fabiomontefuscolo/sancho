@@ -122,6 +122,17 @@ describe("local storage", () => {
     expect(fresh.messages).toEqual([]);
   });
 
+  it("defaults diagnostics consent to false and persists grants per conversation", async () => {
+    const conversation = await getActiveConversation();
+    expect(conversation.diagnosticsConsent).toBe(false);
+
+    await saveConversationRecord({ ...conversation, diagnosticsConsent: true });
+    expect((await getActiveConversation()).diagnosticsConsent).toBe(true);
+
+    const fresh = await createConversation();
+    expect(fresh.diagnosticsConsent).toBe(false);
+  });
+
   it("round-trips and clears agent session with default maxIterations 25", async () => {
     expect(await getAgentSession()).toBeNull();
     const session = newAgentSession("global");

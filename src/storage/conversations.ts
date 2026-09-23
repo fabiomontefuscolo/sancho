@@ -108,6 +108,7 @@ export async function createConversation(): Promise<Conversation> {
     title: PLACEHOLDER_TITLE,
     messages: [],
     screenshotConsent: false,
+    diagnosticsConsent: false,
     acpSessionId: null,
     createdAt: now,
     updatedAt: now,

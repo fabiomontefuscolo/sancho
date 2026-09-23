@@ -66,6 +66,7 @@ export interface Conversation {
   title: string;
   messages: Message[];
   screenshotConsent: boolean;
+  diagnosticsConsent: boolean;
   acpSessionId: string | null;
   createdAt: number;
   updatedAt: number;
