@@ -145,6 +145,32 @@ describe("chat.send with tool call", () => {
     ).toBe(true);
   });
 
+  it("prompts for diagnostics consent when a diagnostics tool is blocked", async () => {
+    class DiagnosticsProvider extends BaseLLMProvider {
+      readonly id = "diag";
+      calls = 0;
+      async streamChat(_m: never[], _t: never[], events: StreamEvents) {
+        this.calls += 1;
+        if (this.calls === 1) {
+          events.onToolCall({ name: "getConsoleMessages", arguments: {}, tabId: 1 });
+        } else {
+          events.onDelta("no diagnostics without consent");
+        }
+        events.onDone();
+      }
+    }
+    vi.mocked(createProvider).mockResolvedValue(new DiagnosticsProvider());
+    const port = makePort();
+    await handleChatSend({ text: "check console", tabId: 1, conversationId: "c1" }, port);
+    expect(
+      port.posted.some(
+        (envelope) =>
+          envelope.type === "chat.error" &&
+          envelope.payload.message === "diagnostics_consent_required",
+      ),
+    ).toBe(true);
+  });
+
   it("chat.cancel aborts and reports cancellation", async () => {
     const { handleChatCancel } = await import("../../src/agent/chat-handler");
     const port = makePort();

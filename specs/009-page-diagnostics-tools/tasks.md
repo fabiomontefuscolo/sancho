@@ -99,15 +99,15 @@ description: "Task list for Page Diagnostics Tools (009)"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T018 [P] [US3] Extend tests/component/sidepanel.test.tsx: a `chat.error` with `message: "diagnostics_consent_required"` renders the diagnostics consent banner ("Allow page diagnostics"); clicking it posts a `diagnostics.consent { granted: true }` envelope; the screenshot banner is not shown (mirror the consent test at sidepanel.test.tsx:111-136)
-- [ ] T019 [P] [US3] Add failing flow test in tests/unit/chat-flow.test.ts: when a tool result carries `error: "diagnostics_consent_required"`, the background posts `chat.error` with message `diagnostics_consent_required` (local loop path; ACP path equivalent in tests/unit/acp-consent.test.ts style)
+- [x] T018 [P] [US3] Extend tests/component/sidepanel.test.tsx: a `chat.error` with `message: "diagnostics_consent_required"` renders the diagnostics consent banner ("Allow page diagnostics"); clicking it posts a `diagnostics.consent { granted: true }` envelope; the screenshot banner is not shown (mirror the consent test at sidepanel.test.tsx:111-136)
+- [x] T019 [P] [US3] Add failing flow test in tests/unit/chat-flow.test.ts: when a tool result carries `error: "diagnostics_consent_required"`, the background posts `chat.error` with message `diagnostics_consent_required` (local loop path; ACP path equivalent in tests/unit/acp-consent.test.ts style)
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Surface the signal in src/agent/chat-handler.ts: in both the local-loop `executeTool` callback and the ACP `setToolInvokeHandler` path, map tool results with `error === "diagnostics_consent_required"` to `chat.error { message: "diagnostics_consent_required", conversationId }` (alongside the existing screenshot handling)
-- [ ] T021 [US3] Add diagnostics consent state to src/ui/hooks/useSanchoRuntime.ts: `diagnosticsConsentRequired` set on the new `chat.error` message, `grantDiagnosticsConsent` posting `diagnostics.consent { granted: true }`; keep the screenshot consent state untouched
-- [ ] T022 [US3] Render the diagnostics banner in src/ui/components/chat.tsx (parallel to the screenshot banner, with text explaining that console messages and network URLs from the active tab will be shared with the model); add styles in src/ui/components/chat.css
-- [ ] T023 [P] [US3] Register `console_messages` and `network_requests` in native-host/com.sancho.mcp_server.mjs mapping to the same tool names, so ACP agents get parity through the same consent-gated path
+- [x] T020 [US3] Surface the signal in src/agent/chat-handler.ts: in both the local-loop `executeTool` callback and the ACP `setToolInvokeHandler` path, map tool results with `error === "diagnostics_consent_required"` to `chat.error { message: "diagnostics_consent_required", conversationId }` (alongside the existing screenshot handling)
+- [x] T021 [US3] Add diagnostics consent state to src/ui/hooks/useSanchoRuntime.ts: `diagnosticsConsentRequired` set on the new `chat.error` message, `grantDiagnosticsConsent` posting `diagnostics.consent { granted: true }`; keep the screenshot consent state untouched
+- [x] T022 [US3] Render the diagnostics banner in src/ui/components/chat.tsx (parallel to the screenshot banner, with text explaining that console messages and network URLs from the active tab will be shared with the model); add styles in src/ui/components/chat.css
+- [x] T023 [P] [US3] Register `console_messages` and `network_requests` in native-host/com.sancho.mcp_server.mjs mapping to the same tool names, so ACP agents get parity through the same consent-gated path
 
 **Checkpoint**: All three stories functional; consent UX verified in unit, component, and flow tests
 

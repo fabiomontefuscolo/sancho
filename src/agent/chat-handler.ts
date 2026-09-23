@@ -176,6 +176,18 @@ export async function handleChatRegenerate(port: chrome.runtime.Port): Promise<v
   await runConversation(conversation, conversation.messages[lastUserIndex]?.tabId ?? 0, port);
 }
 
+function maybePostConsentError(
+  port: chrome.runtime.Port,
+  result: unknown,
+  conversationId: string,
+): void {
+  if (typeof result !== "object" || result === null) return;
+  const error = (result as Record<string, unknown>).error;
+  if (error === "consent_required" || error === "diagnostics_consent_required") {
+    postToPort(port, makeEnvelope("event", "chat.error", { message: error, conversationId }));
+  }
+}
+
 async function runConversation(
   conversation: Conversation,
   tabId: number,
@@ -278,16 +290,7 @@ async function runConversation(
             conversationId,
           }),
         );
-        if (
-          typeof result === "object" &&
-          result !== null &&
-          (result as Record<string, unknown>).error === "consent_required"
-        ) {
-          postToPort(
-            port,
-            makeEnvelope("event", "chat.error", { message: "consent_required", conversationId }),
-          );
-        }
+        maybePostConsentError(port, result, conversationId);
         await maybeAppendScreenshot(port, conversation, toolCall, result);
         return result;
       } catch (error) {
@@ -361,19 +364,7 @@ async function runConversation(
                 conversationId,
               }),
             );
-            if (
-              typeof result === "object" &&
-              result !== null &&
-              (result as Record<string, unknown>).error === "consent_required"
-            ) {
-              postToPort(
-                port,
-                makeEnvelope("event", "chat.error", {
-                  message: "consent_required",
-                  conversationId,
-                }),
-              );
-            }
+            maybePostConsentError(port, result, conversationId);
             await maybeAppendScreenshot(port, conversation, toolCall, result);
             return result;
           } catch (error) {

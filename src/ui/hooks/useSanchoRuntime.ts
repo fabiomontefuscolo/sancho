@@ -62,6 +62,8 @@ export interface SanchoRuntime {
   runtime: ReturnType<typeof useExternalStoreRuntime>;
   consentRequired: boolean;
   grantConsent: () => void;
+  diagnosticsConsentRequired: boolean;
+  grantDiagnosticsConsent: () => void;
   agentState: string | null;
   isRunning: boolean;
   pendingPermission: PendingPermission | null;
@@ -78,6 +80,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
   const [messages, setMessages] = useState<ThreadMessageLike[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [consentRequired, setConsentRequired] = useState(false);
+  const [diagnosticsConsentRequired, setDiagnosticsConsentRequired] = useState(false);
   const [agentState, setAgentState] = useState<string | null>(null);
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
@@ -198,6 +201,8 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
         setAgentState(null);
         if (envelope.payload.message === "consent_required") {
           setConsentRequired(true);
+        } else if (envelope.payload.message === "diagnostics_consent_required") {
+          setDiagnosticsConsentRequired(true);
         } else {
           const messageId = envelope.payload.messageId ?? lastAssistantIdRef.current ?? envelope.id;
           settleTools(messageId);
@@ -343,6 +348,13 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
           makeEnvelope("request", "screenshot.consent", { granted: true }),
         );
       },
+      diagnosticsConsentRequired,
+      grantDiagnosticsConsent: () => {
+        setDiagnosticsConsentRequired(false);
+        portRef.current?.postMessage(
+          makeEnvelope("request", "diagnostics.consent", { granted: true }),
+        );
+      },
       agentState,
       isRunning,
       pendingPermission,
@@ -378,6 +390,7 @@ export function useSanchoRuntime(tabId: number): SanchoRuntime {
     [
       runtime,
       consentRequired,
+      diagnosticsConsentRequired,
       agentState,
       isRunning,
       pendingPermission,

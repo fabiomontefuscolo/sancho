@@ -135,6 +135,34 @@ describe("ChatPanel", () => {
     );
   });
 
+  it("shows a diagnostics consent prompt distinct from the screenshot prompt", async () => {
+    render(<ChatPanel tabId={7} />);
+    port.emit({
+      kind: "event",
+      type: "chat.tool",
+      id: "e-diag",
+      payload: {
+        toolCallId: "tc-diag",
+        toolName: "getConsoleMessages",
+        argsText: "{}",
+        status: "started",
+      },
+    });
+    port.emit({
+      kind: "event",
+      type: "chat.error",
+      id: "e-diag2",
+      payload: { message: "diagnostics_consent_required" },
+    });
+
+    await waitFor(() => expect(screen.getByText(/allow page diagnostics/i)).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /allow screenshots/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /allow page diagnostics/i }));
+    expect(port.sent).toContainEqual(
+      expect.objectContaining({ type: "diagnostics.consent", payload: { granted: true } }),
+    );
+  });
+
   it("renders tool call activity", async () => {
     render(<ChatPanel tabId={7} />);
     port.emit({

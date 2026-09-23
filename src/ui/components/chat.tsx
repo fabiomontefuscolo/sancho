@@ -136,6 +136,8 @@ export function ChatPanel({ tabId }: { tabId: number }) {
     runtime,
     consentRequired,
     grantConsent,
+    diagnosticsConsentRequired,
+    grantDiagnosticsConsent,
     agentState,
     isRunning,
     pendingPermission,
@@ -193,6 +195,15 @@ export function ChatPanel({ tabId }: { tabId: number }) {
           <div className="sancho-consent-banner">
             <span>The agent wants to capture a screenshot of this page.</span>
             <button onClick={grantConsent}>Allow screenshots</button>
+          </div>
+        )}
+        {diagnosticsConsentRequired && (
+          <div className="sancho-consent-banner">
+            <span>
+              The agent wants to read console messages and network URLs from this page and share
+              them with the model.
+            </span>
+            <button onClick={grantDiagnosticsConsent}>Allow page diagnostics</button>
           </div>
         )}
         {view === "settings" ? (

@@ -31,6 +31,7 @@ function legacyConversation(messages: Message[]): Conversation {
     title: "New conversation",
     messages,
     screenshotConsent: true,
+    diagnosticsConsent: false,
     acpSessionId: null,
     createdAt: now,
     updatedAt: now,

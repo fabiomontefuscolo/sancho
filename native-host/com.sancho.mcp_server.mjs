@@ -71,4 +71,27 @@ server.registerTool(
   async () => asTextResult(await bridge.invoke("captureScreenshot", {})),
 );
 
+server.registerTool(
+  "console_messages",
+  {
+    description:
+      "Read recent console messages and JavaScript errors from the active tab. Requires the user to have granted page diagnostics consent.",
+    inputSchema: {
+      limit: z.number().int().min(1).max(200).optional(),
+      level: z.enum(["log", "info", "warn", "error", "exception"]).optional(),
+    },
+  },
+  async (args) => asTextResult(await bridge.invoke("getConsoleMessages", args)),
+);
+
+server.registerTool(
+  "network_requests",
+  {
+    description:
+      "List recent network requests (URL, method, status or failure reason, timing) for the active tab. Metadata only. Requires the user to have granted page diagnostics consent.",
+    inputSchema: { limit: z.number().int().min(1).max(100).optional() },
+  },
+  async (args) => asTextResult(await bridge.invoke("getNetworkRequests", args)),
+);
+
 await server.connect(new StdioServerTransport());
