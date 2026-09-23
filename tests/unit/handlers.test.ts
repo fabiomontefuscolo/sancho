@@ -7,7 +7,11 @@ vi.mock("../../src/providers/factory", async () => {
 });
 
 import { handleSettingsGet, handleSettingsSet } from "../../src/agent/settings-handler";
-import { handleChatClear, handleScreenshotConsent } from "../../src/agent/chat-handler";
+import {
+  handleChatClear,
+  handleDiagnosticsConsent,
+  handleScreenshotConsent,
+} from "../../src/agent/chat-handler";
 import { getActiveConversation } from "../../src/storage/conversations";
 import { getProviderConfig } from "../../src/storage/settings";
 import type { AnyEnvelope } from "../../src/bridge/messages";
@@ -106,6 +110,18 @@ describe("conversation handlers", () => {
       port.posted.some(
         (envelope) =>
           envelope.type === "conversation.state" && envelope.payload.screenshotConsent === true,
+      ),
+    ).toBe(true);
+  });
+
+  it("diagnostics.consent grants and persists consent", async () => {
+    const port = makePort();
+    await handleDiagnosticsConsent({ granted: true }, port);
+    expect((await getActiveConversation()).diagnosticsConsent).toBe(true);
+    expect(
+      port.posted.some(
+        (envelope) =>
+          envelope.type === "conversation.state" && envelope.payload.diagnosticsConsent === true,
       ),
     ).toBe(true);
   });

@@ -39,8 +39,8 @@ description: "Task list for Page Diagnostics Tools (009)"
 
 - [x] T003 [P] Add failing tests in tests/unit/storage.test.ts: `createConversation` defaults `diagnosticsConsent` to `false`; saving a record with `diagnosticsConsent: true` persists and re-reads as `true`; a fresh conversation after `chat.clear` semantics is `false` again (mirror the existing screenshotConsent tests)
 - [x] T004 Implement the flag: add `diagnosticsConsent: boolean` to `Conversation` in src/types.ts and default `diagnosticsConsent: false` in `createConversation` in src/storage/conversations.ts
-- [ ] T005 [P] Add failing handler tests in tests/unit/handlers.test.ts: a `diagnostics.consent` request with `{ granted: true }` sets `diagnosticsConsent` on the active conversation and re-posts `conversation.state` (mirror the `screenshot.consent` tests at handlers.test.ts:101-108)
-- [ ] T006 Implement the bridge + handler: add `diagnostics.consent` request op and `DiagnosticsConsentPayload { granted: boolean }` to src/bridge/messages.ts; add `handleDiagnosticsConsent` in src/agent/chat-handler.ts (clone `handleScreenshotConsent`); register it in entrypoints/background.ts routing and add the op to `SEQUENTIAL_OPS`
+- [x] T005 [P] Add failing handler tests in tests/unit/handlers.test.ts: a `diagnostics.consent` request with `{ granted: true }` sets `diagnosticsConsent` on the active conversation and re-posts `conversation.state` (mirror the `screenshot.consent` tests at handlers.test.ts:101-108)
+- [x] T006 Implement the bridge + handler: add `diagnostics.consent` request op and `DiagnosticsConsentPayload { granted: boolean }` to src/bridge/messages.ts; add `handleDiagnosticsConsent` in src/agent/chat-handler.ts (clone `handleScreenshotConsent`); register it in entrypoints/background.ts routing and add the op to `SEQUENTIAL_OPS`
 
 **Checkpoint**: Consent flag round-trips end-to-end over the bridge; stories can start
 

@@ -64,6 +64,9 @@ export interface ActionResultPayload {
 export interface ScreenshotConsentPayload {
   granted: boolean;
 }
+export interface DiagnosticsConsentPayload {
+  granted: boolean;
+}
 export interface SettingsSetPayload {
   config: ProviderConfig;
   apiKey?: string;
@@ -110,6 +113,7 @@ export type UiToBackground =
   | Envelope<"conversations.delete", ConversationDeletePayload>
   | Envelope<"action.run", ActionRunPayload>
   | Envelope<"screenshot.consent", ScreenshotConsentPayload>
+  | Envelope<"diagnostics.consent", DiagnosticsConsentPayload>
   | Envelope<"settings.get", Record<string, never>>
   | Envelope<"settings.set", SettingsSetPayload>
   | Envelope<"permission.response", PermissionResponsePayload>

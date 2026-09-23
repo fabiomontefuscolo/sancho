@@ -16,6 +16,7 @@ import {
   handleConversationsSelect,
   handlePermissionResponse,
   handleScreenshotConsent,
+  handleDiagnosticsConsent,
 } from "../src/agent/chat-handler";
 import { rebuildContextMenus, seedBuiltinActions, watchActionChanges } from "../src/agent/menus";
 import {
@@ -112,6 +113,7 @@ const SEQUENTIAL_OPS = new Set([
   "chat.send",
   "chat.regenerate",
   "screenshot.consent",
+  "diagnostics.consent",
 ]);
 
 export function handlePortConnection(port: chrome.runtime.Port): void {
@@ -166,6 +168,10 @@ export default defineBackground(() => {
   registerHandler("screenshot.consent", async (envelope, port) => {
     if (envelope.type !== "screenshot.consent") return;
     await handleScreenshotConsent(envelope.payload, port);
+  });
+  registerHandler("diagnostics.consent", async (envelope, port) => {
+    if (envelope.type !== "diagnostics.consent") return;
+    await handleDiagnosticsConsent(envelope.payload, port);
   });
   registerHandler("action.run", async (envelope, port) => {
     if (envelope.type !== "action.run") return;

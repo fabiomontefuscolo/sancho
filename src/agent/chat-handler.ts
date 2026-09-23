@@ -546,3 +546,13 @@ export async function handleScreenshotConsent(
   await saveConversationRecord(conversation);
   postConversation(port, conversation);
 }
+
+export async function handleDiagnosticsConsent(
+  payload: { granted: boolean },
+  port: chrome.runtime.Port,
+): Promise<void> {
+  const conversation = await getActiveConversation();
+  conversation.diagnosticsConsent = payload.granted;
+  await saveConversationRecord(conversation);
+  postConversation(port, conversation);
+}
