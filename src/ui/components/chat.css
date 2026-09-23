@@ -421,12 +421,14 @@ body,
 }
 
 .sancho-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--chat-border);
   background: var(--chat-bg);
   color: var(--chat-text-secondary);
   border-radius: 6px;
-  font-size: 11px;
-  padding: 2px 8px;
+  padding: 4px;
   cursor: pointer;
 }
 
@@ -624,15 +626,15 @@ body,
   color: var(--chat-text);
 }
 
-.sancho-action-button .sancho-icon-copied {
+.sancho-icon-copied {
   display: none;
 }
 
-.sancho-action-button[data-copied="true"] .sancho-icon-copy {
+[data-copied="true"] .sancho-icon-copy {
   display: none;
 }
 
-.sancho-action-button[data-copied="true"] .sancho-icon-copied {
+[data-copied="true"] .sancho-icon-copied {
   display: inline;
   color: var(--chat-accent);
 }

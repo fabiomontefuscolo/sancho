@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Check, Copy } from "lucide-react";
 
 type CopyState = "idle" | "copied" | "failed";
 
@@ -53,10 +54,12 @@ export function CopyButton({
       type="button"
       className={`sancho-copy-button ${className ?? ""}`.trim()}
       data-state={state}
+      data-copied={state === "copied" ? "true" : undefined}
       onClick={onClick}
       aria-label={text}
     >
-      {text}
+      <Copy size={13} className="sancho-icon-copy" />
+      <Check size={13} className="sancho-icon-copied" />
     </button>
   );
 }

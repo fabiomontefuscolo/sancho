@@ -78,7 +78,8 @@ describe("copy controls", () => {
     await userEvent.click(button);
 
     expect(writeText).toHaveBeenCalledWith("const x = 1;\nconst y = 2;");
-    await waitFor(() => expect(button.textContent).toBe("Copied"));
+    await waitFor(() => expect(button).toHaveAttribute("data-copied", "true"));
+    expect(button).toHaveAttribute("aria-label", "Copied");
   });
 
   it("copies the raw markdown source of an agent message", async () => {
