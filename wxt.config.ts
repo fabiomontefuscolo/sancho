@@ -15,6 +15,7 @@ export default defineConfig({
       "nativeMessaging",
       "tabs",
       "webRequest",
+      "webNavigation",
     ],
     host_permissions: ["<all_urls>"],
     action: { default_title: "Open Sancho" },

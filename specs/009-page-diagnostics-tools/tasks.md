@@ -117,10 +117,10 @@ description: "Task list for Page Diagnostics Tools (009)"
 
 **Purpose**: End-to-end proof and gates
 
-- [ ] T024 Create tests/e2e/page-diagnostics.spec.ts modeled on tests/e2e/screenshot-consent.spec.ts: fixture page emitting a known console error and a failing fetch; mock SSE server issues `getConsoleMessages`/`getNetworkRequests` tool calls; verify consent prompt once, grant via `diagnostics.consent`, verify tool results reach the conversation, and verify no re-prompt within the conversation
-- [ ] T025 Run `pnpm exec vitest run --coverage` and confirm coverage stays ≥80% on src/agent, src/providers, src/storage
-- [ ] T026 [P] Run `pnpm lint` and `pnpm typecheck` and fix any findings
-- [ ] T027 Run `pnpm build && pnpm test:e2e` to confirm no regressions
+- [x] T024 Create tests/e2e/page-diagnostics.spec.ts modeled on tests/e2e/screenshot-consent.spec.ts: fixture page emitting a known console error and a failing fetch; mock SSE server issues `getConsoleMessages`/`getNetworkRequests` tool calls; verify consent prompt once, grant via `diagnostics.consent`, verify tool results reach the conversation, and verify no re-prompt within the conversation
+- [x] T025 Run `pnpm exec vitest run --coverage` and confirm coverage stays ≥80% on src/agent, src/providers, src/storage
+- [x] T026 [P] Run `pnpm lint` and `pnpm typecheck` and fix any findings
+- [x] T027 Run `pnpm build && pnpm test:e2e` to confirm no regressions
 - [ ] T028 Manual quickstart validation: execute specs/009-page-diagnostics-tools/quickstart.md S1–S9 in Brave/Chrome (S9 only if an ACP provider is configured)
 
 ---

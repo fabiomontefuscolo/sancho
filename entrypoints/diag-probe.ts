@@ -66,4 +66,6 @@ export function installConsoleCapture(): void {
   });
 }
 
-installConsoleCapture();
+export default defineUnlistedScript(() => {
+  installConsoleCapture();
+});

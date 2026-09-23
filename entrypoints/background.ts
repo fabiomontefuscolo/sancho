@@ -271,10 +271,8 @@ function registerDiagnosticsListeners(): void {
   chrome.webRequest.onBeforeRequest.addListener(recordRequestStart, { urls: ["<all_urls>"] });
   chrome.webRequest.onCompleted.addListener(recordRequestCompleted, { urls: ["<all_urls>"] });
   chrome.webRequest.onErrorOccurred.addListener(recordRequestError, { urls: ["<all_urls>"] });
-  chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-    if (changeInfo.status === "loading" && changeInfo.url) {
-      void resetTabDiagnostics(tabId);
-    }
+  chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId === 0) void resetTabDiagnostics(details.tabId);
   });
   chrome.tabs.onRemoved.addListener((tabId) => {
     void resetTabDiagnostics(tabId);
