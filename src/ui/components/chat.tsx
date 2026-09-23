@@ -30,12 +30,14 @@ function UserMessage() {
   return (
     <MessagePrimitive.Root className="sancho-message sancho-message-user">
       <MessagePrimitive.Parts />
-      <MessageTimestamp />
-      <ActionBarPrimitive.Root hideWhenRunning className="sancho-action-bar">
-        <ActionBarPrimitive.Copy aria-label="Copy" className="sancho-action-button">
-          <CopyIcon />
-        </ActionBarPrimitive.Copy>
-      </ActionBarPrimitive.Root>
+      <div className="sancho-message-footer">
+        <ActionBarPrimitive.Root hideWhenRunning className="sancho-action-bar">
+          <ActionBarPrimitive.Copy aria-label="Copy" className="sancho-action-button">
+            <CopyIcon />
+          </ActionBarPrimitive.Copy>
+        </ActionBarPrimitive.Root>
+        <MessageTimestamp />
+      </div>
     </MessagePrimitive.Root>
   );
 }
@@ -118,15 +120,17 @@ function AssistantMessage() {
           <ErrorPrimitive.Message />
         </ErrorPrimitive.Root>
       </AuiIf>
-      <MessageTimestamp />
-      <ActionBarPrimitive.Root hideWhenRunning className="sancho-action-bar">
-        <ActionBarPrimitive.Copy aria-label="Copy" className="sancho-action-button">
-          <CopyIcon />
-        </ActionBarPrimitive.Copy>
-        <ActionBarPrimitive.Reload aria-label="Regenerate" className="sancho-action-button">
-          <RefreshCw size={13} />
-        </ActionBarPrimitive.Reload>
-      </ActionBarPrimitive.Root>
+      <div className="sancho-message-footer">
+        <MessageTimestamp />
+        <ActionBarPrimitive.Root hideWhenRunning className="sancho-action-bar">
+          <ActionBarPrimitive.Copy aria-label="Copy" className="sancho-action-button">
+            <CopyIcon />
+          </ActionBarPrimitive.Copy>
+          <ActionBarPrimitive.Reload aria-label="Regenerate" className="sancho-action-button">
+            <RefreshCw size={13} />
+          </ActionBarPrimitive.Reload>
+        </ActionBarPrimitive.Root>
+      </div>
     </MessagePrimitive.Root>
   );
 }
