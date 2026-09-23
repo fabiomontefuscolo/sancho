@@ -170,7 +170,12 @@ export function makeEnvelope<T extends string, P>(
 }
 
 export function postToPort(port: chrome.runtime.Port, envelope: AnyEnvelope): void {
-  port.postMessage(envelope);
+  try {
+    port.postMessage(envelope);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("disconnected port")) return;
+    throw error;
+  }
 }
 
 export function onPortEnvelope(
