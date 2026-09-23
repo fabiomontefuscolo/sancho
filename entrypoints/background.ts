@@ -39,6 +39,12 @@ import {
   touchKeepAlive,
 } from "../src/agent/keepalive";
 import { getProviderConfig } from "../src/storage/settings";
+import {
+  recordRequestCompleted,
+  recordRequestError,
+  recordRequestStart,
+  resetTabDiagnostics,
+} from "../src/agent/diagnostics";
 
 type UiHandler = (envelope: UiToBackground, port: chrome.runtime.Port) => Promise<void>;
 
@@ -248,11 +254,53 @@ export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener(() => {
     void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
     void seedBuiltinActions().then(rebuildContextMenus);
+    void registerDiagnosticsProbe();
   });
   chrome.runtime.onStartup.addListener(() => {
     void rebuildContextMenus();
+    void registerDiagnosticsProbe();
   });
   void seedBuiltinActions().then(rebuildContextMenus);
+  void registerDiagnosticsProbe();
   watchActionChanges();
   registerContextMenuClickListener();
+  registerDiagnosticsListeners();
 });
+
+function registerDiagnosticsListeners(): void {
+  chrome.webRequest.onBeforeRequest.addListener(recordRequestStart, { urls: ["<all_urls>"] });
+  chrome.webRequest.onCompleted.addListener(recordRequestCompleted, { urls: ["<all_urls>"] });
+  chrome.webRequest.onErrorOccurred.addListener(recordRequestError, { urls: ["<all_urls>"] });
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+    if (changeInfo.status === "loading" && changeInfo.url) {
+      void resetTabDiagnostics(tabId);
+    }
+  });
+  chrome.tabs.onRemoved.addListener((tabId) => {
+    void resetTabDiagnostics(tabId);
+  });
+}
+
+async function registerDiagnosticsProbe(): Promise<void> {
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: ["sancho-diag-probe"] });
+  } catch {
+    // not registered yet
+  }
+  try {
+    await chrome.scripting.registerContentScripts([
+      {
+        id: "sancho-diag-probe",
+        js: ["diag-probe.js"],
+        matches: ["<all_urls>"],
+        runAt: "document_start",
+        world: "MAIN",
+        allFrames: false,
+      },
+    ]);
+  } catch (error) {
+    logEvent("diagnostics probe registration failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}

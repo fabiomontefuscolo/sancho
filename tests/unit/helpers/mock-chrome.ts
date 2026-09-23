@@ -6,13 +6,18 @@ type ChangeListener = (
 ) => void;
 
 export function installMockChrome() {
-  const stores: { sync: Record<string, unknown>; local: Record<string, unknown> } = {
+  const stores: {
+    sync: Record<string, unknown>;
+    local: Record<string, unknown>;
+    session: Record<string, unknown>;
+  } = {
     sync: {},
     local: {},
+    session: {},
   };
   const changeListeners: ChangeListener[] = [];
 
-  const makeArea = (areaName: "sync" | "local") => {
+  const makeArea = (areaName: "sync" | "local" | "session") => {
     const store = stores[areaName];
     return {
       get: vi.fn(async (keys?: string | string[] | null) => {
@@ -46,6 +51,7 @@ export function installMockChrome() {
     storage: {
       sync: makeArea("sync"),
       local: makeArea("local"),
+      session: makeArea("session"),
       onChanged: {
         addListener: (listener: ChangeListener) => changeListeners.push(listener),
         removeListener: (listener: ChangeListener) => {
@@ -63,6 +69,17 @@ export function installMockChrome() {
           return { title: "t", url: "https://x", chunks: ["text"] };
         }
         if (message.type === "selection.get") return { text: "sel", editable: true };
+        if (message.type === "console.read") {
+          return {
+            ok: true,
+            entries: [
+              { level: "warn", text: "careful", timestamp: 800 },
+              { level: "log", text: "hello page", timestamp: 900 },
+              { level: "error", text: "boom 42", timestamp: 1000 },
+            ],
+            truncated: false,
+          };
+        }
         return { ok: true };
       }),
       get: vi.fn(async () => ({ windowId: 1 })),

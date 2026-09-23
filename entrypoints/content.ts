@@ -237,9 +237,44 @@ function handleMessage(message: { type: string; [key: string]: unknown }): unkno
     }
     case "selection.replace":
       return replaceSelection(String(message.replacement));
+    case "console.read":
+      return readConsoleFromProbe();
     default:
       return { ok: false, error: `unknown message type ${String(message.type)}` };
   }
+}
+
+interface ProbeConsoleEntry {
+  level: "log" | "info" | "warn" | "error" | "exception";
+  text: string;
+  timestamp: number;
+}
+
+function readConsoleFromProbe(): Promise<{
+  ok: boolean;
+  entries: ProbeConsoleEntry[];
+  note?: string;
+}> {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      window.removeEventListener("message", onMessage);
+      resolve({ ok: true, entries: [], note: "probe unavailable" });
+    }, 2000);
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== window) return;
+      const data = event.data as {
+        source?: string;
+        type?: string;
+        entries?: ProbeConsoleEntry[];
+      } | null;
+      if (data?.source !== "sancho-diag-probe" || data.type !== "console.entries") return;
+      clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      resolve({ ok: true, entries: Array.isArray(data.entries) ? data.entries : [] });
+    };
+    window.addEventListener("message", onMessage);
+    window.postMessage({ source: "sancho-diag", type: "console.read" });
+  });
 }
 
 async function setCodeMirrorTextViaMainWorld(

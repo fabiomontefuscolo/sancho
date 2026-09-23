@@ -3,6 +3,8 @@ import {
   captureScreenshotArgs,
   clickElementArgs,
   fillFieldArgs,
+  getConsoleMessagesArgs,
+  getNetworkRequestsArgs,
   readPageArgs,
   selectOptionArgs,
   setEditorTextArgs,
@@ -12,16 +14,35 @@ import {
 } from "../../src/agent/tools";
 
 describe("tool schemas", () => {
-  it("exposes the seven declared tools", () => {
+  it("exposes the nine declared tools", () => {
     expect(toolDefinitions.map((tool) => tool.name).sort()).toEqual([
       "captureScreenshot",
       "clickElement",
       "fillField",
+      "getConsoleMessages",
+      "getNetworkRequests",
       "readPage",
       "selectOption",
       "setEditorText",
       "snapshotPage",
     ]);
+  });
+
+  it("validates getConsoleMessages arguments", () => {
+    expect(getConsoleMessagesArgs.parse({}).limit).toBe(50);
+    expect(getConsoleMessagesArgs.parse({ limit: 10, level: "error" })).toEqual({
+      limit: 10,
+      level: "error",
+    });
+    expect(() => getConsoleMessagesArgs.parse({ limit: 0 })).toThrow();
+    expect(() => getConsoleMessagesArgs.parse({ limit: 201 })).toThrow();
+    expect(() => getConsoleMessagesArgs.parse({ level: "verbose" })).toThrow();
+  });
+
+  it("validates getNetworkRequests arguments", () => {
+    expect(getNetworkRequestsArgs.parse({}).limit).toBe(50);
+    expect(() => getNetworkRequestsArgs.parse({ limit: 0 })).toThrow();
+    expect(() => getNetworkRequestsArgs.parse({ limit: 101 })).toThrow();
   });
 
   it("validates fillField arguments", () => {
